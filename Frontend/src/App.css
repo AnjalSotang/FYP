@@ -1,0 +1,48 @@
+/* Shaking Animation */
+@keyframes shake {
+    0% {
+        transform: translateX(0);
+    }
+    25% {
+        transform: translateX(-5px);
+    }
+    50% {
+        transform: translateX(5px);
+    }
+    75% {
+        transform: translateX(-5px);
+    }
+    100% {
+        transform: translateX(0);
+    }
+}
+
+.shake {
+    animation: shake 0.3s ease-in-out;
+}
+
+/* Fade-In Effect for Error Messages */
+@keyframes fadeInError {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.fade-in-error {
+    animation: fadeInError 0.5s ease-in-out;
+}
+
+
+
+/* Styling the error message */
+.error-message {
+    color: #e74c3c; /* Red color to indicate error */
+    font-size: 0.875rem; /* Smaller text size */
+    font-weight: 600; /* Bold font weight */
+    margin-top: 4px; /* Space between input and error message */
+    margin-left: 12px; /* Add some padding to the left */
+    display: block; /* Make sure it takes up space */
+}
