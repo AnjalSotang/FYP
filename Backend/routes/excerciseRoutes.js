@@ -1,5 +1,5 @@
 const express = require("express")
-const {addExcercise, getAllExcercises, getAllExcercisesForAdmin, getExcercise, deleteExcercise, updateExcercise, activeExercise, deactiveExercise} = require("../controller.js/excerciseController")
+const {addExcercise, getAllExcercises, getAllExcercisesForAdmin, getExcercise, deleteExcercise, updateExcercise, activeExercise, deactiveExercise} = require("../controller.js/admin/excerciseController")
 const router = express.Router();
 const upload = require("../helpers/upload"); 
 

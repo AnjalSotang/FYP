@@ -13,7 +13,7 @@ const Resetword = lazy(() => import("./pages/auth/Reset"));
 const Landing = lazy(() => import("./pages/auth/Landing"));
 // const UserName = lazy(() => import("./pages/auth/UserName"));
 const WelcomePage = lazy(() => import("./pages/auth/Components/Welcome.jsx"));
-const Exe = lazy(() => import("./pages/Admin/AddExcercise.jsx"));
+const AddExcercise = lazy(() => import("./pages/Admin/AddExcercise.jsx"));
 const Ex = lazy(() => import("./pages/Admin/CreateWorkout.jsx"));
 // const MotivationPage = lazy(() => import("./pages/auth/MotivationPage"));
 // const HealthDetaills = lazy(() => import("./pages/auth/HealthDetaills.jsx"));
@@ -44,7 +44,7 @@ function App() {
               <Route path="/Reset" element={<Resetword />} />
               {/* <Route path="/userName" element={<UserName />} /> */}
               <Route path="/WelcomePage" element={<WelcomePage />} />
-              <Route path="/add" element={<Exe  />} />
+              <Route path="/AddExcercise" element={<AddExcercise  />} />
               <Route path="/addq" element={<Ex />} />
               {/* <Route path="/Motivation" element={<MotivationPage />} /> */}
               {/* <Route path="/Health" element={<HealthDetaills />} /> */}

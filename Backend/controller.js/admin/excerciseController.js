@@ -1,9 +1,19 @@
-const { excercise } = require('../models/index')
+const { excercise } = require('../../models/index')
 
 const addExcercise = async (req, res) => {
-
     try {
-        const { name, muscle_group, difficultyLevel, instructions, equipment, category, burned_calories, duration } = req.body;
+        // Destructure the necessary fields from the request body
+        const { 
+            name, 
+            muscle_group, 
+            secondary_muscle_group,  // Added for secondary muscle group
+            difficulty_level,  // Corrected field name to match model
+            instructions, 
+            equipment, 
+            category, 
+            burned_calories, 
+            duration 
+        } = req.body;
 
         // Handle image file
         const image = req.files?.find(file => file.fieldname === 'image'); // Find the image file in req.files
@@ -14,30 +24,31 @@ const addExcercise = async (req, res) => {
         const videoPath = video ? video.path : null; // Path of the uploaded video
 
         // Check if any required fields are missing
-        if (!name || !muscle_group || !difficultyLevel || !instructions || !equipment || !category || !burned_calories || !duration || !videoPath || !imagePath) {
+        if (!name || !muscle_group || !difficulty_level || !instructions || !equipment || !category || !burned_calories || !duration || !videoPath || !imagePath) {
             return res.status(400).json({ message: "Fill up the form properly!!" });
         }
 
         // Check if the exercise already exists
-        const existingExcercise = await excercise.findOne({ where: { name } });
-        if (existingExcercise) {
-            return res.status(409).json({ message: "Excercise already added" });
+        const existingExercise = await Exercise.findOne({ where: { name } });
+        if (existingExercise) {
+            return res.status(409).json({ message: "Exercise already added" });
         }
 
-        // Create a new exercise
-        await excercise.create({
+        // Create a new exercise entry
+        await Exercise.create({
             name,
-            muscle_group,
-            difficultyLevel,
+            muscle_group: JSON.parse(muscle_group), // Convert muscle_group string to an array
+            secondary_muscle_group: JSON.parse(secondary_muscle_group || '[]'), // Convert secondary_muscle_group string to an array (default empty if not provided)
+            difficulty_level,
             instructions,
-            equipment,
+            equipment: JSON.parse(equipment), // Convert equipment string to an array
             category,
-            videoPath,
-            imagePath,
+            videoPath: videoPath,
+            imagePath: imagePath,
             burned_calories,
             duration
         });
-        
+
         // Respond with success message
         res.status(201).json({
             message: `${name} exercise added successfully!!`
@@ -49,7 +60,8 @@ const addExcercise = async (req, res) => {
             message: "An internal server error occurred. Please try again later.",
         });
     }
-}
+};
+
 
 
 const getAllExcercises = async (req, res) => {

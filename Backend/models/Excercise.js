@@ -1,21 +1,20 @@
 module.exports = (sequelize, Sequelize) => {
     const Exercise = sequelize.define("Exercise", {
-        // id: {
-        //     type: DataTypes.INTEGER,
-        //     primaryKey: true,
-        //     autoIncrement: true
-        // },
         name: {
             type: Sequelize.STRING,
             allowNull: false,
             unique: true
         },
         muscle_group: {
-            type: Sequelize.STRING,
+            type: Sequelize.ARRAY(Sequelize.STRING), // Changed to an array of strings
             allowNull: false
         },
+        secondary_muscle_group: {
+            type: Sequelize.ARRAY(Sequelize.STRING), // Allowing secondary muscle groups too
+            defaultValue: []
+        },
         difficulty_level: {
-            type: Sequelize.ENUM("Beginner", "Intermediate", "Advance"),
+            type: Sequelize.ENUM("Beginner", "Intermediate", "Advanced"),
             allowNull: false
         },
         instructions: {
@@ -23,8 +22,8 @@ module.exports = (sequelize, Sequelize) => {
             allowNull: false
         },
         equipment: {
-            type: Sequelize.STRING,
-            defaultValue: "Bodyweight"
+            type: Sequelize.ARRAY(Sequelize.STRING),
+            defaultValue: ["Bodyweight"]
         },
         category: {
             type: Sequelize.STRING
@@ -46,6 +45,5 @@ module.exports = (sequelize, Sequelize) => {
             defaultValue: true
         }
     }, { timestamps: true });
-
     return Exercise;
 };
