@@ -1,26 +1,29 @@
-module.exports = (sequelize, DataTypes) => {
+module.exports = (sequelize, Sequelize) => {
   const Workout = sequelize.define("Workout", {
       name: {
-          type: DataTypes.STRING,
+          type: Sequelize.STRING,
           allowNull: false,
           unique: true
       },
       description: {
-          type: DataTypes.TEXT
+          type: Sequelize.TEXT
       },
       difficulty_level: {
-          type: DataTypes.ENUM("Beginner", "Intermediate", "Advance"),
+          type: Sequelize.ENUM("Beginner", "Intermediate", "Advance"),
           allowNull: false
       },
       duration: {
-          type: DataTypes.INTEGER, // In minutes
+          type: Sequelize.STRING, // In minutes
           allowNull: false
       },
       goal: {
-          type: DataTypes.STRING
+          type: Sequelize.STRING
       },
+      imagePath: {
+        type: Sequelize.STRING
+    },
       is_active: {
-          type: DataTypes.BOOLEAN,
+          type: Sequelize.BOOLEAN,
           defaultValue: true
       }
   }, { timestamps: true });

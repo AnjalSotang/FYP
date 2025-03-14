@@ -13,8 +13,10 @@ const Resetword = lazy(() => import("./pages/auth/Reset"));
 const Landing = lazy(() => import("./pages/auth/Landing"));
 // const UserName = lazy(() => import("./pages/auth/UserName"));
 const WelcomePage = lazy(() => import("./pages/auth/Components/Welcome.jsx"));
-const AddExcercise = lazy(() => import("./pages/Admin/AddExcercise.jsx"));
-const Ex = lazy(() => import("./pages/Admin/CreateWorkout.jsx"));
+const AddExcercise = lazy(() => import("./pages/excercise/AddExcercise.jsx"));
+const Excercise = lazy(() => import("./pages/excercise/Excercise.jsx"));
+const Excercise2 = lazy(() => import("./pages/excercise/Excercise2.jsx"));
+const UpdateExcercise = lazy(() => import("./pages/excercise/UpdateExcercise.jsx"));
 // const MotivationPage = lazy(() => import("./pages/auth/MotivationPage"));
 // const HealthDetaills = lazy(() => import("./pages/auth/HealthDetaills.jsx"));
 // const ExperienceForm = lazy(() => import("./pages/auth/ExperienceForm.jsx"));
@@ -45,7 +47,10 @@ function App() {
               {/* <Route path="/userName" element={<UserName />} /> */}
               <Route path="/WelcomePage" element={<WelcomePage />} />
               <Route path="/AddExcercise" element={<AddExcercise  />} />
-              <Route path="/addq" element={<Ex />} />
+              <Route path="/Excercise" element={<Excercise  />} />
+              <Route path="/Excercise2" element={<Excercise2  />} />
+              <Route path="/edit/:id" element={<UpdateExcercise />} />
+              {/* <Route path="/addq" element={<Ex />} /> */}
               {/* <Route path="/Motivation" element={<MotivationPage />} /> */}
               {/* <Route path="/Health" element={<HealthDetaills />} /> */}
               {/* <Route path="/Experience" element={<ExperienceForm />} /> */}

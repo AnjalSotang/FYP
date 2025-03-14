@@ -1,47 +1,64 @@
-const { Workout, WorkoutExercise, Exercise } = require('../../models/index');
+const { Op, Sequelize } = require("sequelize");
+const { workout, workoutExercise } = require('../../models/index');
 
-exports.createWorkout = async (req, res) => {
-    try {
-        // 1️⃣ Get Workout Data from Request
-        const { name, description, difficulty_level, duration, goal, is_active, exercises } = req.body;
+const createWorkout = async (req, res) => {
+  try {
+    // 1️⃣ Get Workout Data from Request
+    const { name, description, difficulty_level, duration, goal } = req.body;
 
-        // Validation (Ensure required fields are present)
-        if (!name || !difficulty_level || !exercises || exercises.length === 0) {
-            return res.status(400).json({ message: "Workout name, difficulty, and exercises are required." });
-        }
+    // Get file paths safely
+    const imagePath = req.files?.image ? req.files.image[0].path : null;
 
-        // 2️⃣ Create the Workout in DB
-        const workout = await Workout.create({ name, description, difficulty_level, duration, goal, is_active });
-
-        console.log('✅ Workout Created:', workout.name);
-
-        // 3️⃣ Associate Exercises with Workout
-        for (let i = 0; i < exercises.length; i++) {
-            const exerciseData = exercises[i];
-
-            // Check if Exercise exists
-            const exerciseExists = await Exercise.findByPk(exerciseData.exercise_id);
-            if (!exerciseExists) {
-                return res.status(404).json({ message: `Exercise with ID ${exerciseData.exercise_id} not found` });
-            }
-
-            await WorkoutExercise.create({
-                workout_id: workout.id,
-                exercise_id: exerciseData.exercise_id,
-                sets: exerciseData.sets,
-                reps: exerciseData.reps,
-                order: i + 1,  // Maintain order of exercises
-                rest_time: exerciseData.rest_time
-            });
-        }
-
-        console.log('✅ Exercises Linked to Workout Successfully.');
-
-        // 4️⃣ Response
-        res.status(201).json({ message: "Workout created successfully!", workout });
-
-    } catch (error) {
-        console.error("❌ Error creating workout:", error);
-        res.status(500).json({ message: "Internal Server Error", error: error.message });
+    // Validation (Ensure required fields are present)
+    if (!name || !description || !difficulty_level || !duration || !goal || imagePath === 0) {
+      return res.status(400).json({ message: "Workout name, difficulty, and exercises are required." });
     }
+
+    // Check if the exercise already exists
+    const existingWorkout = await workout.findOne({ where: { name } });
+    if (existingWorkout) {
+      return res.status(409).json({ message: "Exercise already added" });
+    }
+
+
+    // 2️⃣ Create the Workout in DB
+    const response = await workout.create({ name, description, difficulty_level, duration, goal, imagePath });
+
+    // 4️⃣ Response
+    res.status(201).json({ message: "Workout created successfully!", response });
+
+  } catch (error) {
+    res.status(500).json({ message: `Internal Server ${error.message}` });
+    console.log(error)
+  }
 };
+
+const addExerciseToWorkout = async (req, res) => {
+  try {
+    const { workoutId } = req.params;
+    const { exerciseId, sets, reps, rest_time } = req.body;
+
+    if (!workoutId || !exerciseId || !sets || !reps) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const response = await workoutExercise.create({
+      workoutId,
+      exerciseId,
+      sets,
+      reps,
+      rest_time
+    });
+
+    return res.status(201).json({ success: true, data: response });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Failed to add exercise to workout" });
+  }
+};
+
+
+module.exports = {
+  createWorkout,
+  addExerciseToWorkout
+}

@@ -3,7 +3,8 @@ const { sequelize } = require("./models/index"); // Sequelize instance import
 const userRoutes = require("./routes/userRoutes");
 const addRoutes = require("./routes/addRoutes");
 const excerciseRoutes = require("./routes/excerciseRoutes")
-
+const workoutRoutes = require("./routes/workoutRoutes")
+const path = require("path");
 const cors = require("cors");
 const app = express();
 
@@ -25,7 +26,9 @@ app.use(express.urlencoded({ extended: true })); // Parse URL-encoded payloads p
 
 
 app.use('/auth', userRoutes)
-app.use('/api', addRoutes, excerciseRoutes)
+app.use('/api', addRoutes, excerciseRoutes, workoutRoutes)
+
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Use the PORT value from the .env file or default to 3000
 const PORT = process.env.PORT || 3000;
