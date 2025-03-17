@@ -1,11 +1,11 @@
 module.exports = (sequelize, DataTypes) => {
     const WorkoutExercise = sequelize.define("WorkoutExercise", {
         sets: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.STRING,
             allowNull: false
         },
         reps: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.STRING,
             allowNull: false
         },
         rest_time: {

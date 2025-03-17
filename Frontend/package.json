@@ -16,6 +16,7 @@
     "axios": "^1.7.9",
     "lodash": "^4.17.21",
     "lucide-react": "^0.479.0",
+    "nodemon": "^3.1.9",
     "react": "^18.3.1",
     "react-avatar": "^5.0.3",
     "react-confetti": "^6.2.2",

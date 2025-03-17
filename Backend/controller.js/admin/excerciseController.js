@@ -7,9 +7,9 @@ const addExcercise = async (req, res) => {
         const {
             name,
             muscle_group,
-            secondary_muscle_group,
             difficulty_level,
             instructions,
+            equipment,
             category,
             burned_calories,
             duration
@@ -18,14 +18,13 @@ const addExcercise = async (req, res) => {
         // Get file paths safely
         const imagePath = req.files?.image ? req.files.image[0].path : null;
         const videoPath = req.files?.video ? req.files.video[0].path : null;
-        const equipmentPaths = req.files?.equipment ? req.files.equipment.map(file => file.path) : [];
 
         console.log(req.body);
         console.log(req.files);
 
 
         // Check if any required fields are missing
-        if (!name || !muscle_group || !difficulty_level || !instructions || !category || !burned_calories || !duration || equipmentPaths.length === 0) {
+        if (!name || !muscle_group || !equipment || !difficulty_level || !instructions || !category || !burned_calories || !duration) {
             return res.status(400).json({ message: "Fill up the form properly!!" });
         }
 
@@ -39,10 +38,9 @@ const addExcercise = async (req, res) => {
         await excercise.create({
             name,
             muscle_group,
-            secondary_muscle_group,
             difficulty_level,
             instructions,
-            equipment: equipmentPaths.join(","), // Store as comma-separated string
+            equipment, // Store as comma-separated string
             category,
             videoPath,
             imagePath,
@@ -105,9 +103,6 @@ const searchExercises = async (req, res) => {
                       [Op.like]: `%${searchTerm}%`,
                   }),
                   Sequelize.where(Sequelize.fn("LOWER", Sequelize.fn("REPLACE", Sequelize.col("muscle_group"), " ", "")), {
-                      [Op.like]: `%${searchTerm}%`,
-                  }),
-                  Sequelize.where(Sequelize.fn("LOWER", Sequelize.fn("REPLACE", Sequelize.col("secondary_muscle_group"), " ", "")), {
                       [Op.like]: `%${searchTerm}%`,
                   }),
                   Sequelize.where(Sequelize.fn("LOWER", Sequelize.col("difficulty_level")), {
@@ -188,13 +183,12 @@ const getExcercise = async (req, res) => {
 }
 
 const updateExcercise = async (req, res) => {
-
     try {
-        const { id } = req.params;
         const {
+            id,
             name,
             muscle_group,
-            secondary_muscle_group,
+            equipment,
             difficulty_level,
             instructions,
             category,
@@ -202,36 +196,29 @@ const updateExcercise = async (req, res) => {
             duration
         } = req.body;
 
-        
-
-        // Get file paths safely (if new files are uploaded)
-        const imagePath = req.files?.image ? req.files.image[0].path : null;
-        const videoPath = req.files?.video ? req.files.video[0].path : null;
-        const equipmentPaths = req.files?.equipment ? req.files.equipment.map(file => file.path) : null;
+        // Extract file paths safely if new files are uploaded
+        const imagePath = req.files?.image?.[0]?.path || null;
+        const videoPath = req.files?.video?.[0]?.path || null;
 
         // Find exercise by ID
         const exercise = await excercise.findByPk(id);
-
         if (!exercise) {
             return res.status(404).json({ message: "Exercise not found" });
         }
-
-
+        
         // Update only provided fields
-        await excercise.update({
-            name: name || exercise.name,
-            muscle_group: muscle_group || exercise.muscle_group,
-            secondary_muscle_group: secondary_muscle_group || exercise.secondary_muscle_group,
-            difficulty_level: difficulty_level || exercise.difficulty_level,
-            instructions: instructions || exercise.instructions,
-            category: category || exercise.category,
-            burned_calories: burned_calories ? parseInt(burned_calories) : exercise.burned_calories,
-            duration: duration ? parseInt(duration) : exercise.duration,
-            imagePath: imagePath || exercise.imagePath,
-            videoPath: videoPath || exercise.videoPath,
-            equipment: equipmentPaths ? equipmentPaths.join(",") : exercise.equipment
-        },
-            { where: { id } });
+        await exercise.update({
+            name: name ?? exercise.name,
+            muscle_group: muscle_group ?? excercise.muscle_group,
+            difficulty_level: difficulty_level ?? exercise.difficulty_level,
+            instructions: instructions ?? exercise.instructions,
+            equipment: equipment ?? excercise.equipment,
+            category: category ?? exercise.category,
+            burned_calories: burned_calories ? parseInt(burned_calories, 10)  : exercise.burned_calories,
+            duration: duration ? parseInt(duration, 10)  : exercise.duration,
+            imagePath: imagePath ?? exercise.imagePath,
+            videoPath: videoPath ?? exercise.videoPath,
+        });
 
         res.status(200).json({ message: "Exercise updated successfully", data: exercise });
 
@@ -244,33 +231,33 @@ const updateExcercise = async (req, res) => {
     }
 };
 
-const toggleExerciseActive = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { isActive } = req.body; // Get the new isActive status from request body
+// const toggleExerciseActive = async (req, res) => {
+//     try {
+//         const { id } = req.params;
+//         const { isActive } = req.body; // Get the new isActive status from request body
 
-        // Find the exercise
-        const exercise = await excercise.findByPk(id);
+//         // Find the exercise
+//         const exercise = await excercise.findByPk(id);
 
-        if (!exercise) {
-            return res.status(404).json({ message: "Exercise not found" });
-        }
+//         if (!exercise) {
+//             return res.status(404).json({ message: "Exercise not found" });
+//         }
 
-        // Update the is_active field
-        await exercise.update({ is_active: isActive }, { where: {id}});
+//         // Update the is_active field
+//         await exercise.update({ is_active: isActive }, { where: {id}});
 
-        res.status(200).json({
-            message: `Exercise has been ${isActive ? "activated" : "deactivated"}`,
-            data: exercise, // Send updated exercise data
-        });
-    } catch (error) {
-        console.error("Error updating exercise status:", error);
-        res.status(500).json({
-            message: "An internal server error occurred. Please try again later.",
-            error: error.message,
-        });
-    }
-};
+//         res.status(200).json({
+//             message: `Exercise has been ${isActive ? "activated" : "deactivated"}`,
+//             data: exercise, // Send updated exercise data
+//         });
+//     } catch (error) {
+//         console.error("Error updating exercise status:", error);
+//         res.status(500).json({
+//             message: "An internal server error occurred. Please try again later.",
+//             error: error.message,
+//         });
+//     }
+// };
 
 
 
@@ -311,6 +298,5 @@ module.exports = {
     getExcercise,
     deleteExcercise,
     updateExcercise,
-    toggleExerciseActive,
     searchExercises
 }

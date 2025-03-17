@@ -164,16 +164,18 @@ export function fetchExcercise(id) {
 
 
     // export function editExcercise(id, token)  
-    export function updateExcercise(id, data){
+    export function updateExcercise(data){
         return async function updateExcerciseThunk(dispatch){
             dispatch(setStatus(STATUSES.LOADING))
            try{
-            const response = await API.patch(`api/updateExcercises/${id}`,data,{
+            const response = await API.patch('api/updateExcercise',data,{
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     // 'Authorization': localStorage.getItem(token)
                 }
             })
+
+
             if(response.status === 200){
                 dispatch(setStatus({ status: STATUSES.SUCCESS, message: response.data.message }))
             }
@@ -184,7 +186,7 @@ export function fetchExcercise(id) {
 
             if (error.response) {
                 // Server responded with an error status (e.g., 400, 409)
-                errorMessage = error.response.data.message || "Registration failed.";
+                errorMessage = error.response.data.message || "Update fAILED";
             } else if (error.request) {
                 // Request was made but no response (backend is down or network issue)
                 errorMessage = "Cannot connect to the server. Please check your internet or try again later.";
@@ -205,12 +207,22 @@ export function fetchExcercise(id) {
                 const response = await API.delete(`api/deleteExcercise/${id}`);
                 if (response.status === 200) {
                     const currentData = getState().excercise.data;
-                    const newData = currentData.filter(ex => ex.id !== id);
+                    const newData = currentData.filter(ex => ex.id !== id);~
                     dispatch(setExcercise(newData));
                     dispatch(setStatus({ status: STATUSES.SUCCESS, message: "Successfully deleted" }));
                 }
             } catch (error) {
-                dispatch(setStatus({ status: STATUSES.ERROR, message: "Deletion failed" }));
+                let errorMessage = "An unexpected error occurred.";
+    
+                if (error.response) {
+                    errorMessage = error.response.data.message || "Failed to delete exercise.";
+                } else if (error.request) {
+                    errorMessage = "Cannot connect to the server. Please check your internet or try again later.";
+                } else {
+                    errorMessage = error.message;
+                }
+    
+                dispatch(setStatus({ status: STATUSES.ERROR, message: errorMessage }));
             }
         }
     }

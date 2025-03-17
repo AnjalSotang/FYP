@@ -1,13 +1,10 @@
-import { useState, useEffect, useRef, memo } from "react";
-import { Bell, ChevronDown, Search, Menu, Settings, HelpCircle, User, LogOut, XCircle } from "lucide-react";
-import Avatar from "react-avatar";
+import { useState, useEffect, memo } from "react";
+import { Bell, ChevronDown, Settings, HelpCircle, User, LogOut,  } from "lucide-react";
 import { throttle } from "lodash";
 import { Link } from "react-router-dom";
 
-const Navbar = () => {
+const TopNavbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showClear, setShowClear] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
 
@@ -25,15 +22,6 @@ const Navbar = () => {
     };
   }, [handleScroll]);
 
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-    setShowClear(e.target.value.length > 0);
-  };
-
-  const clearSearch = () => {
-    setSearchQuery("");
-    setShowClear(false);
-  };
 
   return (
     <nav
@@ -48,29 +36,7 @@ const Navbar = () => {
         </span>
       </Link>
 
-      {/* Search Bar */}
-      <div className="flex-1 max-w-2xl mx-6 relative">
-        <div className="relative w-full">
-          <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-            <Search className="h-4 w-4 text-gray-400" />
-          </div>
-          <input
-            type="search"
-            value={searchQuery}
-            onChange={handleSearchChange}
-            placeholder="Search..."
-            className="w-full h-10 pl-10 pr-10 rounded-md bg-[#1a2c50]/50 text-white placeholder:text-gray-400 border-0 focus:outline-none focus:ring-1 focus:ring-[#b4e61d]"
-          />
-          {showClear && (
-            <button
-              onClick={clearSearch}
-              className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-white"
-            >
-              <XCircle className="h-5 w-5" />
-            </button>
-          )}
-        </div>
-      </div>
+    
 
         
         {/* Right section: Actions and profile */}
@@ -201,4 +167,4 @@ const Navbar = () => {
   );
 };
 
-export default memo(Navbar);
+export default memo(TopNavbar);

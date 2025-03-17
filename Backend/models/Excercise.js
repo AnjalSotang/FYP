@@ -1,17 +1,16 @@
 module.exports = (sequelize, Sequelize) => {
-    const Exercise = sequelize.define("Exercise", {
+    const Excercise = sequelize.define("Excercise", {
         name: {
             type: Sequelize.STRING,
             allowNull: false,
-            unique: true
+            unique: true,
+            validate: {
+                notEmpty: true // Ensures name is not empty
+            }
         },
         muscle_group: {
-            type: Sequelize.TEXT, // Storing as a JSON string or comma-separated values
+            type: Sequelize.JSON, // Store multiple muscle groups as JSON array
             allowNull: false
-        },
-        secondary_muscle_group: {
-            type: Sequelize.TEXT, // Allowing secondary muscle groups too
-            defaultValue: "Back"
         },
         difficulty_level: {
             type: Sequelize.ENUM("Beginner", "Intermediate", "Advanced"),
@@ -22,8 +21,7 @@ module.exports = (sequelize, Sequelize) => {
             allowNull: false
         },
         equipment: {
-            type: Sequelize.TEXT, // Changed to TEXT to store as JSON or comma-separated values
-            defaultValue: "Bodyweight"
+            type: Sequelize.TEXT, // Storing multiple equipment types in JSON format
         },
         category: {
             type: Sequelize.STRING
@@ -36,10 +34,16 @@ module.exports = (sequelize, Sequelize) => {
         },
         burned_calories: {
             type: Sequelize.INTEGER,
-            defaultValue: 0
+            defaultValue: 0,
+            validate: {
+                min: 0
+            }
         },
         duration: {
             type: Sequelize.INTEGER,
+            validate: {
+                min: 1
+            }
         },
         is_active: {
             type: Sequelize.BOOLEAN,
@@ -47,5 +51,5 @@ module.exports = (sequelize, Sequelize) => {
         }
     }, { timestamps: true });
 
-    return Exercise;
+    return Excercise;
 };

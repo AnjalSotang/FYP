@@ -13,10 +13,14 @@ const Resetword = lazy(() => import("./pages/auth/Reset"));
 const Landing = lazy(() => import("./pages/auth/Landing"));
 // const UserName = lazy(() => import("./pages/auth/UserName"));
 const WelcomePage = lazy(() => import("./pages/auth/Components/Welcome.jsx"));
-const AddExcercise = lazy(() => import("./pages/excercise/AddExcercise.jsx"));
-const Excercise = lazy(() => import("./pages/excercise/Excercise.jsx"));
-const Excercise2 = lazy(() => import("./pages/excercise/Excercise2.jsx"));
-const UpdateExcercise = lazy(() => import("./pages/excercise/UpdateExcercise.jsx"));
+const AddExcercise = lazy(() => import("./pages/admin/excercises/AddExcercise.jsx"));
+// const Excercise = lazy(() => import("./pages/excercise/Excercise.jsx"));
+const Excercise2 = lazy(() => import("./pages/admin/excercises/Excercise2.jsx"));
+const UpdateExcercise = lazy(() => import("./pages/admin/excercises/UpdateExcercise.jsx"));
+const AddWorkout = lazy(() => import("./pages/admin/workouts/AddWorkout.jsx"));
+const AddExcercise2 = lazy(() => import("./pages/admin/excercises/AddExcercise.jsx"));
+const Workout = lazy(() => import("./pages/admin/workouts/Workout.jsx"));
+const UpdateWorkout = lazy(() => import("./pages/admin/workouts/AddWorkout.jsx"));
 // const MotivationPage = lazy(() => import("./pages/auth/MotivationPage"));
 // const HealthDetaills = lazy(() => import("./pages/auth/HealthDetaills.jsx"));
 // const ExperienceForm = lazy(() => import("./pages/auth/ExperienceForm.jsx"));
@@ -41,15 +45,19 @@ function App() {
             <Routes>
               <Route path="/Login" element={<Login />} />
               <Route path="/Register" element={<Register />} />
-              <Route path="/" element={<Landing />} />
+              <Route path="/Landing" element={<Landing />} />
               <Route path="/Forgot" element={<ForgotPassword />} />
               <Route path="/Reset" element={<Resetword />} />
               {/* <Route path="/userName" element={<UserName />} /> */}
               <Route path="/WelcomePage" element={<WelcomePage />} />
               <Route path="/AddExcercise" element={<AddExcercise  />} />
-              <Route path="/Excercise" element={<Excercise  />} />
-              <Route path="/Excercise2" element={<Excercise2  />} />
+              {/* <Route path="/Excercise" element={<Excercise  />} /> */}
+              <Route path="/" element={<Excercise2  />} />
               <Route path="/edit/:id" element={<UpdateExcercise />} />
+              <Route path="/AddWorkout" element={<AddWorkout  />} />
+              <Route path="/AddExcercise2" element={<AddExcercise2  />} />
+              <Route path="/Workout" element={<Workout  />} />
+              <Route path="/UpdateWorkout/:id" element={<UpdateWorkout  />} />
               {/* <Route path="/addq" element={<Ex />} /> */}
               {/* <Route path="/Motivation" element={<MotivationPage />} /> */}
               {/* <Route path="/Health" element={<HealthDetaills />} /> */}
