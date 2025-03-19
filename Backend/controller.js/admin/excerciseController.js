@@ -14,25 +14,42 @@ const addExcercise = async (req, res) => {
             burned_calories,
             duration
         } = req.body;
+        const image = req.file;  // Multer file upload
+        // Validation (Ensure required fields are present)
 
-        // Get file paths safely
-        const imagePath = req.files?.image ? req.files.image[0].path : null;
-        const videoPath = req.files?.video ? req.files.video[0].path : null;
+      // Define an array to track missing fields
+const missingFields = [];
 
-        console.log(req.body);
-        console.log(req.files);
+if (!name) missingFields.push("name");
+if (!muscle_group) missingFields.push("muscle_group");
+if (!difficulty_level) missingFields.push("difficulty_level");
+if (!instructions) missingFields.push("instructions");
+if (!equipment) missingFields.push("equipment");
+if (!category) missingFields.push("category");
+if (!burned_calories) missingFields.push("burned_calories");
+if (!duration) missingFields.push("duration");
 
+// If there are missing fields, return a specific error message
+if (missingFields.length > 0) {
+    console.log("Missing Fields:", missingFields);
+    return res.status(400).json({ message: `Missing required fields: ${missingFields.join(", ")}` });
+}
 
-        // Check if any required fields are missing
-        if (!name || !muscle_group || !equipment || !difficulty_level || !instructions || !category || !burned_calories || !duration) {
-            return res.status(400).json({ message: "Fill up the form properly!!" });
-        }
+if (!image) {
+    return res.status(400).json({ message: "Workout image is required." });
+  }
+
 
         // Check if the exercise already exists
         const existingExercise = await excercise.findOne({ where: { name } });
         if (existingExercise) {
             return res.status(409).json({ message: "Exercise already added" });
         }
+
+        
+   // 2️⃣ Get file path (Multer stores files in the 'uploads/' folder by default)
+   const imagePath = image.path;  // Path to the uploaded image
+
 
         // Save to database (example using Sequelize)
         await excercise.create({
@@ -42,7 +59,6 @@ const addExcercise = async (req, res) => {
             instructions,
             equipment, // Store as comma-separated string
             category,
-            videoPath,
             imagePath,
             burned_calories: burned_calories ? parseInt(burned_calories) : null,
             duration: duration ? parseInt(duration) : null,
@@ -56,7 +72,6 @@ const addExcercise = async (req, res) => {
         return res.status(500).json({ message: "Internal server error", error: error.message });
     }
 };
-
 
 const getAllExcercises = async (req, res) => {
     try {

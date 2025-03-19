@@ -69,10 +69,11 @@ export function fetchExcercises() {
             // http://localhost:3001/api/getExcercises
             const response = await API.get('api/getExcercises');
             if (response.status === 200) {
-                const exercises = response.data?.data || [];
+                const workout= response.data?.data || [];
 
-                if (exercises.length > 0) {
-                    dispatch(setExcercise(exercises));
+                if (workout.length > 0) {
+                    dispatch(setExcercise(workout));
+                    console.log(workout)
                     dispatch(setStatus({ status: STATUSES.SUCCESS, message: "Successfull" }))
                 }
             }

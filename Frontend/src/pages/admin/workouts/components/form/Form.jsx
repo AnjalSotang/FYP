@@ -111,48 +111,48 @@ const WorkoutForm = ({ id, onSubmit, type, initialData }) => {
 
     const validateForm = () => {
         const newErrors = {}
-
-        // Validation for exercise name
-        if (!data.name) newErrors.name = "Exercise name is required"
-
-        // Validation for difficulty level
-        if (!data.difficulty_level) newErrors.difficulty_level = "Difficulty level is required"
-
-        // Validation for instructions
-        if (!data.description) newErrors.description = "Description are required"
-
-        // Validation for image - only required for new workouts (add operations)
-        if (!image && !imagePreview) {
-            newErrors.image = "Image is required";
+    
+        if (type === "add") {
+            // For new exercises, all fields are required
+            if (!data.name) newErrors.name = "Exercise name is required"
+            if (!data.difficulty_level) newErrors.difficulty_level = "Difficulty level is required"
+            if (!data.description) newErrors.description = "Description is required"
+            if (!image && !imagePreview) newErrors.image = "Image is required"
+            if (!data.goal) newErrors.goal = "Goal is required"
+            if (!data.duration) newErrors.duration = "Duration is required"
+        } else if (type === "update") {
+            // Only validate fields that exist (i.e., changed fields)
+            if (data.name !== undefined && !data.name) newErrors.name = "Exercise name is required"
+            if (data.difficulty_level !== undefined && !data.difficulty_level) newErrors.difficulty_level = "Difficulty level is required"
+            if (data.description !== undefined && !data.description) newErrors.description = "Description is required"
+            if (data.goal !== undefined && !data.goal) newErrors.goal = "Goal is required"
+            if (data.duration !== undefined && !data.duration) newErrors.duration = "Duration is required"
+            
+            // Allow empty image field when updating unless explicitly changed
+            if (image !== undefined && !image && !imagePreview) {
+                newErrors.image = "Image is required"
+            }
         }
-
-        if (!data.goal) newErrors.goal = "Goal is required"
-
-        if (!data.duration) newErrors.duration = "Duration is required"
-
+    
         setErrors(newErrors)
         return Object.keys(newErrors).length === 0
     }
-
+    
     const handleSubmit = async (e) => {
         e.preventDefault()
-        // Start loading state when the form submission begins
         setIsLoading(true)
-
-        // For add operations, validate all required fields
-        // For update operations, only validate fields that have values
-        if (type === "add") {
-            if (!validateForm()) {
-                toast.error("Please fill in all required fields");
-                setIsLoading(false);
-                return;
-            }
+    
+        // Validate form based on operation type
+        if (!validateForm()) {
+            toast.error("Please fill in all required fields")
+            setIsLoading(false)
+            return
         }
-
+        // Prepare form data
         const formData = new FormData()
         formData.append("id", id);
         formData.append("name", data.name)
-        formData.append("difficulty_level", data.difficulty_level)
+        formData.append("level", data.difficulty_level)
         formData.append("description", data.description)
         formData.append("goal", data.goal)
         formData.append("duration", data.duration)
@@ -161,8 +161,8 @@ const WorkoutForm = ({ id, onSubmit, type, initialData }) => {
 
         console.log("Form data being submitted:", Object.fromEntries(formData.entries()));
         try {
-            console.log(formData)
-            await onSubmit(formData) // Use the provided onSubmit function
+            console.log("Form data being submitted:", Object.fromEntries(formData.entries()));
+            onSubmit(formData);
             // toast.success("Workout added successfully!");
 
             // Reset form fields after successful submission
@@ -170,7 +170,7 @@ const WorkoutForm = ({ id, onSubmit, type, initialData }) => {
             if (type === "add") {
                 setData({
                     name: "",
-                    difficulty_level: "",
+                    level: "",
                     description: "",
                     goal: "",
                     duration: "",
@@ -233,7 +233,7 @@ const WorkoutForm = ({ id, onSubmit, type, initialData }) => {
                                     id="name"
                                     type="text"
                                     name="name"
-                                    placeholder="e.g., Barbell Squat"
+                                    placeholder="e.g., Full Body Workout"
                                     className={classNames(
                                         "w-full p-3 rounded-lg bg-[#1a2c50]/80 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4a90e2] transition-all duration-200 border border-[#1e3a6a]/50",
                                         errors.name ? "border-red-500 focus:ring-red-500" : "hover:border-[#1e3a6a]",
@@ -281,7 +281,7 @@ const WorkoutForm = ({ id, onSubmit, type, initialData }) => {
                                     <option value="Intermediate" className="bg-[#1a2c50]">
                                         Intermediate
                                     </option>
-                                    <option value="Advance" className="bg-[#1a2c50]">
+                                    <option value="Advanced" className="bg-[#1a2c50]">
                                         Advanced
                                     </option>
                                 </select>

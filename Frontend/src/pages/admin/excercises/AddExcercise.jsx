@@ -10,7 +10,7 @@ import DashboardLayout from "../../../components/layout/DashboardLayout";
 import Sidebar from "../../../components/navbar/Sidebar";
 
 
-const AddExerciseForm = lazy(() => import("./components/form/Form"));
+const ExerciseForm = lazy(() => import("./components/form/ExcerciseForm"));
 
 const AddExercise = () => {
   const { status } = useSelector((state) => state.excercise)
@@ -48,7 +48,7 @@ const AddExercise = () => {
     <ErrorBoundary FallbackComponent={ErrorFallback}>
    <Suspense fallback={<div className="spinner">Loading...</div>}>
    <DashboardLayout SidebarComponent={Sidebar}>
-        <AddExerciseForm onSubmit={handleAddExcercise} />
+        <ExerciseForm type= "add" onSubmit={handleAddExcercise} />
         </DashboardLayout>
       </Suspense>
     </ErrorBoundary>

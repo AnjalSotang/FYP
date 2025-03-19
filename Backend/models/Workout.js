@@ -9,21 +9,12 @@ module.exports = (sequelize, Sequelize) => {
           type: Sequelize.TEXT
       },
       level: {
-          type: Sequelize.ENUM("Beginner", "Intermediate", "Advanced"),
+          type: Sequelize.ENUM("All","Beginner", "Intermediate", "Advanced"),
           allowNull: false
       },
       duration: {
-          type: Sequelize.STRING, // In minutes
+          type: Sequelize.STRING, 
           allowNull: false
-      },
-      category: {
-        type: Sequelize.STRING,
-      },
-      calories: {
-        type: Sequelize.STRING
-      },
-      is_featured:{
-        type: Sequelize.STRING 
       },
       goal: {
           type: Sequelize.STRING

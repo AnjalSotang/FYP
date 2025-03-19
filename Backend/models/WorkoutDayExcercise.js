@@ -1,5 +1,5 @@
 module.exports = (sequelize, DataTypes) => {
-    const WorkoutExercise = sequelize.define("WorkoutExercise", {
+    const WorkoutDayExercise = sequelize.define("WorkoutDayExercise", {
         sets: {
             type: DataTypes.STRING,
             allowNull: false
@@ -14,5 +14,5 @@ module.exports = (sequelize, DataTypes) => {
         }
     }, { timestamps: false });
 
-    return WorkoutExercise;
+    return WorkoutDayExercise;
 };

@@ -17,17 +17,18 @@ const AddExercise = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate();
   const workout = useSelector((state) => state.workout);
-    
-    console.log("Workout state:", workout); 
+    console.log(workout);
+  console.log("Workout state:", workout); 
 
   const handleAddWorkout = (data) => {
     dispatch(addWorkout(data))
+    console.log(data)
   };
 
   // 🔥 Handle Status Updates
   useEffect(() => {
     if (status?.status === STATUSES.SUCCESS) {
-      navigate("/AddExcercise2");
+      navigate("/Workout");
       toast.success(status.message);
       dispatch(setStatus(null));
     } else if (status?.status === STATUSES.ERROR) {

@@ -104,86 +104,80 @@ export default function Exercises2() {
       <div className="min-h-screen bg-navy-900 p-4 md:p-8 ">
         {/* Header with search and add button */}
         <div className="mb-5 ">
-          <h1 className="text-3xl font-bold tracking-tight mb-1 text-white">Exercises</h1>
-          <p className=" text-gray-400">Manage your exercise library</p>
+          <h1 className="text-4xl font-bold tracking-tight mb-3 text-white">Exercises</h1>
+          <p className=" text-gray-400 font-semibold">Manage your exercise library</p>
         </div>
 
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4 ">
-          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-            {/* Search input */}
-            <div className="relative w-full sm:w-70">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-                <Search className="h-4 w-4 text-gray-400" />
-              </div>
-              <input
-                type="search"
-                value={searchTerm}
-                onChange={handleSearch}
-                placeholder="Search..."
-                className="w-full h-10 pl-10 pr-10 rounded-md bg-[#1a2c50]/50 text-white placeholder:text-gray-400 border-0 focus:outline-none focus:ring-1 focus:ring-[#b4e61d]"
-              />
-              {showClear && (
-                <button
-                  onClick={clearSearch}
-                  className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-white"
-                >
-                  <XCircle className="h-5 w-5" />
-                </button>
-              )}
-            </div>
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-6">
+  <div className="flex flex-col sm:flex-row gap-6 w-full sm:w-auto">
+    {/* Search input */}
+    <div className="relative w-full sm:w-80">
+      <div className="absolute inset-y-0 left-0 flex items-center pl-3">
+        <Search className="h-5 w-5 text-gray-400" />
+      </div>
+      <input
+        type="search"
+        value={searchTerm}
+        onChange={handleSearch}
+        placeholder="Search..."
+        className="w-full h-12 pl-10 pr-10 rounded-lg bg-[#1a2c50]/50 text-white placeholder:text-gray-400 border-0 focus:outline-none focus:ring-1 focus:ring-[#b4e61d]"
+      />
+      {showClear && (
+        <button
+          onClick={clearSearch}
+          className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-white"
+        >
+          <XCircle className="h-5 w-5" />
+        </button>
+      )}
+    </div>
 
-            {/* Category filter dropdown */}
-            <div className="relative w-full sm:w-50">
+    {/* Category filter dropdown */}
+    <div className="relative w-full sm:w-60">
+      <select
+        value={categoryFilter}
+        onChange={handleCategoryChange}
+        className="w-full h-12 pl-4 pr-10 rounded-lg bg-[#1a2c50]/50 text-gray-400 appearance-none border-0 focus:outline-none focus:ring-1 focus:ring-[#b4e61d]"
+      >
+        <option value="all" className="text-gray-400 bg-navy-800">All Categories</option>
+        <option value="strength" className="text-gray-400 bg-navy-800">Strength</option>
+        <option value="cardio" className="text-gray-400 bg-navy-800">Cardio</option>
+        <option value="flexibility" className="text-gray-400 bg-navy-800">Flexibility</option>
+        <option value="bodyweight" className="text-gray-400 bg-navy-800">Bodyweight</option>
+        <option value="machine" className="text-gray-400 bg-navy-800">Machine</option>
+      </select>
+      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+        <ChevronDown className="h-5 w-5 text-gray-400" />
+      </div>
+    </div>
 
+    {/* Difficulty filter dropdown */}
+    <div className="relative w-full sm:w-60">
+      <select
+        value={difficultyFilter}
+        onChange={handleDifficultyChange}
+        className="w-full h-12 pl-4 pr-10 rounded-lg bg-[#1a2c50]/50 text-gray-400 appearance-none border-0 focus:outline-none focus:ring-1 focus:ring-[#b4e61d]"
+      >
+        <option value="all" className="text-gray-400 bg-navy-800">All Difficulty Levels</option>
+        <option value="beginner" className="text-gray-400 bg-navy-800">Beginner</option>
+        <option value="intermediate" className="text-gray-400 bg-navy-800">Intermediate</option>
+        <option value="advanced" className="text-gray-400 bg-navy-800">Advanced</option>
+      </select>
+      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+        <ChevronDown className="h-5 w-5 text-gray-400" />
+      </div>
+    </div>
+  </div>
 
-              <select
-                value={categoryFilter}
-                onChange={handleCategoryChange}
-                className="w-full h-10 pl-4 pr-10 rounded-md bg-[#1a2c50]/50 text-gray-400 appearance-none border-0 focus:outline-none focus:ring-1 focus:ring-[#b4e61d]"
-              >
-                <option value="all" className="text-gray-400 bg-navy-800">All Categories</option>
-                <option value="strength" className="text-gray-400 bg-navy-800">Strength</option>
-                <option value="cardio" className="text-gray-400 bg-navy-800">Cardio</option>
-                <option value="flexibility" className="text-gray-400 bg-navy-800">Flexibility</option>
-                <option value="bodyweight" className="text-gray-400 bg-navy-800">Bodyweight</option>
-                <option value="machine" className="text-gray-400 bg-navy-800">Machine</option>
-              </select>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <ChevronDown className="h-4 w-4 text-gray-400" />
-              </div>
-            </div>
-            {/* Category filter dropdown */}
-            <div className="relative w-full sm:w-50">
+  {/* Add Exercise button */}
+  <Link to="/AddExcercise" className="w-full sm:w-auto">
+    <button className="w-full bg-lime-300 hover:bg-lime-400 text-navy-900 font-semibold py-4 px-8 rounded-lg transition-colors flex items-center justify-center gap-3">
+      <Plus size={18} />
+      ADD EXERCISE
+    </button>
+  </Link>
+</div>
 
-
-              <select
-                value={difficultyFilter}
-                onChange={handleDifficultyChange}
-                className="w-full h-10 pl-4 pr-10 rounded-md bg-[#1a2c50]/50 text-gray-400 appearance-none border-0 focus:outline-none focus:ring-1 focus:ring-[#b4e61d]"
-              >
-                <option value="all" className="text-gray-400 bg-navy-800">All Categories</option>
-                <option value="strength" className="text-gray-400 bg-navy-800">Strength</option>
-                <option value="cardio" className="text-gray-400 bg-navy-800">Cardio</option>
-                <option value="flexibility" className="text-gray-400 bg-navy-800">Flexibility</option>
-                <option value="bodyweight" className="text-gray-400 bg-navy-800">Bodyweight</option>
-                <option value="machine" className="text-gray-400 bg-navy-800">Machine</option>
-              </select>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <ChevronDown className="h-4 w-4 text-gray-400" />
-              </div>
-            </div>
-
-
-          </div>
-
-          {/* Add Exercise button */}
-          <Link to="/AddExcercise" className="w-full sm:w-auto">
-            <button className="w-full bg-lime-300 hover:bg-lime-400 text-navy-900 font-semibold py-3 px-6 rounded-md transition-colors flex items-center justify-center gap-2">
-              <Plus size={18} />
-              ADD EXERCISE
-            </button>
-          </Link>
-        </div>
 
         {/* Exercise Card List - always vertical column layout */}
         <ErrorBoundary FallbackComponent={ErrorFallback}>
@@ -192,13 +186,10 @@ export default function Exercises2() {
           ) : exercises?.length > 0 ? (
             <div className="flex flex-col gap-6">
               <Suspense fallback={<LoadingSpinner />}>
-                {exercises.map((exercise) => (
                   <Card
-                    key={exercise.id || exercise._id}
-                    exercise={exercise}
+                    exercises={exercises}
                     onDelete={handleDelete}
                   />
-                ))}
               </Suspense>
             </div>
           ) : (

@@ -8,18 +8,29 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import DashboardLayout from "../../../components/layout/DashboardLayout";
 import Sidebar from "../../../components/navbar/Sidebar";
+import { CloudFog } from "lucide-react";
 
 
-const AddExerciseForm = lazy(() => import("./components/form/Form"));
+const ExerciseForm = lazy(() => import("./components/form/ExcerciseForm"));
 
-const AddExercise = () => {
+const UpdateExercise = () => {
   const { id } = useParams();  // Get the exercise id from the URL
-  const { status, data: exercises } = useSelector((state) => state.excercise); // Access exercises from Redux state
+  const { status, data } = useSelector((state) => state.excercise); // Access exercises from Redux state
   const dispatch = useDispatch()
   const navigate = useNavigate();
+  console.log(id)
 
-  // Find the exercise by id in the Redux store
-  const exerciseData = exercises.find(exercise => exercise.id === id);
+  if (!data || data.length === 0) {
+    return <div>Loading...</div>;  // Show a loading state while fetching data
+  }
+
+    // Ensure both id and workout.id are numbers
+    const excerciseData = data.find(data => data.id === Number(id)); // Convert id to number
+
+    if (!excerciseData) {
+      return <div>Workout not found</div>;
+    }
+  console.log(excerciseData);
 
   const handleUpdateExcercise = (formData) => {
     dispatch(updateExcercise(formData)); // formData would be a FormData object
@@ -29,7 +40,7 @@ const AddExercise = () => {
   // 🔥 Handle Status Updates
   useEffect(() => {
     if (status?.status === STATUSES.SUCCESS) {
-      navigate("/Excercise2");
+      navigate("/");
       toast.success(status.message);
       dispatch(setStatus(null));
     } else if (status?.status === STATUSES.ERROR) {
@@ -53,11 +64,11 @@ const AddExercise = () => {
     <ErrorBoundary FallbackComponent={ErrorFallback}>
       <Suspense fallback={<div className="spinner">Loading...</div>}>
         <DashboardLayout SidebarComponent={Sidebar}>
-          <AddExerciseForm type='update' onSubmit={handleUpdateExcercise} initialData={exerciseData} id={id} />
+          <ExerciseForm type='update' onSubmit={handleUpdateExcercise} initialData={excerciseData} id={id} />
         </DashboardLayout>
       </Suspense>
     </ErrorBoundary>
   );
 };
 
-export default React.memo(AddExercise);
+export default React.memo(UpdateExercise);

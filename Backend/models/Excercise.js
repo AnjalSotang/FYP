@@ -9,8 +9,8 @@ module.exports = (sequelize, Sequelize) => {
             }
         },
         muscle_group: {
-            type: Sequelize.JSON, // Store multiple muscle groups as JSON array
-            allowNull: false
+            type: Sequelize.TEXT, // Store multiple muscle groups as JSON array
+            allowNull: false,
         },
         difficulty_level: {
             type: Sequelize.ENUM("Beginner", "Intermediate", "Advanced"),
@@ -24,9 +24,6 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.TEXT, // Storing multiple equipment types in JSON format
         },
         category: {
-            type: Sequelize.STRING
-        },
-        videoPath: {
             type: Sequelize.STRING
         },
         imagePath: {

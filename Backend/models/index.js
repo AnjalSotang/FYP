@@ -36,41 +36,28 @@ db.users = require("./Users")(sequelize, Sequelize);
 // db.userGoals= require("./UserGoal")(sequelize, Sequelize);  
 // db.workoutLog = require("./WorkoutLog")(sequelize, Sequelize);  
 db.workout = require("./Workout")(sequelize, Sequelize);  
-db.workoutExcercise = require("./workoutExcercise")(sequelize, Sequelize);
+db.workoutdayExcercise = require("./WorkoutDayExcercise")(sequelize, Sequelize);
 db.excercise = require("./Excercise")(sequelize, Sequelize);
+db.workoutday = require("./WorkoutDay")(sequelize, Sequelize);
 // db.notification = require("./Notification")(sequelize, Sequelize);
 db.contact = require("./Contact")(sequelize, Sequelize);
 
-// Workout-Excercise Relationship
-db.workout.hasMany(db.workoutExcercise)
-db.workoutExcercise.belongsTo(db.workout)
-db.excercise.hasMany(db.workoutExcercise)
-db.workoutExcercise.belongsTo(db.excercise)
+db.workout.hasMany(db.workoutday, { as: 'days' });
+db.workoutday.belongsTo(db.workout);
 
+// WorkoutDay to Exercise Relationship (Many-to-Many)
+db.workoutday.belongsToMany(db.excercise, {
+    through: db.workoutdayExcercise,
+    foreignKey: 'workoutdayId',
+    as: 'excercises'  // Maintaining "excercise" spelling
+});
 
+db.excercise.belongsToMany(db.workoutday, {
+    through: db.workoutdayExcercise,
+    foreignKey: 'excerciseId',
+    as: 'workoutDays'
+});
 
-
-// // User-Goal Relationship
-// db.users.hasMany(db.userGoals)
-// db.userGoals.belongsTo(db.users)
-
-// db.goals.hasMany(db.userGoals)
-// db.userGoals.belongsTo(db.goals)
-
-// // User-WorkoutLog Relationship
-// db.users.hasMany(db.workoutLog)
-// db.workoutLog.belongsTo(db.users)
-
-// db.workout.hasMany(db.workoutLog)
-// db.workoutLog.belongsTo(db.workout)
-
-// // User-Progress Tracking
-// db.users.hasMany(db.tracks)
-// db.tracks.belongsTo(db.users)
-
-// //User - Notification
-// db.notification.hasMany(db.users)
-// db.users.belongsTo(db.notification)
 
 
 // Export db object to use models and associations in other parts of the application

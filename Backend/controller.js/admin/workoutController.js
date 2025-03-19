@@ -1,14 +1,14 @@
 const { Op, Sequelize } = require("sequelize");
-const { workout, workoutExcercise } = require('../../models/index');
+const { workout, workoutday, excercise, workoutdayExercise, workoutdayExcercise } = require('../../models/index');
 
 const createWorkout = async (req, res) => {
   try {
     // 1️⃣ Get Workout Data from Request
-    const { name, description, level, duration, category, calories, goal } = req.body;
+    const { name, description, level, duration, goal } = req.body;
     const image = req.file;  // Multer file upload
 
     // Validation (Ensure required fields are present)
-    if (!name || !description || !level || !duration || !category || !calories|| !goal) {
+    if (!name || !description || !level || !duration || !goal) {
       return res.status(400).json({ message: "Workout name, description, difficulty, duration, and goal are required." });
     }
 
@@ -31,8 +31,6 @@ const createWorkout = async (req, res) => {
       description,
       level,
       duration,
-      category,
-      calories,
       goal,
       imagePath,  // Save the file path to the database
     });
@@ -73,28 +71,52 @@ const addExerciseToWorkout = async (req, res) => {
   }
 };
 
+
+// Get all workout plans
 const getAllWorkout = async (req, res) => {
-    try {
-        const response = await  workout.findAll({
-            order: [['createdAt', 'DESC']], //
-        })
-
-        if (!response.length) {
-            return res.status(404).json({ message: "No workout found" });
+  try {
+    const workoutPlans = await workout.findAll({
+      include: [
+        {
+          model: workoutday,
+          as: 'days',
+          attributes: ['id', 'dayName'],
         }
-
-        res.status(200).json({
-            data: response
-        })
-    }
-    catch (error) {
-        console.error("Error fetching excercises:", error);
-        res.status(500).json({
-            message: "An internal server error occurred. Please try again later.",
-            error: error.message
+      ],
+      order: [['name', 'ASC']]
+    });
+    
+    // Add exercise count to each workout plan
+    const workoutPlansWithCounts = await Promise.all(workoutPlans.map(async (plan) => {
+      const planJson = plan.toJSON();
+      
+      // Count total exercises across all days (with duplicates removed)
+      const exerciseIds = new Set();
+      await Promise.all(planJson.days.map(async (day) => {
+        const exercises = await workoutdayExcercise.findAll({
+          where: { workoutdayId: day.id },
+          attributes: ['excerciseId']  // Using "excercise" spelling
         });
-    }
-}
+        
+        exercises.forEach(exercise => {
+          exerciseIds.add(exercise.excerciseId);  // Using "excercise" spelling
+        });
+      }));
+      
+      return {
+        ...planJson,
+        dayCount: planJson.days.length,
+        exerciseCount: exerciseIds.size
+      };
+    }));
+    
+    return res.status(200).json({data: workoutPlansWithCounts});
+  } catch (error) {
+    console.error('Error fetching workout plans:', error);
+    return res.status(500).json({ error: 'Failed to fetch workout plans' });
+  }
+};
+
 const deleteWorkout = async (req, res) => {
   try {
       const { id } = req.params;
@@ -134,8 +156,6 @@ const updateWorkout = async (req, res) => {
       description,
       level,
       duration,
-      category,
-      calories,
       goal
     } = req.body;
 
@@ -158,8 +178,6 @@ const updateWorkout = async (req, res) => {
       description: description ?? workoutExist.description,
       level: level ?? workoutExist.level,
       duration: duration ?? workoutExist.duration,
-      category: category ?? category.duration,
-      calories: calories ?? calories.duration,
       goal: goal ?? workoutExist.goal,
       imagePath,  // Update image if new file is uploaded, else keep old value
     });
@@ -181,38 +199,45 @@ const updateWorkout = async (req, res) => {
 
 const searchWorkouts = async (req, res) => {
   try {
-    let { query } = req.query;
-
-    if (!query) {
-      return res.status(400).json({ message: "Search query is required" });
-    }
+    let { query, level } = req.query;
+    console.log(req.query);  // Log incoming query parameters
 
     // Normalize search input (remove spaces, convert to lowercase)
     const searchTerm = query.replace(/\s+/g, "").toLowerCase();
 
+    // Construct filter conditions based on query parameters
+    const filters = {
+      is_active: true, // Ensure the workout is active
+      [Op.or]: [
+        Sequelize.where(Sequelize.fn("LOWER", Sequelize.fn("REPLACE", Sequelize.col("name"), " ", "")), {
+          [Op.like]: `%${searchTerm}%`,
+        }),
+        Sequelize.where(Sequelize.fn("LOWER", Sequelize.fn("REPLACE", Sequelize.col("description"), " ", "")), {
+          [Op.like]: `%${searchTerm}%`,
+        }),
+        Sequelize.where(Sequelize.fn("LOWER", Sequelize.fn("REPLACE", Sequelize.col("goal"), " ", "")), {
+          [Op.like]: `%${searchTerm}%`,
+        }),
+        Sequelize.where(Sequelize.fn("LOWER", Sequelize.col("level")), {
+          [Op.like]: `%${searchTerm}%`,
+        }),
+        Sequelize.where(Sequelize.fn("LOWER", Sequelize.fn("REPLACE", Sequelize.col("duration"), " ", "")), {
+          [Op.like]: `%${searchTerm}%`,
+        })
+      ].filter(Boolean), // Remove null values from the array
+    };
+
+     // Apply filters for level if specified
+     if (level && level !== 'all') {
+      filters.level = level;
+    }
+    
+    // Query the database with the constructed filters
     const workouts = await workout.findAll({
-      where: {
-        is_active: true, // Assuming you have an 'is_active' field like in the exercise model
-        [Op.or]: [
-          Sequelize.where(Sequelize.fn("LOWER", Sequelize.fn("REPLACE", Sequelize.col("name"), " ", "")), {
-            [Op.like]: `%${searchTerm}%`,
-          }),
-          Sequelize.where(Sequelize.fn("LOWER", Sequelize.fn("REPLACE", Sequelize.col("description"), " ", "")), {
-            [Op.like]: `%${searchTerm}%`,
-          }),
-          Sequelize.where(Sequelize.fn("LOWER", Sequelize.fn("REPLACE", Sequelize.col("goal"), " ", "")), {
-            [Op.like]: `%${searchTerm}%`,
-          }),
-          Sequelize.where(Sequelize.fn("LOWER", Sequelize.col("difficulty_level")), {
-            [Op.like]: `%${searchTerm}%`,
-          }),
-          Sequelize.where(Sequelize.fn("LOWER", Sequelize.fn("REPLACE", Sequelize.col("duration"), " ", "")), {
-            [Op.like]: `%${searchTerm}%`,
-          })
-        ].filter(Boolean), // Remove null values
-      },
+      where: filters,
       order: [["createdAt", "DESC"]],
     });
+
 
     if (!workouts.length) {
       return res.status(404).json({ message: "No matching workouts found" });
@@ -225,32 +250,38 @@ const searchWorkouts = async (req, res) => {
   }
 };
 
-
+// Get workout plan by ID
 const getWorkout = async (req, res) => {
-    try {
-        let { id } = req.params;
-
-        // Fetch the exercise by ID
-        const response = await workout.findOne({ where: { id } });
-
-        if (!response) {
-            return res.status(404).json({ message: "No workout found" });
+  try {
+    const { id } = req.params;
+    const workoutPlan = await workout.findByPk(id, {
+      include: [
+        {
+          model: workoutday,
+          as: 'days',
+          include: [
+            {
+              model: excercise,
+              as: 'excercises',
+              through: {
+                attributes: ['sets', 'reps', 'rest_time']
+              }
+            }
+          ]
         }
-
-        res.status(200).json({
-            data: response
-        })
+      ]
+    });
+    
+    if (!workoutPlan) {
+      return res.status(404).json({ error: 'Workout plan not found' });
     }
-    catch (error) {
-        console.error("Error during fetching excercies:", error);
-        res.status(500).json({
-            message: "An internal server error occurred. Please try again later.",
-            error: error.message
-
-        });
-    }
-}
-
+    
+    return res.status(200).json({ data: workoutPlan });
+  } catch (error) {
+    console.error('Error fetching workout plan:', error);
+    return res.status(500).json({ error: 'Failed to fetch workout plan' });
+  }
+};
 
 module.exports = {
   createWorkout,

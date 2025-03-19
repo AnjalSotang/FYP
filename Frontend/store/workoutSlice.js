@@ -22,12 +22,21 @@ const workoutSlice = createSlice({
         },
         setToken(state, action) {
             state.token = action.payload
+        },
+         // ✅ New Reducer: Instantly updates a workout day in Redux store
+         updateWorkoutDayInState(state, action) {
+            const updatedDay = action.payload;
+            if (state.data1?.days) {
+                state.data1.days = state.data1.days.map(day =>
+                    day.id === updatedDay.id ? { ...day, ...updatedDay } : day
+                );
+            }
         }
     }
 });
 
 //Step 2: Now Action
-export const { setStatus, setWorkout, setWorkout1, setToken } = workoutSlice.actions;
+export const { setStatus, setWorkout, setWorkout1, setToken, updateWorkoutDayInState } = workoutSlice.actions;
 export default workoutSlice.reducer
 
 
@@ -67,14 +76,15 @@ export function addWorkout(data) {
     }
 }
 
+
 export function fetchWorkouts() {
     return async function fetchWorkoutsThunk(dispatch) {
         dispatch(setStatus(STATUSES.LOADING))
         try {
-            // http://localhost:3001/api/getExcercises
             const response = await API.get('api/getAllWorkout')
             if (response.status === 200) {
                 const workout= response.data?.data || [];
+
 
                 if (workout.length > 0) {
                     dispatch(setWorkout(workout));
@@ -105,15 +115,15 @@ export function fetchWorkouts() {
 
 
 
-export function searchWorkouts(query) {
+export function searchWorkouts(query, level) {
     return async function searchWorkoutsThunk(dispatch) {
         dispatch(setStatus(STATUSES.LOADING));
         try {
-            const response = await API.get(`api/getAllWorkouts/search?query=${encodeURIComponent(query)}`);
-
+            const response = await API.get(`api/getAllWorkouts/search?query=${encodeURIComponent(query)}&level=${encodeURIComponent(level)}`);
+            
             if (response.status === 200 && response.data?.data?.length > 0) {
                 dispatch(setWorkout(response.data.data));
-                dispatch(setStatus({ status: STATUSES.SUCCESS, message: "Successfull" }))
+                // dispatch(setStatus({ status: STATUSES.SUCCESS, message: "Successfull" }))
             } else {
                 dispatch(setWorkout([])); // Clear previous data if no results found
                 dispatch(setStatus(STATUSES.ERROR));
@@ -145,8 +155,11 @@ export function fetchWorkout(id) {
         dispatch(setStatus(STATUSES.LOADING))
         try {
             const response = await API.get(`api/getWorkout/${id}`)
+            console.log(response);
             if (response.status === 200) {
                 dispatch(setWorkout1(response.data.data))
+                // Log to check the structure
+                console.log("Workout data:", response.data.data); 
                 dispatch(setStatus({ status: STATUSES.SUCCESS, message: "Successfull" }))
             } 
         }
@@ -223,6 +236,30 @@ export function fetchWorkout(id) {
             }
         }
     }
+    
+
+    export function updateWorkoutDay({id, dayName}) {
+        return async function updateWorkoutDayThunk(dispatch) {
+            dispatch(setStatus(STATUSES.LOADING));
+            try {
+                console.log(id)
+                console.log(dayName)
+                const response = await API.patch(`api/updateWorkoutDay/${id}`, {dayName});
+                if (response.status === 200) {
+                    dispatch(updateWorkoutDayInState(data)); // ✅ Instantly updates Redux
+                    dispatch(setStatus({
+                        status: STATUSES.SUCCESS,
+                        message: response.data.message || "Workout updated successfully"
+                    }));
+                }
+            } catch (error) {
+                dispatch(setStatus({ status: STATUSES.ERROR, message: "Failed to create workout day" }));
+            }
+        };
+    }
+    
+
+    
     
 
 

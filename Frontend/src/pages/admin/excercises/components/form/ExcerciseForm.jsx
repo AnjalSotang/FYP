@@ -1,11 +1,9 @@
-import React, { useEffect } from "react";
-import { useState } from "react"
-import { toast, ToastContainer } from "react-toastify"
+import React, { useEffect, useState } from "react";
+import { toast, ToastContainer } from "react-toastify";
 import {
   Dumbbell,
   FileText,
   ImageIcon,
-  Video,
   Upload,
   Check,
   AlertCircle,
@@ -13,12 +11,16 @@ import {
   Layers,
   BarChart3,
   Loader2,
-} from "lucide-react"
+  ArrowLeft,
+} from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 
-const AddExerciseForm = ({ onSubmit, type, initialData, id }) => {
-  const [isLoading, setIsLoading] = useState(false)
-  const [image, setImage] = useState(null)
-  const [video, setVideo] = useState(null)
+const ExerciseForm = ({ onSubmit, type, initialData, id }) => {
+  const Navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+
   const [data, setData] = useState({
     name: "",
     muscle_group: "",
@@ -28,24 +30,30 @@ const AddExerciseForm = ({ onSubmit, type, initialData, id }) => {
     equipment: "",
     burned_calories: "",
     duration: "",
-  })
+  });
 
   const ALLOWED_FILE_TYPES = [
     "image/jpeg",
     "image/png",
     "image/gif",
+    "image/avif",
+    "video/mp4",
+    "video/quicktime",
+    "video/webm",
     "application/pdf",
     "application/msword",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  ]
-  const MAX_FILE_SIZE = 1024 * 1024 * 50 // 5MB
+  ];
+  const MAX_FILE_SIZE = 1024 * 1024 * 50; // 50MB
 
-  const [errors, setErrors] = useState({})
+  const [errors, setErrors] = useState({});
 
   // Helper function to join classNames conditionally
   const classNames = (...classes) => {
-    return classes.filter(Boolean).join(" ")
-  }
+    return classes.filter(Boolean).join(" ");
+  };
+
+  console.log(initialData)
 
   // If initial data is passed (for update), pre-fill the form
   useEffect(() => {
@@ -60,154 +68,202 @@ const AddExerciseForm = ({ onSubmit, type, initialData, id }) => {
         burned_calories: initialData.burned_calories || "",
         duration: initialData.duration || "",
       });
-      setImage(initialData.imagePath || null);
-      setVideo(initialData.videoPath || null);
+
+      if (initialData.imagePath) {
+        setImage(initialData.imagePath);
+        setImagePreview(initialData.imagePath);
+      }
     }
-}, [initialData]);
+  }, [initialData]);
+
+  console.log(data.name)
 
 
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setData((prev) => ({ ...prev, [name]: value }))
+    const { name, value } = e.target;
+    setData((prev) => ({ ...prev, [name]: value }));
 
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: null }))
+      setErrors((prev) => ({ ...prev, [name]: null }));
     }
-  }
+  };
 
- 
 const handleFileChange = (e) => {
-  const { name, files } = e.target;
+  const file = e.target.files[0]; // Get the first file
+  const fieldName = e.target.name; // Get input name
 
-  if (files && files.length > 0) {
-    const file = files[0];
-    
+  if (file) {
     if (!ALLOWED_FILE_TYPES.includes(file.type)) {
-      setErrors((prev) => ({ ...prev, [name]: "Unsupported file format" }));
+      setErrors((prev) => ({ ...prev, [fieldName]: "Unsupported file format" }));
       return;
     }
-    
+
     if (file.size > MAX_FILE_SIZE) {
-      setErrors((prev) => ({ ...prev, [name]: "File exceeds the 5MB size limit" }));
+      setErrors((prev) => ({ ...prev, [fieldName]: "File exceeds the 50MB size limit" }));
       return;
     }
-    
-    if (name === "image") {
-      setImage(file);
-    } else if (name === "video") {
-      setVideo(file);
-    }
-    
-    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
+
+    setImage(file);
+    setImagePreview(URL.createObjectURL(file));
+    setErrors((prev) => ({ ...prev, image: null })); // Reset error
   }
 };
 
+  // Remove image function
+  const removeImage = () => {
+    setImage(null);
+    setImagePreview(null);
+  };
+
 
   const validateForm = () => {
-    const newErrors = {}
-    // Validation for exercise name
-    if (!data.name) newErrors.name = "Exercise name is required"
+    const newErrors = {};
+    if (type === "add") {
+      // Validation for exercise name
+      if (!data.name) newErrors.name = "Exercise name is required";
 
-    // Validation for muscle group
-    if (!data.muscle_group) newErrors.muscle_group = "Primary muscle group is required"
+      // Validation for muscle group
+      if (!data.muscle_group) newErrors.muscle_group = "Primary muscle group is required";
 
-    // Validation for difficulty level
-    if (!data.difficulty_level) newErrors.difficulty_level = "Difficulty level is required"
+      // Validation for difficulty level
+      if (!data.difficulty_level) newErrors.difficulty_level = "Difficulty level is required";
 
-    // Validation for instructions
-    if (!data.instructions) newErrors.instructions = "Instructions are required"
+      // Validation for instructions
+      if (!data.instructions) newErrors.instructions = "Instructions are required";
 
-    // Validation for equipment files
-    if (!data.equipment) newErrors.equipment = "At least one equipment is required"
+      // Validation for equipment
+      if (!data.equipment) newErrors.equipment = "At least one equipment is required";
 
-    // Validation for image and video
-    if (!image) newErrors.image = "Image is required"
-    if (!video) newErrors.video = "Video is required"
+      // Validation for category
+      if (!data.category) newErrors.category = "Category is required";
 
-    if (!data.category) newErrors.category = "Category is required"
+      // Validation for calories and duration
+      if (!data.burned_calories) newErrors.burned_calories = "Calories is required";
+      if (!data.duration) newErrors.duration = "Duration is required"
 
-    if (!data.burned_calories) newErrors.burned_calories = "Calories is required"
+      // Validation for image and video
+      if (!image) newErrors.image = "Image is required";
+    }
+    else if (type === "update") {
+      // Validation for exercise name
+      if (data.name !== undefined && !data.name) newErrors.name = "Exercise name is required";
 
-    if (!data.duration) newErrors.duration = "Duration is required"
+      // Validation for muscle group
+      if (data.muscle_group !== undefined && !data.muscle_group) newErrors.muscle_group = "Primary muscle group is required";
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+      // Validation for difficulty level
+      if (data.difficulty_level !== undefined && !data.difficulty_level) newErrors.difficulty_level = "Difficulty level is required";
+
+      // Validation for instructions
+      if (data.instructions !== undefined && !data.instructions) newErrors.instructions = "Instructions are required";
+
+      // Validation for equipment
+      if (data.equipment !== undefined && !data.equipment) newErrors.equipment = "At least one equipment is required";
+
+      // Validation for category
+      if (data.category !== undefined && !data.category) newErrors.category = "Category is required";
+
+      // Validation for calories and duration
+      if (data.burned_calories !== undefined && !data.burned_calories) newErrors.burned_calories = "Calories is required";
+      if (data.duration !== undefined && !data.duration) newErrors.duration = "Duration is required"
+
+      // Allow empty image field when updating unless explicitly changed
+      if (image !== undefined && !image && !imagePreview) {
+        newErrors.image = "Image is required"
+      }
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   }
+
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    // Start loading state when the form submission begins
-    setIsLoading(true)
+    e.preventDefault();
 
-    if (type !== "update" && !validateForm()) {
-      toast.error("Please fill in all required fields")
-      setIsLoading(false) // Reset loading state if validation fails
-      return
+    // Validate form before submission
+    if (!validateForm()) {
+      toast.error("Please fill in all required fields");
+      setIsLoading(false)
+      return;
     }
 
-    const formData = new FormData()
-    formData.append("id", id);  // Add the id if it's for an update
-    formData.append("name", data.name)
-    formData.append("muscle_group", JSON.stringify(data.muscle_group));  // ✅ Fix here
-    formData.append("equipment", JSON.stringify(data.equipment)); // ✅ Fix here
-    formData.append("difficulty_level", data.difficulty_level)
-    formData.append("instructions", data.instructions)
-    formData.append("category", data.category)
-    formData.append("burned_calories", data.burned_calories)
-    formData.append("duration", data.duration)
+    // Start loading state when the form submission begins
+    setIsLoading(true);
 
-    if (image) formData.append("image", image)
-    if (video) formData.append("video", video)
+    if (type !== "add" && !id) {
+      toast.error("Missing exercise ID for update operation");
+      Navigate("/exercises");
+      setIsLoading(false);
+      return;
+    }
 
- 
+    const formData = new FormData();
+    formData.append("id", id); // Add the id if it's for an update
+    formData.append("name", data.name);
+    formData.append("muscle_group", data.muscle_group);
+    formData.append("equipment", data.equipment);
+    formData.append("difficulty_level", data.difficulty_level);
+    formData.append("instructions", data.instructions);
+    formData.append("category", data.category);
+    formData.append("burned_calories", data.burned_calories);
+    formData.append("duration", data.duration);
+
+    if (image) formData.append("image", image);
+
 
     try {
-      await onSubmit(formData) // Use the provided onSubmit function
-      setIsLoading(false); 
+      await onSubmit(formData); // Use the provided onSubmit function
 
-      // Reset form fields after successful submission
-      setData({
-        name: "",
-        muscle_group: "",
-        equipment: "",
-        difficulty_level: "",
-        instructions: "",
-        category: "",
-        burned_calories: "",
-        duration: "",
-      })
-      setImage(null)
-      setVideo(null)
+
+
+      // Reset form fields after successful submission if adding new exercise
+      if (type === "add") {
+        setData({
+          name: "",
+          muscle_group: "",
+          equipment: "",
+          difficulty_level: "",
+          instructions: "",
+          category: "",
+          burned_calories: "",
+          duration: "",
+        });
+        setImage(null);
+        setImagePreview(null);
+        setErrors({});
+      }
 
       // Reset loading state after submission is complete
-      setIsLoading(false)
+      setIsLoading(false);
     } catch (error) {
       // Handle any submission errors here
-      // toast.error("Failed to add exercise. Please try again.")
-      setIsLoading(false) // Reset loading state in case of an error
-      console.error("Error during form submission:", error)
+      toast.error("Failed to save exercise. Please try again.");
+      setIsLoading(false); // Reset loading state in case of an error
+      console.error("Error during form submission:", error);
     }
-  }
-
-  const removeEquipmentFile = (index) => {
-    setEquipmentFiles((prev) => prev.filter((_, i) => i !== index))
-  }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0b1129] to-[#1a2c50] flex flex-col items-center px-10 py-10 sm:px-6 relative pt-20" >
-  <div className="w-full max-w-xl mx-auto my-auto">
+    <div className="min-h-screen bg-gradient-to-br from-[#0b1129] to-[#1a2c50] flex flex-col items-center px-10 py-10 sm:px-6 relative pt-20">
+      <div className="w-full max-w-xl mx-auto my-auto">
         <ToastContainer position="top-center" autoClose={3000} />
-
+        <Link to="/" className="w-full sm:w-auto">
+          <button className="mb-7 flex items-center gap-2 px-3 py-2 border border-[#A3E635] text-[#A3E635] rounded-md hover:bg-[#A3E635] hover:text-[#111827] transition-colors">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Exercise Manager
+          </button>
+        </Link>
         {/* Form Container */}
         <div className="bg-gradient-to-b from-[#112240] to-[#0d1a30] py-8 px-6 sm:px-10 rounded-2xl shadow-[0_10px_50px_rgba(0,0,0,0.3)] w-full max-w-xl hover:shadow-[0_15px_60px_rgba(0,0,0,0.4)] transition-all duration-500 border border-[#1e3a6a]/30">
           {/* Heading with subtle animation */}
           <div className="space-y-2 mb-8 text-center">
             <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-            {type === "update" ? "Update" : "Add New"} Exercise
+              {type === "update" ? "Update" : "Add New"} Exercise
             </h1>
             <p className="text-gray-400 text-sm sm:text-base">
-              Provide details about the new exercise to track in your fitness app
+              {type === "update" ?
+                "Provide details about the exercise to update in your fitness app" : "Provide details about the exercise to track in your fitness app"}
             </p>
           </div>
 
@@ -276,24 +332,37 @@ const handleFileChange = (e) => {
                 </div>
               </div>
 
-              {/* Secondary Muscle Group */}
+              {/* Equipment */}
               <div className="space-y-2">
                 <label
                   htmlFor="equipment"
                   className="text-white text-sm font-medium flex items-center gap-2"
                 >
                   <Layers className="h-4 w-4 text-[#a4d519]" />
-                  Equipment
+                  Equipment <span className="text-[#a4d519]">*</span>
                 </label>
-                <input
-                  id="equipment"
-                  type="text"
-                  name="equipment"
-                  placeholder="e.g., Hamstrings (optional)"
-                  className="w-full p-3 rounded-lg bg-[#1a2c50]/80 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4a90e2] transition-all duration-200 border border-[#1e3a6a]/50 hover:border-[#1e3a6a]"
-                  onChange={handleChange}
-                  value={data.equipment}
-                />
+                <div className="relative">
+                  <input
+                    id="equipment"
+                    type="text"
+                    name="equipment"
+                    placeholder="e.g., Dumbbell"
+                    className={classNames(
+                      "w-full p-3 rounded-lg bg-[#1a2c50]/80 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4a90e2] transition-all duration-200 border border-[#1e3a6a]/50",
+                      errors.equipment ? "border-red-500 focus:ring-red-500" : "hover:border-[#1e3a6a]",
+                    )}
+                    onChange={handleChange}
+                    value={data.equipment}
+                    aria-invalid={errors.equipment ? "true" : "false"}
+                    aria-describedby={errors.equipment ? "equipment-error" : undefined}
+                  />
+                  {errors.equipment && (
+                    <div id="equipment-error" className="flex items-center gap-1 mt-1 text-red-400 text-xs animate-fadeIn">
+                      <AlertCircle className="h-3 w-3" />
+                      <span>{errors.equipment}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -377,14 +446,14 @@ const handleFileChange = (e) => {
                   <option value="Strength" className="bg-[#1a2c50]">
                     Strength
                   </option>
+                  <option value="Bodyweight" className="bg-[#1a2c50]">
+                    Bodyweight
+                  </option>
+                  <option value="Machine" className="bg-[#1a2c50]">
+                    Machine
+                  </option>
                   <option value="Cardio" className="bg-[#1a2c50]">
                     Cardio
-                  </option>
-                  <option value="Flexibility" className="bg-[#1a2c50]">
-                    Flexibility
-                  </option>
-                  <option value="Balance" className="bg-[#1a2c50]">
-                    Balance
                   </option>
                 </select>
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
@@ -509,104 +578,75 @@ const handleFileChange = (e) => {
               </div>
             </div>
 
-            
-
-            {/* Media Uploads - 2 column layout on larger screens */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              {/* Image Upload */}
-              <div className="space-y-2">
-                <label htmlFor="image" className="text-white text-sm font-medium flex items-center gap-2">
-                  <ImageIcon className="h-4 w-4 text-[#a4d519]" />
-                  Exercise Image <span className="text-[#a4d519]">*</span>
-                </label>
-                <div className="relative">
-                  <div
-                    className={classNames(
-                      "w-full p-3 rounded-lg bg-[#1a2c50]/80 text-white border border-dashed border-[#1e3a6a]/70 hover:border-[#4a90e2] transition-all duration-200 flex flex-col items-center justify-center cursor-pointer",
-                      image ? "border-[#a4d519]" : "",
-                      errors.image ? "border-red-500" : "",
-                    )}
-                  >
-                    <input
-                      id="image"
-                      type="file"
-                      name="image"
-                      accept="image/*,video/*,image/gif" // Accepts images, videos, and GIFs
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      onChange={handleFileChange}
-                      aria-invalid={errors.image ? "true" : "false"}
-                      aria-describedby={errors.image ? "image-error" : undefined}
-                    />
-                    <div className="flex flex-col items-center py-2 text-center">
-                      {image ? (
-                        <>
-                          <Check className="h-5 w-5 text-[#a4d519] mb-1" />
-                          <span className="text-xs text-gray-300 truncate max-w-full">{image.name}</span>
-                        </>
-                      ) : (
-                        <>
-                          <Upload className="h-5 w-5 text-gray-400 mb-1" />
-                          <span className="text-xs text-gray-400">Upload image</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  {errors.image && (
-                    <div id="image-error" className="flex items-center gap-1 mt-1 text-red-400 text-xs animate-fadeIn">
-                      <AlertCircle className="h-3 w-3" />
-                      <span>{errors.image}</span>
-                    </div>
+            {/* Image Upload */}
+            <div className="space-y-2">
+              <label htmlFor="image" className="text-white text-sm font-medium flex items-center gap-2">
+                <ImageIcon className="h-4 w-4 text-[#a4d519]" />
+                Exercise Image <span className="text-[#a4d519]">*</span>
+              </label>
+              <div className="relative">
+                <div
+                  className={classNames(
+                    "w-full p-3 rounded-lg bg-[#1a2c50]/80 text-white border border-dashed border-[#1e3a6a]/70 hover:border-[#4a90e2] transition-all duration-200 flex flex-col items-center justify-center cursor-pointer",
+                    image ? "border-[#a4d519]" : "",
+                    errors.image ? "border-red-500" : "",
                   )}
-                </div>
-              </div>
-
-              {/* Video Upload */}
-              <div className="space-y-2">
-                <label htmlFor="video" className="text-white text-sm font-medium flex items-center gap-2">
-                  <Video className="h-4 w-4 text-[#a4d519]" />
-                  Exercise Video <span className="text-[#a4d519]">*</span>
-                </label>
-                <div className="relative">
-                  <div
-                    className={classNames(
-                      "w-full p-3 rounded-lg bg-[#1a2c50]/80 text-white border border-dashed border-[#1e3a6a]/70 hover:border-[#4a90e2] transition-all duration-200 flex flex-col items-center justify-center cursor-pointer",
-                      video ? "border-[#a4d519]" : "",
-                      errors.video ? "border-red-500" : "",
+                >
+                  <input
+                    id="image"
+                    type="file"
+                    name="image"
+                    accept="image/*,video/*,image/gif" // Accepts images, videos, and GIFs
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    onChange={handleFileChange}
+                    aria-invalid={errors.image ? "true" : "false"}
+                    aria-describedby={errors.image ? "image-error" : undefined}
+                  />
+                  <div className="flex flex-col items-center py-2 text-center">
+                    {image ? (
+                      <>
+                        <Check className="h-5 w-5 text-[#a4d519] mb-1" />
+                        <span className="text-xs text-gray-300 truncate max-w-full">{image.name}</span>
+                      </>
+                    ) : imagePreview ? (
+                      <>
+                        <Check className="h-5 w-5 text-[#a4d519] mb-1" />
+                        <span className="text-xs text-gray-300">Current image selected</span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-5 w-5 text-gray-400 mb-1" />
+                        <span className="text-xs text-gray-400">Upload image</span>
+                      </>
                     )}
-                  >
-                    <input
-                      id="video"
-                      type="file"
-                      name="video"
-                      accept="image/*,video/*,image/gif" // Accepts images, videos, and GIFs
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      onChange={handleFileChange}
-                      aria-invalid={errors.video ? "true" : "false"}
-                      aria-describedby={errors.video ? "video-error" : undefined}
-                    />
-                    <div className="flex flex-col items-center py-2 text-center">
-                      {video ? (
-                        <>
-                          <Check className="h-5 w-5 text-[#a4d519] mb-1" />
-                          <span className="text-xs text-gray-300 truncate max-w-full">{video.name}</span>
-                        </>
-                      ) : (
-                        <>
-                          <Upload className="h-5 w-5 text-gray-400 mb-1" />
-                          <span className="text-xs text-gray-400">Upload video</span>
-                        </>
-                      )}
-                    </div>
                   </div>
-                  {errors.video && (
-                    <div id="video-error" className="flex items-center gap-1 mt-1 text-red-400 text-xs animate-fadeIn">
-                      <AlertCircle className="h-3 w-3" />
-                      <span>{errors.video}</span>
-                    </div>
-                  )}
                 </div>
+                {/* {errors.image && (
+                  <div id="image-error" className="flex items-center gap-1 mt-1 text-red-400 text-xs animate-fadeIn">
+                    <AlertCircle className="h-3 w-3" />
+                    <span>{errors.image}</span>
+                  </div>
+                )} */}
               </div>
             </div>
+
+            {/* Image preview */}
+            {type === 'add' &&imagePreview && (
+              <div className="yt-2">
+                <img
+                  src={image ? URL.createObjectURL(image) : imagePreview}
+                  alt="Preview"
+                  className="max-h-32 rounded-lg object-contain"
+                />
+                <button
+                  type="button" // Make sure this doesn't submit the form
+                  onClick={removeImage}
+                  className="text-xs text-red-400 hover:text-red-300 mt-1"
+                >
+                  Remove image
+                </button>
+              </div>
+            )}
 
             {/* Submit Button */}
             <button
@@ -616,19 +656,20 @@ const handleFileChange = (e) => {
                 "bg-gradient-to-r from-[#b4e61d] to-[#a4d519]",
                 "hover:shadow-[0_0_20px_rgba(164,213,25,0.4)] hover:scale-[1.02]",
                 "active:scale-[0.98] transition-all duration-300",
-                isLoading ? "opacity-70 cursor-not-allowed" : "",
+                isLoading ? "opacity-70 cursor-not-allowed" : ""
               )}
               disabled={isLoading}
             >
               {isLoading ? (
                 <span className="flex items-center justify-center gap-2">
                   <Loader2 className="h-5 w-5 animate-spin" />
-                  Submitting...
+                  {type === "add" ? "Adding..." : "Updating..."}
                 </span>
               ) : (
-                "Add Exercise"
+                type === "add" ? "Add Exercise" : "Update Exercise"
               )}
             </button>
+
           </form>
         </div>
       </div>
@@ -636,5 +677,6 @@ const handleFileChange = (e) => {
   )
 }
 
-export default React.memo(AddExerciseForm)
+
+export default React.memo(ExerciseForm)
 
