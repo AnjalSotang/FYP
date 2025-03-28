@@ -27,7 +27,7 @@ export default function WorkoutsPage() {
   const dispatch = useDispatch();
 
   // Fix: More robust state access with additional safety checks
-  const workouts = useSelector((state) => state.workout);
+  const {data: workouts, status} = useSelector((state) => state.workout);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [showClear, setShowClear] = useState(false);
@@ -171,7 +171,7 @@ console.log(workouts)
         <ErrorBoundary FallbackComponent={ErrorFallback}>
           {status?.status === STATUSES.LOADING ? (
             <LoadingSpinner />
-          ) : workouts?.data.length > 0 ? (
+          ) : workouts?.length > 0 ? (
             <div className="flex flex-col gap-6">
               <Suspense fallback={<LoadingSpinner />}>
                 <Card

@@ -246,7 +246,10 @@ export function fetchWorkout(id) {
                 console.log(dayName)
                 const response = await API.patch(`api/updateWorkoutDay/${id}`, {dayName});
                 if (response.status === 200) {
-                    dispatch(updateWorkoutDayInState(data)); // ✅ Instantly updates Redux
+                     // Assuming response.data.data contains the updated workout day
+                const updatedDay = response.data.data;
+                
+                    dispatch(updateWorkoutDayInState(updatedDay)); // ✅ Instantly updates Redux
                     dispatch(setStatus({
                         status: STATUSES.SUCCESS,
                         message: response.data.message || "Workout updated successfully"
@@ -257,6 +260,8 @@ export function fetchWorkout(id) {
             }
         };
     }
+
+    
     
 
     

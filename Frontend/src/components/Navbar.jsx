@@ -1,112 +1,222 @@
-import React, { useState, useEffect } from "react";
+
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Bell, Calendar, Dumbbell, Home, LineChart, Menu, Plus, User } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
-const Navbar = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
+export function Navbar() {
+  const [notifications, setNotifications] = useState([
+    {
+      id: 1,
+      title: "Workout Reminder",
+      message: "Upper Body workout scheduled for today at 6:00 PM",
+      time: "2 hours ago",
+      read: false,
+    },
+    {
+      id: 2,
+      title: "Achievement Unlocked",
+      message: "You've completed 5 workouts this week!",
+      time: "Yesterday",
+      read: true,
+    },
+    {
+      id: 3,
+      title: "New Workout Plan",
+      message: "Check out our new HIIT workout plan",
+      time: "3 days ago",
+      read: true,
+    },
+  ]);
 
-  // Function to handle scroll events
-  const handleScroll = () => {
-    setIsScrolled(window.scrollY > 10); // Trigger after scrolling 10px
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
+  const markAllAsRead = () => {
+    setNotifications(notifications.map((n) => ({ ...n, read: true })));
   };
 
-  useEffect(() => {
-    // Attach scroll listener
-    window.addEventListener("scroll", handleScroll);
-
-    // Initial scroll position check
-    handleScroll();
-
-    // Cleanup event listener
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
-
   return (
-    <nav
-      className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-        isScrolled
-          ? "bg-gradient-to-r from-[#0b1129] to-[#1a2c50] shadow-lg"
-          : "bg-transparent"
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <div className="flex-shrink-0">
-            <h1 className="text-[#b4e61d] text-2xl font-extrabold tracking-wide hover:text-[#a4d519] transition-all duration-300 cursor-pointer">
-              FitTrack
-            </h1>
-          </div>
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-20 items-center px-12">
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="outline" size="icon" className="md:hidden mr-4">
+              <Menu className="h-7 w-7" />
+              <span className="sr-only">Toggle menu</span>
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left">
+            <div className="px-4 py-8">
+              <Link to="/" className="flex items-center gap-4 mb-10">
+                <Dumbbell className="h-6 w-6" />
+                <span className="font-bold text-4xl">FitTrack</span>
+              </Link>
+              <nav className="flex flex-col gap-5">
+                <Link
+                  to="/"
+                  className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Home className="h-5 w-5" />
+                  <span>Home</span>
+                </Link>
+                <Link
+                  to="/user"
+                  className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors"
+                >   
+                  <LineChart className="h-5 w-5" />
+                  <span>Dashboard</span>
+                </Link>
+                <Link
+                  to="/plans"
+                  className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Dumbbell className="h-5 w-5" />
+                  <span>Workout Plans</span>
+                </Link>
+                <Link
+                  to="/user/Schedule"
+                  className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Calendar className="h-5 w-5" />
+                  <span>Schedule</span>
+                </Link>
+                <Link
+                  to="/profile"
+                  className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <User className="h-5 w-5" />
+                  <span>Profile</span>
+                </Link>
+              </nav>
+            </div>
+          </SheetContent>
+        </Sheet>
 
-          {/* Desktop Navigation Links */}
-          <div className="hidden md:flex items-center space-x-8">
-            <NavLink to="/features" label="Features" />
-            <NavLink to="/about" label="About Us" />
-            <NavLink to="/faq" label="FAQs" />
-            <NavLink to="/contact" label="Contact" />
-            <Link
-              to="/login"
-              className="text-white px-5 py-2 text-sm font-medium bg-[#1a2c50] border border-[#4a90e2] rounded-full hover:bg-[#4a90e2] hover:text-[#0b1129] transition-all duration-300 shadow-md"
-            >
-              Login
-            </Link>
-            <Link
-              to="/register"
-              className="text-white px-5 py-2 text-sm font-medium bg-[#4a90e2] border border-[#1a2c50] rounded-full hover:bg-[#b4e61d] hover:text-[#0b1129] transition-all duration-300 shadow-md"
-            >
-              Sign Up
-            </Link>
-          </div>
+        <Link to="/" className="flex items-center gap-2 mr-6">
+          <Dumbbell className="h-6 w-6" />
+          <span className="font-bold text-xl hidden sm:inline-block">FitTrack</span>
+        </Link>
 
-          {/* Mobile Menu Button */}
-          <div className="md:hidden">
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="text-white focus:outline-none"
-            >
-              <span className="text-2xl">☰</span>
-            </button>
-          </div>
-        </div>
+        <nav className="hidden md:flex items-center gap-6 flex-1">
+          <Link to="/" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            Home
+          </Link>
+          <Link
+            to="/user"
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Dashboard
+          </Link>
+          <Link
+            to="/"
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Workout Plans
+          </Link>
+          <Link
+            to="/user/schedule"
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Schedule
+          </Link>
+        </nav>
 
-        {/* Mobile Menu */}
-        <div
-          className={`${
-            isMobileMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-          } overflow-hidden transition-all duration-500 md:hidden bg-[#1a2c50] rounded-lg shadow-md mt-2`}
-        >
-          <MobileNavLink to="/features" label="Features" />
-          <MobileNavLink to="/about" label="About Us" />
-          <MobileNavLink to="/faq" label="FAQs" />
-          <MobileNavLink to="/contact" label="Contact" />
-          <MobileNavLink to="/login" label="Login" />
-          <MobileNavLink to="/register" label="Sign Up" />
+        <div className="flex items-center gap-2">
+          <Link to="/generate" className="hidden sm:flex">
+            <Button size="sm" className="gap-1">
+              <Plus className="h-4 w-4" />
+              <span>New Workout</span>
+            </Button>
+          </Link>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon" className="relative">
+                <Bell className="h-5 w-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
+                    {unreadCount}
+                  </span>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-80">
+              <DropdownMenuLabel className="flex items-center justify-between">
+                <span>Notifications</span>
+                {unreadCount > 0 && (
+                  <Button variant="ghost" size="sm" onClick={markAllAsRead} className="h-auto text-xs">
+                    Mark all as read
+                  </Button>
+                )}
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {notifications.length > 0 ? (
+                <>
+                  {notifications.map((notification) => (
+                    <DropdownMenuItem key={notification.id} className="flex flex-col items-start p-4 cursor-pointer">
+                      <div className="flex items-start justify-between w-full">
+                        <div className="font-medium flex items-center gap-2">
+                          {notification.title}
+                          {!notification.read && <Badge className="h-1.5 w-1.5 rounded-full p-0" />}
+                        </div>
+                        <div className="text-xs text-muted-foreground">{notification.time}</div>
+                      </div>
+                      <div className="text-sm text-muted-foreground mt-1">{notification.message}</div>
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="justify-center text-sm">View all notifications</DropdownMenuItem>
+                </>
+              ) : (
+                <div className="text-center py-4 text-muted-foreground">No notifications</div>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="rounded-full">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src="/placeholder.svg?height=32&width=32" alt="User" />
+                  <AvatarFallback>JD</AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <Link to="/profile1" className="flex w-full">
+                  Profile
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link to="/settings" className="flex w-full">
+                  Settings
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link to="/my-workouts" className="flex w-full">
+                  My Workouts
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>Log out</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
-    </nav>
+    </header>
   );
-};
-
-/* Reusable Desktop Navigation Link Component */
-const NavLink = ({ to, label }) => (
-  <Link
-    to={to}
-    className="text-white text-sm font-medium hover:text-[#4a90e2] transition-all duration-300"
-  >
-    {label}
-  </Link>
-);
-
-/* Reusable Mobile Navigation Link Component */
-const MobileNavLink = ({ to, label }) => (
-  <Link
-    to={to}
-    className="block text-white px-5 py-2 text-sm font-medium border-b border-[#4a90e2] hover:bg-[#4a90e2] hover:text-[#0b1129] transition-all duration-300"
-  >
-    {label}
-  </Link>
-);
-
-export default Navbar;
+}

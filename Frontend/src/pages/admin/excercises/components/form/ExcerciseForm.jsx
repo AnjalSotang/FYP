@@ -37,12 +37,14 @@ const ExerciseForm = ({ onSubmit, type, initialData, id }) => {
     "image/png",
     "image/gif",
     "image/avif",
+    "image/webp",
     "video/mp4",
     "video/quicktime",
     "video/webm",
     "application/pdf",
     "application/msword",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+
   ];
   const MAX_FILE_SIZE = 1024 * 1024 * 50; // 50MB
 

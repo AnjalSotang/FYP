@@ -1,33 +1,65 @@
 module.exports = (sequelize, Sequelize) => {
     const User = sequelize.define('User', {
-        // Define profile model fields here, for example:
-        name: {
-            type: Sequelize.STRING
-        },
-        email: {
-            type: Sequelize.STRING
-        },
-        password: {
+          username: {
             type: Sequelize.STRING,
-        },
-        gender: {
-            type: Sequelize.ENUM('Male', 'Female', 'Other')
-        },
-        age: {
-            type: Sequelize.INTEGER
-        },
-        height_feet: {
-            type: Sequelize.INTEGER
-        },
-        height_inches: {
-            type: Sequelize.INTEGER
-        },
-        weight: {
+            unique: true,
+          },
+          email: {
+            type: Sequelize.STRING,
+            allowNull: false,
+            unique: true,
+            validate: {
+              isEmail: true,
+            },
+          },
+          bio:{
+            type: Sequelize.TEXT
+          },
+          profileVisibility: {
+            type: Sequelize.ENUM("public", "private"),
+            defaultValue: "public",
+          },
+          password: {
+            type: Sequelize.STRING,
+            allowNull: false,
+          },
+          firstName: {
+            type: Sequelize.STRING,
+          },
+          lastName: {
+            type: Sequelize.STRING,
+          },
+          profileImage: {
+            type: Sequelize.STRING,
+          },
+          role: {
+            type: Sequelize.ENUM("user", "admin"),
+            defaultValue: "user",
+          },
+          heightFeet: {
+            type: Sequelize.INTEGER,
+          },
+          heightInches: {
+            type: Sequelize.INTEGER,
+          },
+          weight: {
             type: Sequelize.FLOAT,
-        },
-        fitness_level: {
-            type: Sequelize.ENUM('Beginner', 'Intermediate', 'Advanced')
-        },
+          },
+          fitnessGoal: {
+            type: Sequelize.ENUM("weight_loss", "muscle_gain", "endurance", "strength", "flexibility", "general_fitness"),
+            defaultValue: "general_fitness",
+          },
+          experienceLevel: {
+            type: Sequelize.ENUM("beginner", "intermediate", "advanced"),
+            defaultValue: "beginner",
+          },
+          isActive: {
+            type: Sequelize.BOOLEAN,
+            defaultValue: true,
+          },
+          lastLogin: {
+            type: Sequelize.DATE,
+          },
         otp: {
             type: Sequelize.STRING,
             allowNull: true,
@@ -36,11 +68,14 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.DATE,
             allowNull: true,
         },
-        // role: {
-        //     type: Sequelize.STRING,
-        //     defaultValue: "user",
-        //     allowNull: false,
-        // }
+        age:{
+            type: Sequelize.INTEGER,
+            allowNull: true,
+        },
+        gender:{
+            type: Sequelize.ENUM("male", "female", "other"),
+            allowNull: true,
+        }
     });
 
     return User;

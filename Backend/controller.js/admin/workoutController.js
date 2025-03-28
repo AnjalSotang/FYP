@@ -1,14 +1,16 @@
 const { Op, Sequelize } = require("sequelize");
-const { workout, workoutday, excercise, workoutdayExercise, workoutdayExcercise } = require('../../models/index');
+const { workout, workoutday, excercise, workoutdayExcercise } = require('../../models/index');
+
+console.log("workoutdayExcercise:", workout);
 
 const createWorkout = async (req, res) => {
   try {
     // 1️⃣ Get Workout Data from Request
-    const { name, description, level, duration, goal } = req.body;
+    const { name, description, level, duration, goal, calories, equipment } = req.body;
     const image = req.file;  // Multer file upload
 
     // Validation (Ensure required fields are present)
-    if (!name || !description || !level || !duration || !goal) {
+    if (!name || !description || !level || !duration || !goal || !calories || !equipment) {
       return res.status(400).json({ message: "Workout name, description, difficulty, duration, and goal are required." });
     }
 
@@ -32,7 +34,9 @@ const createWorkout = async (req, res) => {
       level,
       duration,
       goal,
-      imagePath,  // Save the file path to the database
+      calories,
+      equipment,
+      imagePath// Save the file path to the database
     });
 
     // 4️⃣ Response
@@ -44,30 +48,6 @@ const createWorkout = async (req, res) => {
   } catch (error) {
     console.error("Error creating workout:", error); // Detailed error logging
     res.status(500).json({ message: `Internal Server Error: ${error.message}` });
-  }
-};
-
-const addExerciseToWorkout = async (req, res) => {
-  try {
-    console.log(req.body)
-        const { WorkoutId, ExcerciseId, sets, reps, rest_time  } = req.body;
-
-    if (!WorkoutId || !ExcerciseId || !sets || !reps) {
-      return res.status(400).json({ message: "All fields are required" });
-    }
-
-    const response = await workoutExcercise.create({
-      WorkoutId,
-      ExcerciseId,
-      sets,
-      reps,
-      rest_time
-    });
-
-    return res.status(201).json({ success: true, data: response });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: error });
   }
 };
 
@@ -156,7 +136,9 @@ const updateWorkout = async (req, res) => {
       description,
       level,
       duration,
-      goal
+      goal,
+      calories,
+      equipment
     } = req.body;
 
 
@@ -179,6 +161,8 @@ const updateWorkout = async (req, res) => {
       level: level ?? workoutExist.level,
       duration: duration ?? workoutExist.duration,
       goal: goal ?? workoutExist.goal,
+      calories: calories ?? workoutExist.calories,
+      equipment: equipment ?? workoutExist.equipment,
       imagePath,  // Update image if new file is uploaded, else keep old value
     });
 
@@ -285,7 +269,6 @@ const getWorkout = async (req, res) => {
 
 module.exports = {
   createWorkout,
-  addExerciseToWorkout,
   getAllWorkout,
   deleteWorkout,
   updateWorkout,

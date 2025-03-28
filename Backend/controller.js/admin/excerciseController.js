@@ -17,27 +17,27 @@ const addExcercise = async (req, res) => {
         const image = req.file;  // Multer file upload
         // Validation (Ensure required fields are present)
 
-      // Define an array to track missing fields
-const missingFields = [];
+        // Define an array to track missing fields
+        const missingFields = [];
 
-if (!name) missingFields.push("name");
-if (!muscle_group) missingFields.push("muscle_group");
-if (!difficulty_level) missingFields.push("difficulty_level");
-if (!instructions) missingFields.push("instructions");
-if (!equipment) missingFields.push("equipment");
-if (!category) missingFields.push("category");
-if (!burned_calories) missingFields.push("burned_calories");
-if (!duration) missingFields.push("duration");
+        if (!name) missingFields.push("name");
+        if (!muscle_group) missingFields.push("muscle_group");
+        if (!difficulty_level) missingFields.push("difficulty_level");
+        if (!instructions) missingFields.push("instructions");
+        if (!equipment) missingFields.push("equipment");
+        if (!category) missingFields.push("category");
+        if (!burned_calories) missingFields.push("burned_calories");
+        if (!duration) missingFields.push("duration");
 
-// If there are missing fields, return a specific error message
-if (missingFields.length > 0) {
-    console.log("Missing Fields:", missingFields);
-    return res.status(400).json({ message: `Missing required fields: ${missingFields.join(", ")}` });
-}
+        // If there are missing fields, return a specific error message
+        if (missingFields.length > 0) {
+            console.log("Missing Fields:", missingFields);
+            return res.status(400).json({ message: `Missing required fields: ${missingFields.join(", ")}` });
+        }
 
-if (!image) {
-    return res.status(400).json({ message: "Workout image is required." });
-  }
+        if (!image) {
+            return res.status(400).json({ message: "Workout image is required." });
+        }
 
 
         // Check if the exercise already exists
@@ -46,9 +46,9 @@ if (!image) {
             return res.status(409).json({ message: "Exercise already added" });
         }
 
-        
-   // 2️⃣ Get file path (Multer stores files in the 'uploads/' folder by default)
-   const imagePath = image.path;  // Path to the uploaded image
+
+        // 2️⃣ Get file path (Multer stores files in the 'uploads/' folder by default)
+        const imagePath = image.path;  // Path to the uploaded image
 
 
         // Save to database (example using Sequelize)
@@ -105,35 +105,35 @@ const searchExercises = async (req, res) => {
 
         if (!query) {
             return res.status(400).json({ message: "Search query is required" });
-        }   
+        }
 
-      // Normalize search input (remove spaces, convert to lowercase)
-      const searchTerm = query.replace(/\s+/g, "").toLowerCase();
+        // Normalize search input (remove spaces, convert to lowercase)
+        const searchTerm = query.replace(/\s+/g, "").toLowerCase();
 
-      const exercises = await excercise.findAll({
-          where: {
-              is_active: true,
-              [Op.or]: [
-                  Sequelize.where(Sequelize.fn("LOWER", Sequelize.fn("REPLACE", Sequelize.col("name"), " ", "")), {
-                      [Op.like]: `%${searchTerm}%`,
-                  }),
-                  Sequelize.where(Sequelize.fn("LOWER", Sequelize.fn("REPLACE", Sequelize.col("muscle_group"), " ", "")), {
-                      [Op.like]: `%${searchTerm}%`,
-                  }),
-                  Sequelize.where(Sequelize.fn("LOWER", Sequelize.col("difficulty_level")), {
-                      [Op.like]: `%${searchTerm}%`,
-                  }),
-                  Sequelize.where(Sequelize.fn("LOWER", Sequelize.fn("REPLACE", Sequelize.col("equipment"), " ", "")), {
-                      [Op.like]: `%${searchTerm}%`,
-                  }),
-                  Sequelize.where(Sequelize.fn("LOWER", Sequelize.fn("REPLACE", Sequelize.col("category"), " ", "")), {
-                      [Op.like]: `%${searchTerm}%`,
-                  }),
-                  !isNaN(searchTerm) ? { burned_calories: parseInt(searchTerm) } : null
-              ].filter(Boolean), // Remove null values
-          },
-          order: [["createdAt", "DESC"]],
-      });
+        const exercises = await excercise.findAll({
+            where: {
+                is_active: true,
+                [Op.or]: [
+                    Sequelize.where(Sequelize.fn("LOWER", Sequelize.fn("REPLACE", Sequelize.col("name"), " ", "")), {
+                        [Op.like]: `%${searchTerm}%`,
+                    }),
+                    Sequelize.where(Sequelize.fn("LOWER", Sequelize.fn("REPLACE", Sequelize.col("muscle_group"), " ", "")), {
+                        [Op.like]: `%${searchTerm}%`,
+                    }),
+                    Sequelize.where(Sequelize.fn("LOWER", Sequelize.col("difficulty_level")), {
+                        [Op.like]: `%${searchTerm}%`,
+                    }),
+                    Sequelize.where(Sequelize.fn("LOWER", Sequelize.fn("REPLACE", Sequelize.col("equipment"), " ", "")), {
+                        [Op.like]: `%${searchTerm}%`,
+                    }),
+                    Sequelize.where(Sequelize.fn("LOWER", Sequelize.fn("REPLACE", Sequelize.col("category"), " ", "")), {
+                        [Op.like]: `%${searchTerm}%`,
+                    }),
+                    !isNaN(searchTerm) ? { burned_calories: parseInt(searchTerm) } : null
+                ].filter(Boolean), // Remove null values
+            },
+            order: [["createdAt", "DESC"]],
+        });
 
 
         if (!exercises.length) {
@@ -220,7 +220,7 @@ const updateExcercise = async (req, res) => {
         if (!exercise) {
             return res.status(404).json({ message: "Exercise not found" });
         }
-        
+
         // Update only provided fields
         await exercise.update({
             name: name ?? exercise.name,
@@ -229,8 +229,8 @@ const updateExcercise = async (req, res) => {
             instructions: instructions ?? exercise.instructions,
             equipment: equipment ?? excercise.equipment,
             category: category ?? exercise.category,
-            burned_calories: burned_calories ? parseInt(burned_calories, 10)  : exercise.burned_calories,
-            duration: duration ? parseInt(duration, 10)  : exercise.duration,
+            burned_calories: burned_calories ? parseInt(burned_calories, 10) : exercise.burned_calories,
+            duration: duration ? parseInt(duration, 10) : exercise.duration,
             imagePath: imagePath ?? exercise.imagePath,
             videoPath: videoPath ?? exercise.videoPath,
         });

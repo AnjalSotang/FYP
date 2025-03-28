@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect } from "react";
+  import React, { lazy, Suspense, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { setStatus, updateExcercise } from "../../../../store/excerciseSlice";

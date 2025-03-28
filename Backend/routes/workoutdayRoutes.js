@@ -6,9 +6,9 @@ const { createWorkoutDay, getWorkoutDayById, updateWorkoutDay, deleteWorkoutDay,
 router.post('/createWorkoutDay/:id', createWorkoutDay);
 router.get('/getWorkoutDayById/:id', getWorkoutDayById)
 router.patch('/updateWorkoutDay/:id', updateWorkoutDay)
-router.delete('/deleteWorkoutDay/:id', deleteWorkoutDay)
-router.post('/addExcerciseToWorkoutDay/:id', addExerciseToWorkoutDay)
-router.delete('/removeExcerciseFromWorkoutDay/:id/:excerciseId', removeExerciseFromWorkoutDay)
-router.patch('/updateExcerciseInWorkoutDay/:id/:excerciseId',updateExerciseInWorkoutDay)
+router.delete('/deleteWorkoutDay/:dayId', deleteWorkoutDay)
+router.post('/addExcerciseToWorkoutDay/:dayId', addExerciseToWorkoutDay)
+router.delete('/workoutday/:id/exercise/:excerciseId', removeExerciseFromWorkoutDay);
+router.patch('/workoutday/:id/exercise/:excerciseId',updateExerciseInWorkoutDay)
 
 module.exports= router;

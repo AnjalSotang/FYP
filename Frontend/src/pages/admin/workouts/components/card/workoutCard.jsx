@@ -2,6 +2,16 @@ import React, { useRef, useState } from 'react';
 import { AlignLeft, MoreHorizontal, Edit, Trash2, ArrowRightCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Button } from "@/components/ui/button";
+
 
 const Card = ({ workouts, onDelete }) => {
   const [showActionsForId, setShowActionsForId] = useState(null);
@@ -57,9 +67,9 @@ const Card = ({ workouts, onDelete }) => {
               </tr>
             </thead>
             <tbody>
-      
-              {workouts.data.map((data, index) => {
-              
+
+              {workouts.map((data, index) => {
+
                 const imageUrl = data?.imagePath ? data.imagePath.replace(/\\/g, "/") : "";
                 const id = data.id || data._id;
 
@@ -86,8 +96,8 @@ const Card = ({ workouts, onDelete }) => {
                             {data?.name || "Unnamed Exercise"}
                           </p>
                           <p className="text-sm text-gray-400 truncate max-w-xs">
-                            {data?.descriptions
-                              ? data.descriptions.substring(0, 50) + (data.descriptions.length > 50 ? "..." : "")
+                            {data?.description
+                              ? data.description.substring(0, 50) + (data.description.length > 50 ? "..." : "")
                               : "No description"}
                           </p>
                         </div>
@@ -111,35 +121,40 @@ const Card = ({ workouts, onDelete }) => {
                     </td>
 
                     <td className="py-5 px-6 text-center">
-                      <div className="relative flex items-center justify-center gap-3">
-                        <Link
-                          to={`/UpdateWorkout/${id}`}
-                          className="p-2 hover:bg-navy-600 transition-colors text-gray-400 hover:text-lime-300"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Link>
-                        
-                        <Link
-                          to={`/Workout/${id}`}
-                          className="p-2 hover:bg-navy-600 transition-colors text-gray-400 hover:text-lime-300"
-                        >
-                          <ArrowRightCircle className="w-4 h-4" />
-                        </Link>
-                        
-                        <button
-                          onClick={() => {
-                            setDeletingId(id);
-                            onDelete(id).finally(() => {
-                              setDeletingId(null);
-                            });
-                          }}
-                          disabled={deletingId === id}
-                          className="p-2 hover:bg-navy-600 transition-colors text-red-400"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="p-2 rounded-md hover:bg-navy-600 transition-colors">
+                            <MoreHorizontal className="w-5 h-5 text-gray-400" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-40 bg-navy-900 rounded-md shadow-lg border border-navy-600">
+                          <DropdownMenuItem asChild>
+                            <Link
+                              to={`/Workout/${id}`}
+                              className="flex items-center px-4 py-3 text-gray-300 hover:bg-navy-700 hover:text-lime-300 transition-colors"
+                            >
+                              <ArrowRightCircle className="w-4 h-4 mr-3" />
+                              Go to Workout
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setDeletingId(id);
+                              onDelete(id).finally(() => {
+                                setDeletingId(null);
+                              });
+                            }}
+                            disabled={deletingId === id}
+                            className="flex items-center w-full text-left px-4 py-3 text-red-400 hover:bg-navy-700 transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4 mr-3" />
+                            {deletingId === id ? "Deleting..." : "Delete"}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </td>
+
                   </tr>
                 );
               })}

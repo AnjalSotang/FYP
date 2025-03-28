@@ -11,11 +11,17 @@ import {
     AlertCircle,
     Target,
     Loader2,
-    ArrowLeft
+    ArrowLeft,
+    Watch,
+    Flame
 } from "lucide-react"
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
+import STATUSES from "../../../../../globals/status/statuses";
+import { setStatus } from "../../../../../../store/workoutSlice";
 
 const WorkoutForm = ({ id, onSubmit, type, initialData }) => {
+    const { status } = useSelector((state) => state.workout);
     const [isLoading, setIsLoading] = useState(false)
     const [image, setImage] = useState(null)
     const [imagePreview, setImagePreview] = useState(null);
@@ -25,6 +31,8 @@ const WorkoutForm = ({ id, onSubmit, type, initialData }) => {
         description: "",
         goal: "",
         duration: "",
+        calories: "",
+        equipment: ""
     })
 
     const MAX_FILE_SIZE = 1024 * 1024 * 5; // 5MB
@@ -46,6 +54,8 @@ const WorkoutForm = ({ id, onSubmit, type, initialData }) => {
                 description: initialData.description || "",
                 goal: initialData.goal || "",
                 duration: initialData.duration || "",
+                calories: initialData.calories || "",
+                equipment: initialData.equipment || "",
             });
             // Handle image preview for update
             if (initialData.imagePath) {
@@ -111,7 +121,8 @@ const WorkoutForm = ({ id, onSubmit, type, initialData }) => {
 
     const validateForm = () => {
         const newErrors = {}
-    
+        console.log("Difficulty Level:", data.difficulty_level);
+
         if (type === "add") {
             // For new exercises, all fields are required
             if (!data.name) newErrors.name = "Exercise name is required"
@@ -120,6 +131,8 @@ const WorkoutForm = ({ id, onSubmit, type, initialData }) => {
             if (!image && !imagePreview) newErrors.image = "Image is required"
             if (!data.goal) newErrors.goal = "Goal is required"
             if (!data.duration) newErrors.duration = "Duration is required"
+            if (!data.calories) newErrors.calories = "Calories is required"
+            if (!data.equipment) newErrors.equipment = "Equipment is required"
         } else if (type === "update") {
             // Only validate fields that exist (i.e., changed fields)
             if (data.name !== undefined && !data.name) newErrors.name = "Exercise name is required"
@@ -127,6 +140,8 @@ const WorkoutForm = ({ id, onSubmit, type, initialData }) => {
             if (data.description !== undefined && !data.description) newErrors.description = "Description is required"
             if (data.goal !== undefined && !data.goal) newErrors.goal = "Goal is required"
             if (data.duration !== undefined && !data.duration) newErrors.duration = "Duration is required"
+            if (data.calories !== undefined && !data.calories) newErrors.calories = "Calories is required"
+            if (data.equipment !== undefined && !data.equipment) newErrors.equipment = "Equipment is required"
             
             // Allow empty image field when updating unless explicitly changed
             if (image !== undefined && !image && !imagePreview) {
@@ -156,6 +171,8 @@ const WorkoutForm = ({ id, onSubmit, type, initialData }) => {
         formData.append("description", data.description)
         formData.append("goal", data.goal)
         formData.append("duration", data.duration)
+        formData.append("calories", data.calories)
+        formData.append("equipment", data.equipment)
 
         if (image) formData.append("image", image)
 
@@ -174,6 +191,8 @@ const WorkoutForm = ({ id, onSubmit, type, initialData }) => {
                     description: "",
                     goal: "",
                     duration: "",
+                    calories: "",
+                    equipment: "",
                 });
                 setImage(null);
                 setImagePreview(null);
@@ -189,6 +208,23 @@ const WorkoutForm = ({ id, onSubmit, type, initialData }) => {
             console.error("Error during form submission:", error)
         }
     }
+
+      // 🔥 Handle Status Updates
+  useEffect(() => {
+    if (status?.status === STATUSES.SUCCESS) {
+      // Only navigate if this was an add operation
+      // navigate("/Workout");
+      toast.success(status.message);
+    //   dispatch(setStatus(null));
+    //   setIsSubmitting(false);
+    } 
+  }, [status]);
+
+  const handleAddWorkout = (data) => {
+    setIsSubmitting(true);
+    dispatch(addWorkout(data));
+    console.log(data);
+  };
 
 
     return (
@@ -372,6 +408,77 @@ const WorkoutForm = ({ id, onSubmit, type, initialData }) => {
                                         >
                                             <AlertCircle className="h-3 w-3" />
                                             <span>{errors.duration}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+
+                        
+                        {/* calories and equipment */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            {/* calories */}
+                            <div className="space-y-2">
+                                <label htmlFor="calories" className="text-white text-sm font-medium flex items-center gap-2">
+                                     <Flame className="h-4 w-4 text-[#a4d519]" />
+                                    Calories <span className="text-[#a4d519]">*</span>
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        id="calories"
+                                        type="text"
+                                        name="calories"
+                                        placeholder="e.g., 300-500"
+                                        className={classNames(
+                                            "w-full p-3 rounded-lg bg-[#1a2c50]/80 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4a90e2] transition-all duration-200 border border-[#1e3a6a]/50",
+                                            errors.goal ? "border-red-500 focus:ring-red-500" : "hover:border-[#1e3a6a]",
+                                        )}
+                                        onChange={handleChange}
+                                        value={data.calories}
+                                        aria-invalid={errors.calories ? "true" : "false"}
+                                        aria-describedby={errors.calories ? "calories-error" : undefined}
+                                    />
+                                    {errors.calories && (
+                                        <div
+                                            id="calories-error"
+                                            className="flex items-center gap-1 mt-1 text-red-400 text-xs animate-fadeIn"
+                                        >
+                                            <AlertCircle className="h-3 w-3" />
+                                            <span>{errors.calories}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* equipment */}
+                            <div className="space-y-2">
+                                <label htmlFor="equipment" className="text-white text-sm font-medium flex items-center gap-2">
+                                    <Dumbbell className="h-4 w-4 text-[#a4d519]" />
+                                    Equipment (days) <span className="text-[#a4d519]">*</span>
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        id="equipment"
+                                        type="text"
+                                        name="equipment"
+                                        placeholder="e.g., Dumbells, Bench, Barbell"
+                                        className={classNames(
+                                            "w-full p-3 rounded-lg bg-[#1a2c50]/80 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4a90e2] transition-all duration-200 border border-[#1e3a6a]/50",
+                                            errors.duration ? "border-red-500 focus:ring-red-500" : "hover:border-[#1e3a6a]",
+                                        )}
+                                        onChange={handleChange}
+                                        value={data.equipment}
+                                        aria-invalid={errors.equipment ? "true" : "false"}
+                                        aria-describedby={errors.equipment ? "duration-error" : undefined}
+                                    />
+                                    {errors.equipment && (
+                                        <div
+                                            id="equipment-error"
+                                            className="flex items-center gap-1 mt-1 text-red-400 text-xs animate-fadeIn"
+                                        >
+                                            <AlertCircle className="h-3 w-3" />
+                                            <span>{errors.equipment}</span>
                                         </div>
                                     )}
                                 </div>

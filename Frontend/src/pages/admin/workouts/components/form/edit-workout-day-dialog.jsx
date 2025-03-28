@@ -13,9 +13,14 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useDispatch, useSelector } from "react-redux"
 import { updateWorkoutDay } from "../../../../../../store/workoutSlice"
+import { fetchWorkout } from "../../../../../../store/workoutSlice"
+import { toast } from "react-toastify"
+import STATUSES from "../../../../../globals/status/statuses";  // Adjust path if necessary
+
 
 
 export function EditWorkoutDayDialog({ day, open, onOpenChange, onSave }) {
+  // const { status } = useSelector((state) => state.workoutSlice);
   const dispatch = useDispatch();
   const [dayName, setDayName] = useState(day.dayName)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -39,17 +44,25 @@ export function EditWorkoutDayDialog({ day, open, onOpenChange, onSave }) {
       // })
 
       dispatch(updateWorkoutDay({ id: day.id, dayName}))
-
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 500))
-
+      dispatch(fetchWorkout(id)); // Refetch workout data
       onSave({ id: day.id, dayName })
     } catch (error) {
       console.error("Error updating workout day:", error)
     } finally {
       setIsSubmitting(false)
+      window.location.reload();
     }
   }
+
+  
+    //  // 🔥 Handle Status Updates
+    //  useEffect(() => {
+    //   if (status?.status === STATUSES.ERROR) {
+    //       toast.error(status.message);
+    //     }
+    //   }, [status]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

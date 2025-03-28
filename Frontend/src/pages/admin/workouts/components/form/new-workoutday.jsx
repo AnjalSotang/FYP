@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,9 +15,12 @@ import { Plus } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { createWorkoutDay } from "../../../../../../store/workoutDaySlice";
 // import STATUSES from "../../../../../globals/status/statuses"; 
+import { fetchWorkout } from "../../../../../../store/workoutSlice"
+import { toast } from "react-toastify"
+import STATUSES from "../../../../../globals/status/statuses";  // Adjust path if necessary
 
 export function NewWorkoutDayDialog({ id }) {
-    // const { status } = useSelector((state) => state.workoutDaySlice)
+    const { status } = useSelector((state) => state.workoutDaySlice)
    const dispatch = useDispatch()
    
 
@@ -31,16 +34,28 @@ export function NewWorkoutDayDialog({ id }) {
     setIsSubmitting(true);
 
     try {
-      await dispatch(createWorkoutDay(id, dayName));
+     
+      dispatch(createWorkoutDay(id, dayName));
+      await new Promise((resolve) => setTimeout(resolve, 500))
       setDayName("");
+      dispatch(fetchWorkout(id)); // Refetch workout data
       setOpen(false);
-      window.location.reload();
+      // window.location.reload();
     } catch (error) {
       console.error("Error creating workout day:", error);
     } finally {
       setIsSubmitting(false);
+      window.location.reload();
     }
   };
+
+  
+       // 🔥 Handle Status Updates
+       useEffect(() => {
+        if (status?.status === STATUSES.ERROR) {
+            toast.error(status.message);
+          }
+        }, [status]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

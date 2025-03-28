@@ -1,13 +1,13 @@
-import React, { lazy, Suspense, useEffect } from "react";
+import React, { lazy, Suspense, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { setStatus, updateWorkout } from "../../../store/workoutSlice";
-import STATUSES from "../../globals/status/statuses";  // Adjust path if necessary
+import { setStatus, updateWorkout } from "../../../../store/workoutSlice";
+import STATUSES from "../../../globals/status/statuses";  // Adjust path if necessary
 import { ErrorBoundary } from "react-error-boundary";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import DashboardLayout from "../../components/layout/DashboardLayout";
-import Sidebar from "../../components/sidebar/Sidebar";
+import DashboardLayout from "../../../components/layout/DashboardLayout";
+import Sidebar from "../../../components/navbar/Sidebar";
 
 
 const WorkoutForm = lazy(() => import("./components/form/Form"));
@@ -17,39 +17,54 @@ const UpdateWorkout = () => {
   const { status, data: workout } = useSelector((state) => state.workout);
   const dispatch = useDispatch()
   const navigate = useNavigate();
+  const [workoutData, setWorkoutData] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  if (!workout || workout.length === 0) {
-    return <div>Loading...</div>;  // Show a loading state while fetching data
-  }
+  useEffect(() => {
+    // Find the workout data when the component mounts or workout data changes
+    if (workout && workout.length > 0) {
+      const found = workout.find(item => item.id === Number(id));
+      setWorkoutData(found);
+    }
+  }, [workout, id]);
 
 
   // Ensure both id and workout.id are numbers
-  const workoutData = workout.find(workout => workout.id === Number(id)); // Convert id to number
+  // const workoutData = workout.find(workout => workout.id === Number(id)); // Convert id to number
 
-  if (!workoutData) {
-    return <div>Workout not found</div>;
-  }
-
-  console.log(workoutData);
-
-  const handleUpdateWorkout = (formData) => {
-    dispatch(updateWorkout(formData)); // formData would be a FormData object
-  };
+  // if (!workoutData) {
+  //   return <div>Workout not found</div>;
+  // }
 
 
   // 🔥 Handle Status Updates
   useEffect(() => {
-    if (status?.status === STATUSES.SUCCESS) {
+    if (status?.status === STATUSES.SUCCESS && status?.type === 'update') {
       navigate("/Workout");
       toast.success(status.message);
       dispatch(setStatus(null));
+      setIsSubmitting(false);
     } else if (status?.status === STATUSES.ERROR) {
       toast.error(status.message);
       dispatch(setStatus(null));
+      setIsSubmitting(false);
     }
   }, [status, dispatch, navigate]);
 
+  const handleUpdateWorkout = (formData) => {
+    setIsSubmitting(true);
+    dispatch(updateWorkout(formData)); // formData would be a FormData object
+  };
 
+
+
+  if (!workout || workout.length === 0) {
+    return <div>Loading...</div>;
+  }
+
+  if (!workoutData) {
+    return <div>Workout not found</div>;
+  }
 
   function ErrorFallback({ error }) {
     return (

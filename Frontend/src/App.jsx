@@ -4,6 +4,9 @@ import React, { Suspense, lazy } from "react";
 import store from "../store/store.js";
 import "./App.css";
 import { ErrorBoundary } from "react-error-boundary";
+import "@fontsource/inter"; // Defaults to weight 400.
+import Protected from './Protected.jsx'
+
 
 // Lazy Loading Components
 const Login = lazy(() => import("./pages/auth/Login"));
@@ -20,8 +23,24 @@ const UpdateExcercise = lazy(() => import("./pages/admin/excercises/UpdateExcerc
 const AddWorkout = lazy(() => import("./pages/admin/workouts/AddWorkout.jsx"));
 const AddExcercise2 = lazy(() => import("./pages/admin/excercises/AddExcercise.jsx"));
 const Workouts = lazy(() => import("./pages/admin/workouts/Workout.jsx"));
-const UpdateWorkout = lazy(() => import("./pages/admin/workouts/AddWorkout.jsx"));
+const Workouts1 = lazy(() => import("./pages/admin/workouts/Workout1.jsx"));
+
+const UpdateWorkout = lazy(() => import("./pages/admin/workouts/UpdateWorkout.jsx"));
 const Workout = lazy(() => import("./pages/admin/workouts/id/workout.jsx"));
+const Plans = lazy(() => import("./pages/user/plans/page.jsx"));
+const UserManagementLoading = lazy(() => import("./pages/admin/users/loading.jsx"));
+const UserManagemen = lazy(() => import("./pages/admin/users/page.jsx"));
+const Dashboard = lazy(() => import("./pages/admin/dashboard.jsx"));
+const Excercise = lazy(() => import("./pages/admin/excercises/Excercise.jsx"));
+const Plans1 = lazy(() => import("./pages/user/plans/id/plans.jsx"));
+const UserDashboard = lazy(() => import("./pages/user/dashboard/page.jsx"));
+const Profile = lazy(() => import("./pages/user/profile/page.jsx"));
+const Schedule = lazy(() => import("./pages/user/schedule/page.jsx"));
+const Profile1 = lazy(() => import("./pages/user/profile/page1.jsx"));
+
+
+
+
 
 // const MotivationPage = lazy(() => import("./pages/auth/MotivationPage"));
 // const HealthDetaills = lazy(() => import("./pages/auth/HealthDetaills.jsx"));
@@ -53,14 +72,24 @@ function App() {
               {/* <Route path="/userName" element={<UserName />} /> */}
               <Route path="/WelcomePage" element={<WelcomePage />} />
               <Route path="/AddExcercise" element={<AddExcercise  />} />
-              {/* <Route path="/Excercise" element={<Excercise  />} /> */}
-              <Route path="/" element={<Excercise2  />} />
+              <Route path="/admin/Excercise" element={<Excercise  />} />
+              <Route path="/Ex" element={<Excercise2  />} />
               <Route path="/edit/:id" element={<UpdateExcercise />} />
               <Route path="/AddWorkout" element={<AddWorkout  />} />
               <Route path="/AddExcercise2" element={<AddExcercise2  />} />
               <Route path="/Workout" element={<Workouts  />} />
               <Route path="/UpdateWorkout/:id" element={<UpdateWorkout  />} />
               <Route path="/Workout/:id" element={<Workout/>} />
+              <Route path="/" element={<Plans/>} />
+              <Route path="/admin/users/loading" element={<UserManagementLoading/>} />
+              <Route path="/admin/users" element={<UserManagemen/>} />
+              <Route path="/admin" element={<Dashboard/>} />
+              <Route path="/admin/workout" element={<Workouts1/>} />
+              <Route path="/user/Plan/:id" element={<Plans1/>} />
+              <Route path="/user" element={<UserDashboard/>} />
+              <Route path="/user/profile" element={<Protected><Profile/></Protected>} />
+              <Route path="/user/Schedule" element={<Schedule/>} />
+              <Route path="/profile1" element={<Protected><Profile1/></Protected>} />
               {/* <Route path="/addq" element={<Ex />} /> */}
               {/* <Route path="/Motivation" element={<MotivationPage />} /> */}
               {/* <Route path="/Health" element={<HealthDetaills />} /> */}

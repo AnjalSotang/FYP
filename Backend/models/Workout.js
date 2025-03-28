@@ -19,6 +19,12 @@ module.exports = (sequelize, Sequelize) => {
       goal: {
           type: Sequelize.STRING
       },
+      equipment: {
+          type: Sequelize.TEXT
+      },
+      calories:{
+        type: Sequelize.STRING
+      },
       imagePath: {
         type: Sequelize.STRING
     },

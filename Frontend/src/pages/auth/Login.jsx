@@ -22,7 +22,7 @@ const Login = () => {
   // 🔥 Handle Status Updates
   useEffect(() => {
     if (status?.status === STATUSES.SUCCESS) {
-      navigate("/Dashboard");
+      navigate("/");
       dispatch(setStatus(null));
     } else if (status?.status === STATUSES.ERROR) {
       toast.error(status.message);

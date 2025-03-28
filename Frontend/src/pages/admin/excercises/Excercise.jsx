@@ -1,230 +1,248 @@
-import React, { useEffect, lazy, Suspense, useState } from 'react';
-import { Loader2, Plus, Search, XCircle, CheckSquare } from 'lucide-react';
-import { ErrorBoundary } from "react-error-boundary";
-import { useDispatch, useSelector } from "react-redux";
-import { Link, useNavigate } from 'react-router-dom';
-import { deleteExcercise, fetchExcercises, searchExercises, setStatus } from "../../../../store/excerciseSlice";
-
+import { useEffect, useState } from "react"
+import { ArrowUpDown, Dumbbell, Edit, MoreHorizontal, Plus, Search, Trash2, Upload } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { toast, ToastContainer } from "react-toastify"
+import { useDispatch } from "react-redux"
+import { deleteExcercise, fetchExcercises, setStatus } from "../../../../store/excerciseSlice";
 import STATUSES from "../../../globals/status/statuses";
-import { toast } from "react-toastify";
+import { Link } from "react-router-dom"
 import "react-toastify/dist/ReactToastify.css";
+import { useSelector } from "react-redux"
 import DashboardLayout from '../../../components/layout/DashboardLayout';
-import { addExerciseToWorkout, setStatus1, setWorkoutExercises } from '../../../../store/workoutExcerciseSlice';
 
-// Lazy load the card component
-const ExcerciseCard = lazy(() => import('./components/card/card'));
 
-// Error fallback component
-function ErrorFallback({ error }) {
-  return (
-    <div className="text-red-500 text-center p-6 bg-navy-800 rounded-lg">
-      <h1 className="font-bold text-xl mb-2">Something went wrong</h1>
-      <p>{error.message}</p>
-    </div>
-  );
-}
-
-export default function AddExcercise2() {
-  const navigate = useNavigate();
-  const { data1: workoutData } = useSelector((state) => state.workout);
-  const { status: nt} = useSelector((state) => state.workoutExercise);  
-  const { data: exercises, status } = useSelector((state) => state.excercise);
+export default function ExercisesPage() {
+  const { data: exercises = [], status } = useSelector((state) => state.excercise || {});
   const dispatch = useDispatch();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [showClear, setShowClear] = useState(false);
-  const [selectedExercises, setSelectedExercises] = useState([]);
-  const [isWorkoutInProgress, setIsWorkoutInProgress] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("")
+  const [categoryFilter, setCategoryFilter] = useState("all")
+  const [difficultyFilter, setDifficultyFilter] = useState("all")
+  const [deletingId, setDeletingId] = useState(null);
 
-// Log the workout data to verify its structure
-if (!workoutData) {
-  toast.error("Workout ID is missing! Please try again.");
-  return; // Stop execution if ID is null
-}
-
-// If workoutData is populated, get the ID of the latest workout (the last item in the array)
-const latestWorkoutId = workoutData.id;
-
-if (!latestWorkoutId) {
-  toast.error("Workout ID is missing! Please try again.");
-  return; // Stop execution if ID is null
-}
-console.log(latestWorkoutId)
-
-  // Add this useEffect after your other useEffect hooks
+  // Fetch exercises on mount
   useEffect(() => {
-    // Only fetch if we don't already have exercises and aren't currently loading
-    if (!exercises.length && status !== STATUSES.LOADING) {
-      dispatch(fetchExcercises());
-    }
-  }, [dispatch, exercises.length, status]);
-
+    dispatch(fetchExcercises());
+  }, [dispatch]);
 
   // Handle status updates
   useEffect(() => {
-    if (status?.status  === STATUSES.SUCCESS) {
+    if (status?.status === STATUSES.SUCCESS) {
       dispatch(setStatus(null));
     } else if (status?.status === STATUSES.ERROR && status.message) {
       toast.error(status.message);
     }
   }, [status, dispatch]);
 
-    // Handle status updates
-    useEffect(() => {
-      if (nt?.status  === STATUSES.SUCCESS) {
-        dispatch(setStatus1(null));
-        // dispatch(setWorkoutExercises([]));
-      } else if (nt?.status === STATUSES.ERROR && nt.message) {
-        toast.error(nt.message);
-      }
-    }, [nt, dispatch]);
-  
-
-
-// Handle adding exercise to workout
-const handleAddExerciseToWorkout = (exerciseData) => {
-  // Add exercise to workout and keep internal state (but don't update the list UI directly)
-  const updatedExercises = [...selectedExercises, exerciseData];
-  setSelectedExercises(updatedExercises);
-  setIsWorkoutInProgress(true);
-
-  // Save to localStorage for persistence between page refreshes
-  localStorage.setItem('workoutExercises', JSON.stringify(updatedExercises));
-
-  console.log(exerciseData)
-  const { exerciseName, ...validExerciseData } = exerciseData;
-console.log(validExerciseData);  
-  // Dispatch action to add exercise to the workout
-  dispatch(addExerciseToWorkout(validExerciseData));
-  console.log(exerciseData)
-
-  // toast.success(`Added ${exerciseData.exerciseName} to workout!`);
-
-};
-  // // Handler functions
-  // const handleDelete = (id) => {
-  //   if (window.confirm("Are you sure you want to delete this exercise?")) {
-  //     dispatch(deleteExcercise(id));
-  //   }
-  // };
-
-  const handleSearch = (e) => {
-    const value = e.target.value;
-    setSearchTerm(value);
-    dispatch(searchExercises(value));
-    setShowClear(value.length > 0);
+  // Handler functions
+  const handleDelete = (id) => {
+    if (window.confirm("Are you sure you want to delete this exercise?")) {
+      dispatch(deleteExcercise(id));
+    }
   };
 
-  const clearSearch = () => {
-    setSearchTerm("");
-    setShowClear(false);
-    dispatch(fetchExcercises());
-  };
-
-    // Navigate to workout summary
-    const handleFinishWorkout = () => {
-      if (selectedExercises.length === 0) {
-        toast.warning("Please add at least one exercise to your workout first!");
-        return;
-      }
-  
-      // Navigate to workout summary page
-      navigate('/workout-summary');
-    };
-
+  // Filter exercises based on search term and filters
+const filteredExercises = Array.isArray(exercises) 
+? exercises.filter((exercise) => {
+    const matchesSearch = 
+      (exercise.name?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+      (exercise.description?.toLowerCase() || "").includes(searchTerm.toLowerCase());
+      
+    const matchesCategory = categoryFilter === "all" || exercise.category === categoryFilter;
     
-  // Loading state component
-  const LoadingSpinner = () => (
-    <div className="flex justify-center items-center h-64">
-      <Loader2 className="w-8 h-8 text-lime-300 animate-spin" />
-    </div>
-  );
-
-  // Empty state component
-  const EmptyState = () => (
-    <div className="text-center py-12 bg-navy-800 rounded-lg">
-      <p className="text-xl text-gray-400 mb-4">
-        No exercises found
-      </p>
-      <Link to="/AddExcercise">
-        <button className="bg-lime-300 hover:bg-lime-400 text-navy-900 font-semibold py-3 px-6 rounded-md transition-colors flex items-center justify-center gap-2 mx-auto">
-          <Plus size={18} />
-          Add Your First Exercise
-        </button>
-      </Link>
-    </div>
-  );
+    const matchesDifficulty = difficultyFilter === "all" || 
+      (exercise.difficulty_level?.toLowerCase() || "") === difficultyFilter.toLowerCase();
+      
+    return matchesSearch && matchesCategory && matchesDifficulty;
+  }) 
+: [];
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen bg-navy-900 p-4 md:p-8">
-        {/* Header with search, add button and workout status */}
-        <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-          <div className="relative w-full md:w-72">
-            <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-              <Search className="h-4 w-4 text-gray-400" />
-            </div>
-            <input
-              type="search"
-              value={searchTerm}
-              onChange={handleSearch}
-              placeholder="Search..."
-              className="w-full h-10 pl-10 pr-10 rounded-md bg-[#1a2c50]/50 text-white placeholder:text-gray-400 border-0 focus:outline-none focus:ring-1 focus:ring-[#b4e61d]"
-            />
-            {showClear && (
-              <button
-                onClick={clearSearch}
-                className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-white"
-              >
-                <XCircle className="h-5 w-5" />
-              </button>
-            )}
-          </div>
-
-         
+      <div className="flex flex-col gap-6 m-form-padding">
+                <div>
+          <h1 className="text-3xl mb-2 font-bold tracking-tight">Exercises</h1>
+          <p className="text-muted-foreground mb-3">Manage your exercise library</p>
         </div>
 
-        {/* Workout Status Bar */}
-        {isWorkoutInProgress && (
-          <div className="bg-navy-800 p-4 rounded-lg mb-6 flex flex-col sm:flex-row justify-between items-center">
-            <div className="flex items-center mb-3 sm:mb-0">
-              <div className="w-2 h-2 bg-lime-300 rounded-full mr-2 animate-pulse"></div>
-              <span className="text-white font-medium">
-                Workout in progress: {selectedExercises.length} exercise{selectedExercises.length !== 1 ? 's' : ''} selected
-              </span>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+            <div className="relative w-full sm:w-[300px]">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search exercises..."
+                className="pl-8"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
-            <button
-              onClick={handleFinishWorkout}
-              className="bg-lime-300 hover:bg-lime-400 text-navy-900 font-semibold py-2 px-4 rounded-md transition-colors flex items-center justify-center gap-2 w-full sm:w-auto"
-            >
-              <CheckSquare size={18} />
-              FINISH & REVIEW WORKOUT
-            </button>
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Filter by category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                <SelectItem value="Strength">Strength</SelectItem>
+                <SelectItem value="Bodyweight">Bodyweight</SelectItem>
+                <SelectItem value="Machine">Machine</SelectItem>
+                <SelectItem value="Cardio">Cardio</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Filter by difficulty" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Difficulties</SelectItem>
+                <SelectItem value="beginner">Beginner</SelectItem>
+                <SelectItem value="intermediate">Intermediate</SelectItem>
+                <SelectItem value="advanced">Advanced</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        )}
 
-        {/* Exercise Card List - always vertical column layout */}
-        <ErrorBoundary FallbackComponent={ErrorFallback}>
-          {status?.status === STATUSES.LOADING ? (
-            <LoadingSpinner />
-          ) : exercises?.length > 0 ? (
-            <div className="flex flex-col gap-6">
-              <Suspense fallback={<LoadingSpinner />}>
-                {exercises.map((exercise) => (
-                  <ExcerciseCard
-                    key={exercise.id || exercise._id}
-                    exercise={exercise}
-                    // onDelete={handleDelete}
-                    latestWorkoutId={latestWorkoutId}
-                    onAddToWorkout={handleAddExerciseToWorkout}
-                  />
-                ))}
-              </Suspense>
-            </div>
-          ) : (
-            <EmptyState />
-          )}
-        </ErrorBoundary>
+
+          <Link to="/AddExcercise" className="w-full sm:w-auto">
+            <Button className="w-full sm:w-auto">
+              <Plus className="mr-2 h-4 w-4" />
+              Add Exercise
+            </Button>
+          </Link>
+        </div>
+
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle>Exercise Library</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[300px]">
+                    <div className="flex items-center gap-2">
+                      Exercise
+                      <Button variant="ghost" size="sm" className="h-8 p-0">
+                        <ArrowUpDown className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Difficulty</TableHead>
+                  <TableHead>Equipment</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredExercises.map((exercise) => {
+                  const imageUrl = exercise.imagePath ? exercise.imagePath.replace(/\\/g, "/") : "";
+                  const id = exercise.id || exercise._id;
+                  
+                  return (
+                    <TableRow key={id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border">
+                            {imageUrl ? (
+                              <img
+                                src={`http://localhost:3001/${imageUrl}`}
+                                alt={exercise.name}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <div className="h-full w-full bg-muted flex items-center justify-center">
+                                <Dumbbell className="h-6 w-6 text-muted-foreground" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium truncate">{exercise.name}</p>
+                            <p className="text-sm text-muted-foreground line-clamp-1">{exercise.description}</p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        <Badge variant="outline" className="capitalize">
+                          {exercise.category}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        <Badge
+                          variant={
+                            exercise.difficulty_level === "Beginner"
+                              ? "secondary"
+                              : exercise.difficulty_level === "Intermediate"
+                                ? "default"
+                                : "destructive"
+                          }
+                          className="capitalize"
+                        >
+                          {exercise.difficulty_level}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="capitalize whitespace-nowrap">{exercise.equipment}</TableCell>
+                      <TableCell className="text-right whitespace-nowrap">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuItem asChild>
+                              <Link to={`/edit/${id}`} className="flex items-center w-full">
+                                <Edit className="mr-2 h-4 w-4" />
+                                Edit
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setDeletingId(id);
+                                handleDelete(id).finally(() => {
+                                  setDeletingId(null);
+                                });
+                              }}
+                              disabled={deletingId === id}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              {deletingId === id ? "Deleting..." : "Delete"}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+
+                {filteredExercises.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                      No exercises found. Add an exercise to get started.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+
+        <ToastContainer />
       </div>
     </DashboardLayout>
-  );
+  )
 }

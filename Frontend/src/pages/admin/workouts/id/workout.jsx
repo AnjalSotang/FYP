@@ -5,15 +5,16 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useParams } from 'react-router-dom';
 import { deleteWorkout, fetchWorkouts, searchWorkouts, setStatus } from "../../../../../store/workoutSlice";
 import STATUSES from "../../../../globals/status/statuses";
-import { toast } from "react-toastify";
+import {ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import DashboardLayout from '../../../../components/layout/DashboardLayout';
-import {NewWorkoutDayDialog} from '../components/form/new-workoutday'
+import { NewWorkoutDayDialog } from '../components/form/new-workoutday'
 const WorkoutDayList = lazy(() => import('../Workoutdaylist').then(module => ({ default: module.WorkoutDayList })));
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from "@/components/ui/breadcrumb";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { Button } from "@/components/ui/button";
 import { DashboardShell } from "@/components/dashboard-shell";
+
 
 // Error fallback component
 function ErrorFallback({ error }) {
@@ -26,15 +27,16 @@ function ErrorFallback({ error }) {
 }
 
 export default function WorkoutsPage() {
-  const { id } = useParams(); 
+  const { id } = useParams();
   const { status, data: workouts } = useSelector((state) => state.workout);
   const dispatch = useDispatch();
   const numericId = Number(id);
   console.log(numericId)
-  
+
   // Find the workout data that matches the ID from URL params
   const workoutData = workouts?.find(workout => workout.id === numericId);
-  
+  console.log(workoutData)
+
   useEffect(() => {
     // If we don't have workouts data yet or need to refresh, fetch it
     if (!workouts || workouts.length === 0) {
@@ -86,7 +88,9 @@ export default function WorkoutsPage() {
       <DashboardLayout>
         <div className="flex-1">
           <DashboardShell>
-            <Breadcrumb className="mb-4">
+    
+            <Breadcrumb className="mb-5">
+            <ToastContainer position="top-right" autoClose={3000} />
               <BreadcrumbItem>
                 <BreadcrumbLink href="/">Workout Plans</BreadcrumbLink>
               </BreadcrumbItem>
@@ -97,24 +101,26 @@ export default function WorkoutsPage() {
                 <span>{workoutData?.name || 'Workout Plan'}</span>
               </BreadcrumbItem>
             </Breadcrumb>
-            
-            <DashboardHeader 
-              heading={workoutData?.name || 'Workout Plan'} 
+
+            <DashboardHeader
+              heading={workoutData?.name || 'Workout Plan'}
               text="Manage workout days and exercises."
             >
-              <div className="flex space-x-2">
+              <div className="flex space-x-4">
                 <Button variant="outline" asChild>
-                  <a href={`/workout/${id}/edit`}>Edit Plan</a>
+                  <Link to={`/UpdateWorkout/${id}`}>
+                    Edit Plan
+                  </Link>
                 </Button>
                 <NewWorkoutDayDialog id={numericId} />
               </div>
             </DashboardHeader>
-            
+
             <ErrorBoundary FallbackComponent={ErrorFallback}>
               <Suspense fallback={<LoadingSpinner />}>
                 {/* Pass both the ID and the workout data to the component */}
-                <WorkoutDayList 
-                  workoutPlanId={numericId} 
+                <WorkoutDayList
+                  workoutPlanId={numericId}
                   workoutData={workoutData}
                 />
               </Suspense>

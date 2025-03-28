@@ -20,7 +20,9 @@ const fileFilter = (req, file, cb) => {
     file.mimetype === "image/gif" || // Accept GIFs
     file.mimetype === "video/mp4" ||  // Accept MP4 videos
     file.mimetype === "video/avi" ||  // Accept AVI videos
-    file.mimetype === "video/mkv"     // Accept MKV videos
+    file.mimetype === "video/mkv" ||  // Accept MKV videos
+    file.mimetype === "image/webp"
+
   ) {
     return cb(null, true); // Accepts the file if it's one of the allowed types
   } else {

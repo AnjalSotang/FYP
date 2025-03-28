@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { createWorkout, addExerciseToWorkout, getAllWorkout, deleteWorkout, updateWorkout, searchWorkouts, getWorkout } = require('../controller.js/admin/workoutController');
+const { createWorkout, getAllWorkout, deleteWorkout, updateWorkout, searchWorkouts, getWorkout } = require('../controller.js/admin/workoutController');
 const upload = require("../helpers/upload"); 
 
 
 // API Endpoint: Create Workout with Exercises
 router.post('/createWorkout', upload.single("image"), createWorkout);
-router.post('/addExcerciseToWorkout', addExerciseToWorkout);
+// router.post('/addExcerciseToWorkout', addExerciseToWorkout);
 router.get('/getAllWorkout', getAllWorkout);
 router.delete('/deleteWorkout/:id', deleteWorkout);
 router.patch('/updateWorkout', upload.single("image"), updateWorkout);

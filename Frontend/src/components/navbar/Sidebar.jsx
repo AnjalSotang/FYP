@@ -1,17 +1,12 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
-  ChevronDown,
-  ChevronRight,
   Home,
   Dumbbell,
   Users,
-  Calendar,
   Settings,
-  BarChart2,
   LogOut,
   Bell,
-  Search,
   Menu
 } from "lucide-react";
 
@@ -21,23 +16,13 @@ const Sidebar = ({ onToggle }) => {
 
    // Sidebar links data
    const links = [
-    { to: "/dashboard", label: "Dashboard", icon: Home },
-    // { to: "/workouts", label: "Workouts", icon: Dumbbell },
-    // { to: "/nutrition", label: "Nutrition", icon: Utensils },
-    // { to: "/progress", label: "Progress", icon: LineChart },
-    // { to: "/activity", label: "Activity", icon: Activity },
-    // { to: "/profile", label: "Profile", icon: User },
-    { to: "/Excercise2", label: "Excercise", icon: Dumbbell },
-    { to: "/Workout", label: "Workout", icon: Dumbbell },
-    { to: "", label: "Users", icon: Users },
-    { to: "", label: "Analytics", icon: BarChart2 },
-    { to: "", label: "Norification", icon: Bell },
+    { to: "/admin", label: "Dashboard", icon: Home },
+    { to: "/admin/Excercise", label: "Excercise", icon: Dumbbell },
+    { to: "/admin/Workout", label: "Workout", icon: Dumbbell },
+    { to: "/admin/users", label: "Users", icon: Users },
+    // { to: "", label: "Analytics", icon: BarChart2 },
+    { to: "", label: "Notification", icon: Bell },
     { to: "", label: "Settings", icon: Settings },
-    // { to: "/AddExcercise", label: "AddExcercise", icon: Dumbbell }
-    // { to: "/nutrition", label: "Nutrition", icon: Utensils },
-    // { to: "/progress", label: "Progress", icon: LineChart },
-    // { to: "/activity", label: "Activity", icon: Activity },
-    // { to: "/profile", label: "Profile", icon: User },
   ];
 
   // Toggle Sidebar

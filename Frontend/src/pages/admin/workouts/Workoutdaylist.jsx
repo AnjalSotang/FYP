@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchWorkout, setStatus } from "../../../../store/workoutSlice";
-import STATUSES from "../../../globals/status/statuses"; 
+import STATUSES from "../../../globals/status/statuses";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -12,29 +12,28 @@ import { AddExerciseDialog } from "./components/form/add-exercise-dialog"
 import { EditWorkoutDayDialog } from "./components/form/edit-workout-day-dialog"
 import { DeleteWorkoutDayDialog } from "./components/form/delete-workout-day-dialog"
 
-export function WorkoutDayList({ workoutPlanId, workoutData }) {
+export function WorkoutDayList({ workoutPlanId }) {
   const [editingDay, setEditingDay] = useState(null);
   const [deletingDayId, setDeletingDayId] = useState(null);
   const [addingExerciseToDayId, setAddingExerciseToDayId] = useState(null);
-  
+
   const { status } = useSelector((state) => state.workout);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   // Only fetch if workoutData is not provided from parent
   useEffect(() => {
-    if (workoutPlanId && !workoutData) {
+    if (workoutPlanId) {
       dispatch(fetchWorkout(workoutPlanId));
     }
-  }, [workoutPlanId, workoutData, dispatch]);
-  
+  }, [workoutPlanId, dispatch]);
+
   // Get workoutDays from either passed workoutData or from Redux state
   const { data1: reduxWorkoutDays } = useSelector((state) => state.workout);
-  const workoutDays = workoutData || reduxWorkoutDays;
-  
-  console.log("Workout Data from props:", workoutData);
+  const workoutDays = reduxWorkoutDays;
+console.log("WorkoutDays:", workoutDays);
+
   console.log("WorkoutPlanId:", workoutPlanId);
-  console.log("Redux workout days:", reduxWorkoutDays);
   console.log("Using workout days:", workoutDays);
 
   // Handle different states based on status
@@ -45,20 +44,22 @@ export function WorkoutDayList({ workoutPlanId, workoutData }) {
   if (status === STATUSES.ERROR) {
     return <div>Error loading workout data. Please try again.</div>;
   }
-  
+
   if (!workoutDays) {
     return <div>No workout data available.</div>;
   }
 
   // Get the days array from the workoutDays object
-  const days = workoutDays.days || [];
-  
+  const days = workoutDays.days;
+  console.log("Days:", days);
+
   // Check if days is empty or not
   const hasDays = Array.isArray(days) && days.length > 0;
-
+  console.log(hasDays)
+  
   return (
     <>
-      <div className="grid gap-4">
+      <div className="grid gap-4  bg-card border rounded-md p-4">
         {!hasDays ? (
           <Card>
             <CardContent className="py-10 text-center">
@@ -71,7 +72,7 @@ export function WorkoutDayList({ workoutPlanId, workoutData }) {
               <AccordionItem key={day.id} value={day.id.toString()}>
                 <AccordionTrigger className="px-4">
                   <div className="flex items-center justify-between w-full">
-                    <span>{day.dayName}</span>
+                    <span className="text-lg">{day.dayName}</span>
                     <div className="flex space-x-2" onClick={(e) => e.stopPropagation()}>
                       <Button
                         variant="ghost"
@@ -97,28 +98,32 @@ export function WorkoutDayList({ workoutPlanId, workoutData }) {
                       </Button>
                     </div>
                     <div className="rounded-md border">
+
                       <Table>
                         <TableHeader>
                           <TableRow>
                             <TableHead>Exercise</TableHead>
                             <TableHead>Sets</TableHead>
                             <TableHead>Reps</TableHead>
+                            <TableHead>Rest Time</TableHead>
                             <TableHead className="w-[100px]">Actions</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {!day.exercises || day.exercises.length === 0 ? (
+                          {!day.excercises || day.excercises.length === 0 ? (
                             <TableRow>
                               <TableCell colSpan={4} className="h-24 text-center">
                                 No exercises found.
                               </TableCell>
                             </TableRow>
                           ) : (
-                            day.exercises.map((exercise) => (
+                            day.excercises.map((exercise) => (
                               <TableRow key={exercise.id}>
                                 <TableCell>{exercise.name}</TableCell>
-                                <TableCell>{exercise.sets}</TableCell>
-                                <TableCell>{exercise.reps}</TableCell>
+                                <TableCell>{exercise.WorkoutDayExercise?.sets || "N/A"}</TableCell>
+                                <TableCell>{exercise.WorkoutDayExercise?.reps || "N/A"}</TableCell>
+                                <TableCell>{exercise.WorkoutDayExercise?.rest_time || "N/A"}</TableCell>
+
                                 <TableCell>
                                   <div className="flex space-x-2">
                                     <Button

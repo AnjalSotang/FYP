@@ -1,5 +1,5 @@
 const express = require('express');
-const { sequelize } = require("./models/index"); // Sequelize instance import
+const { sequelize, users } = require("./models/index"); // Sequelize instance import
 const userRoutes = require("./routes/userRoutes");
 const addRoutes = require("./routes/addRoutes");
 const excerciseRoutes = require("./routes/excerciseRoutes")
@@ -8,10 +8,11 @@ const workoutDayRoutes = require("./routes/workoutdayRoutes")
 const path = require("path");
 const cors = require("cors");
 const app = express();
+const bcrypt = require('bcrypt')
 
 
 // Synchronize the models with the database
-sequelize.sync({ force:0}) // Use 'false' to prevent dropping tables
+sequelize.sync({ force: 0}) // Use 'false' to prevent dropping tables
   .then(() => {
     console.log('Database synced successfully');
   })
@@ -30,6 +31,28 @@ app.use('/auth', userRoutes)
 app.use('/api', addRoutes, excerciseRoutes, workoutRoutes, workoutDayRoutes)
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+const createUser = async () => {
+  let foundAdmin = await users.findOne({
+      where: {
+          role: "admin"
+      }
+  })
+  
+
+  if (!foundAdmin) {
+      const hashpassword = await bcrypt.hash("password", 8);
+      await users.create({
+          email: "admin@gmail.com",
+          password: hashpassword,
+          role: "admin"
+      })
+      console.log("created successfully")
+  } else {
+      console.log("already seeeded")
+  }
+}
+createUser()
 
 // Use the PORT value from the .env file or default to 3000
 const PORT = process.env.PORT || 3000;

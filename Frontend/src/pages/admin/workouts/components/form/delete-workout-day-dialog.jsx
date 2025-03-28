@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useDispatch } from "react-redux"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -8,29 +9,43 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { deleteWorkoutDay } from "../../../../../../store/workoutDaySlice"
+import { fetchWorkout } from "../../../../../../store/workoutSlice"
+import { toast } from "react-toastify";
+import STATUSES from "../../../../../globals/status/statuses";  // Adjust path if necessary
 
 export function DeleteWorkoutDayDialog({ dayId, open, onOpenChange, onDelete }) {
+  const dispatch = useDispatch()
+  const { status } = useSelector((state) => state.workoutDaySlice);
   const [isDeleting, setIsDeleting] = useState(false)
 
   const handleDelete = async () => {
     setIsDeleting(true)
 
     try {
-      // In a real app, you would call your API here
-      // await fetch(`/api/workout-days/${dayId}`, {
-      //   method: 'DELETE',
-      // })
-
+      dispatch(deleteWorkoutDay(dayId))
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 500))
-
+      dispatch(fetchWorkout(dayId)); // Refetch workout data
+ 
       onDelete(dayId)
+      onOpenChange(false) // Close the dialog after successful deletion
+
     } catch (error) {
       console.error("Error deleting workout day:", error)
     } finally {
       setIsDeleting(false)
+      window.location.reload();
     }
+
   }
+
+   // 🔥 Handle Status Updates
+   useEffect(() => {
+    if (status?.status === STATUSES.ERROR) {
+        toast.error(status.message);
+      }
+    }, [status]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -42,10 +57,10 @@ export function DeleteWorkoutDayDialog({ dayId, open, onOpenChange, onDelete }) 
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button type="button" variant="destructive" onClick={handleDelete} disabled={isDeleting}>
+          <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
             {isDeleting ? "Deleting..." : "Delete"}
           </Button>
         </DialogFooter>
@@ -53,4 +68,3 @@ export function DeleteWorkoutDayDialog({ dayId, open, onOpenChange, onDelete }) 
     </Dialog>
   )
 }
-

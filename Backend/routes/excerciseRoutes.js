@@ -1,5 +1,6 @@
 const express = require("express")
 const {addExcercise, getAllExcercises, getAllExcercisesForAdmin, getExcercise, deleteExcercise, updateExcercise, searchExercises} = require("../controller.js/admin/excerciseController")
+const { checkTokenAndRole } = require("../middleware/checkTokenAndRole");
 const router = express.Router();
 const upload = require("../helpers/upload"); 
 
