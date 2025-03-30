@@ -5,6 +5,9 @@ const addRoutes = require("./routes/addRoutes");
 const excerciseRoutes = require("./routes/excerciseRoutes")
 const workoutRoutes = require("./routes/workoutRoutes")
 const workoutDayRoutes = require("./routes/workoutdayRoutes")
+const userWorkoutRoutes = require("./routes/user/userWorkoutRoutes")
+const workoutScheduleRoutes = require("./routes/user/workoutScheduleRoutes")
+
 const path = require("path");
 const cors = require("cors");
 const app = express();
@@ -28,7 +31,7 @@ app.use(express.urlencoded({ extended: true })); // Parse URL-encoded payloads p
 
 
 app.use('/auth', userRoutes)
-app.use('/api', addRoutes, excerciseRoutes, workoutRoutes, workoutDayRoutes)
+app.use('/api', addRoutes, excerciseRoutes, workoutRoutes, workoutDayRoutes, userWorkoutRoutes, workoutScheduleRoutes)
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
@@ -36,7 +39,7 @@ const createUser = async () => {
   let foundAdmin = await users.findOne({
       where: {
           role: "admin"
-      }
+      } 
   })
   
 

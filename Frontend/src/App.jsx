@@ -36,6 +36,7 @@ const Plans1 = lazy(() => import("./pages/user/plans/id/plans.jsx"));
 const UserDashboard = lazy(() => import("./pages/user/dashboard/page.jsx"));
 const Profile = lazy(() => import("./pages/user/profile/page.jsx"));
 const Schedule = lazy(() => import("./pages/user/schedule/page.jsx"));
+const Schedule1= lazy(() => import("./pages/user/schedule/page1.jsx"));
 const Profile1 = lazy(() => import("./pages/user/profile/page1.jsx"));
 
 
@@ -89,6 +90,7 @@ function App() {
               <Route path="/user" element={<UserDashboard/>} />
               <Route path="/user/profile" element={<Protected><Profile/></Protected>} />
               <Route path="/user/Schedule" element={<Schedule/>} />
+              <Route path="/user/Schedule1" element={<Schedule1/>} />
               <Route path="/profile1" element={<Protected><Profile1/></Protected>} />
               {/* <Route path="/addq" element={<Ex />} /> */}
               {/* <Route path="/Motivation" element={<MotivationPage />} /> */}

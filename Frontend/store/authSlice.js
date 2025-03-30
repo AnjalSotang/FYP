@@ -332,13 +332,13 @@ export function updateProfile(updatedData = {}, imageFile = null) {
             }
             
             // Make the PATCH request to your endpoint
-            const response = await API.patch('auth/profile', formData, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'multipart/form-data'
-                    // Content-Type is automatically set by the browser with the correct boundary when using FormData
-                }
-            });
+                const response = await API.patch('auth/profile', formData, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'multipart/form-data'
+                        // Content-Type is automatically set by the browser with the correct boundary when using FormData
+                    }
+                });
 
             console.log("Updated profile data:", response.data.data);
 

@@ -1,5 +1,10 @@
 module.exports = (sequelize, DataTypes) => {
     const WorkoutDayExercise = sequelize.define("WorkoutDayExercise", {
+        id: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            autoIncrement: true
+          },
         sets: {
             type: DataTypes.STRING,
             allowNull: false

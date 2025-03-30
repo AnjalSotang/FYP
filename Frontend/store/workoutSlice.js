@@ -6,6 +6,7 @@ const workoutSlice = createSlice({
     name: 'workout',
     initialState: {
         data: [], //It holds object alright
+        selectedDate: new Date().toISOString(),
         data1: null,
         token: null,
         status: null //We will see about this
@@ -89,7 +90,7 @@ export function fetchWorkouts() {
                 if (workout.length > 0) {
                     dispatch(setWorkout(workout));
                     console.log(workout)
-                    dispatch(setStatus({ status: STATUSES.SUCCESS, message: "Successfull" }))
+                    dispatch(setStatus({ status: STATUSES.SUCCESS }))
                 }
             }
         }
@@ -160,7 +161,7 @@ export function fetchWorkout(id) {
                 dispatch(setWorkout1(response.data.data))
                 // Log to check the structure
                 console.log("Workout data:", response.data.data); 
-                dispatch(setStatus({ status: STATUSES.SUCCESS, message: "Successfull" }))
+                dispatch(setStatus({ status: STATUSES.SUCCESS}))
             } 
         }
         catch (error) {

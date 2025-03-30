@@ -12,6 +12,7 @@ const checkTokenAndRole = (role) => {
     return function (req, res, next) {
         // Get the token from the request header
         const token = req.headers["authorization"];
+        // console.log("Received Token:", token);  // Add this log to verify the token is received
         
         if (!token) {
             return res.status(401).json({ error: "No token provided." });

@@ -41,17 +41,17 @@ db.excercise = require("./Excercise")(sequelize, Sequelize);
 db.workoutday = require("./WorkoutDay")(sequelize, Sequelize);
 // db.notification = require("./Notification")(sequelize, Sequelize);
 db.contact = require("./Contact")(sequelize, Sequelize);
+db.userWorkout = require("./UserWorkout")(sequelize, Sequelize);
+db.workoutSchedule = require("./WorkoutSchedule")(sequelize, Sequelize);
 
 db.workout.hasMany(db.workoutday, { as: 'days' });
 db.workoutday.belongsTo(db.workout);
-
 // WorkoutDay to Exercise Relationship (Many-to-Many)
 db.workoutday.belongsToMany(db.excercise, {
     through: db.workoutdayExcercise,
     foreignKey: 'workoutdayId',
     as: 'excercises'  // Maintaining "excercise" spelling
 });
-
 db.excercise.belongsToMany(db.workoutday, {
     through: db.workoutdayExcercise,
     foreignKey: 'excerciseId',
@@ -59,6 +59,24 @@ db.excercise.belongsToMany(db.workoutday, {
 });
 
 
+db.users.belongsToMany(db.workout, {
+    through: db.userWorkout,
+    foreignKey: 'userId',
+    as: 'users'  // Maintaining "excercise" spelling
+});
+db.workout.belongsToMany(db.users, {
+    through: db.userWorkout,
+    foreignKey: 'workoutId',
+    as: 'workoutDays'
+});
+
+
+db.users.hasMany(db.workoutSchedule);
+db.workoutSchedule.belongsTo(db.users);
+db.userWorkout.hasMany(db.workoutSchedule);
+db.workoutSchedule.belongsTo(db.userWorkout);
+db.workoutday.hasMany(db.workoutSchedule);
+db.workoutSchedule.belongsTo(db.workoutday);
 
 // Export db object to use models and associations in other parts of the application
 module.exports = db;
