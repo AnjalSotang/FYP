@@ -22,6 +22,7 @@ import { CalendarIcon, ChevronLeft, ChevronRight, Clock, Dumbbell, Plus, Trash2 
 import { cn } from "@/lib/utils"
 import { ToastContainer, toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux"
+
 import {
   // Status and common actions
   setStatus,
@@ -58,6 +59,7 @@ import {
   selectDatesWithWorkouts,
   selectWorkoutPlanById,
 } from "../../../../store/workoutScheduleSlice" // Adjust path as needed
+import STATUSES from "@/globals/status/statuses";
 
 export default function SchedulePage() {
   const dispatch = useDispatch()
@@ -206,6 +208,14 @@ export default function SchedulePage() {
       </div>
     )
   }
+
+ // 🔥 Handle Status Updates
+ useEffect(() => {
+ if (status?.status === STATUSES.ERROR) {
+    toast.error(status.message);
+  }
+}, [status]);
+
 
   return (
     <div className="container mx-auto py-10 px-4">
@@ -460,11 +470,7 @@ export default function SchedulePage() {
                           onClick={() => handleDeleteWorkout(workout.id)}
                           className="group"
                         >
-                          <Trash2 className="h-4 w-4 text-muted-foreground transition-colors duration-200"
-                            style={{ color: 'var(--muted-foreground)' }}
-                            onMouseOver={(e) => e.currentTarget.style.color = '#000080'}
-                            onMouseOut={(e) => e.currentTarget.style.color = 'var(--muted-foreground)'}
-                          />
+                            <Trash2 className="h-4 w-4 text-muted-foreground group-hover:text-blue-800 transition-colors duration-200" />
                         </Button>
                       </div>
                     </CardContent>

@@ -5,6 +5,7 @@ import workoutSlice from './workoutSlice'
 // import workoutExcerciseSlice from './workoutExcerciseSlice'
 import workoutDaySlice from './workoutDaySlice'
 import userWorkoutSlice from './userWorkoutSlice'
+import userWorkoutSlice2 from './userWorkoutSlice2'
 import workoutScheduleSlice from './workoutScheduleSlice'
 
 const store = configureStore({
@@ -15,6 +16,7 @@ const store = configureStore({
         // workoutExercise: workoutExcerciseSlice,
         workoutDaySlice: workoutDaySlice,
         userWorkout: userWorkoutSlice,
+        userWorkout2: userWorkoutSlice2,
         workoutSchedule: workoutScheduleSlice,
     
     }

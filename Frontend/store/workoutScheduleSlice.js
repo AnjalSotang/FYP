@@ -366,7 +366,7 @@ export function scheduleWorkout(workoutData) {
                 dispatch(fetchScheduledWorkouts());
                 dispatch(fetchWorkoutsForDate(new Date(workoutData.scheduledDate)));
                 dispatch(fetchUpcomingWorkouts());
-                dispatch(setStatus({ status: STATUSES.SUCCESS, message: "Workout scheduled successfully" }));
+                dispatch(setStatus({ status: STATUSES.SUCCESS}));
             }
         } catch (error) {
             let errorMessage = "An unexpected error occurred.";
@@ -386,7 +386,20 @@ export function deleteScheduledWorkout(id) {
     return async function deleteScheduledWorkoutThunk(dispatch, getState) {
         dispatch(setStatus(STATUSES.LOADING));
         try {
-            const response = await API.delete(`api/workout-schedules/${id}`);
+            const token = localStorage.getItem('token');
+            if (!token) {
+                throw new Error("No token found in localStorage.");
+            }
+
+            console.log("Token before request:", token);
+            setToken(token);
+
+            console.log("Authorization Header:", `Bearer ${token}`); // Log the token being sent
+
+            const response = await API.delete(`api/workout-schedules/${id}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+        }});
             
             if (response.status === 200) {
                 // Refresh data after deletion

@@ -30,6 +30,9 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.INTEGER,
             defaultValue: 0,
           },
+          nextWorkout: {
+            type: Sequelize.STRING,
+          },
           lastCompletedDate: {
             type: Sequelize.DATE,
           },

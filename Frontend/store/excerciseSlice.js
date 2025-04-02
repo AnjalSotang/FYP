@@ -74,7 +74,7 @@ export function fetchExcercises() {
                 if (workout.length > 0) {
                     dispatch(setExcercise(workout));
                     console.log(workout)
-                    dispatch(setStatus({ status: STATUSES.SUCCESS, message: "Successfull" }))
+                    dispatch(setStatus({ status: STATUSES.SUCCESS }))
                 }
             }
         }

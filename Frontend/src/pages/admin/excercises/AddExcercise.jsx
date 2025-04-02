@@ -15,7 +15,7 @@ const ExerciseForm = lazy(() => import("./components/form/ExcerciseForm"));
 const AddExercise = () => {
   const { status } = useSelector((state) => state.excercise)
   const dispatch = useDispatch()
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const handleAddExcercise = (data) => {
     dispatch(addExcercise(data))
@@ -24,7 +24,7 @@ const AddExercise = () => {
   // 🔥 Handle Status Updates
   useEffect(() => {
     if (status?.status === STATUSES.SUCCESS) {
-      navigate("/");
+      // navigate("/");
       toast.success(status.message);
       dispatch(setStatus(null));
     } else if (status?.status === STATUSES.ERROR) {

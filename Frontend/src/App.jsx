@@ -38,6 +38,9 @@ const Profile = lazy(() => import("./pages/user/profile/page.jsx"));
 const Schedule = lazy(() => import("./pages/user/schedule/page.jsx"));
 const Schedule1= lazy(() => import("./pages/user/schedule/page1.jsx"));
 const Profile1 = lazy(() => import("./pages/user/profile/page1.jsx"));
+const MyWorkoutsPage = lazy(() => import("./pages/user/my-workouts/page.jsx"));
+const MyWorkoutsPage1 = lazy(() => import("./pages/user/my-workouts/page1.jsx"));
+const MyWorkoutsID = lazy(() => import("./pages/user/my-workouts/id/page.jsx"));
 
 
 
@@ -92,6 +95,10 @@ function App() {
               <Route path="/user/Schedule" element={<Schedule/>} />
               <Route path="/user/Schedule1" element={<Schedule1/>} />
               <Route path="/profile1" element={<Protected><Profile1/></Protected>} />
+              <Route path="/MyWorkouts" element={<Protected><MyWorkoutsPage/></Protected>} />
+              <Route path="/MyWorkouts1" element={<Protected><MyWorkoutsPage1/></Protected>} />
+              <Route path="/MyWorkoutsID/:id" element={<Protected><MyWorkoutsID/></Protected>} />
+
               {/* <Route path="/addq" element={<Ex />} /> */}
               {/* <Route path="/Motivation" element={<MotivationPage />} /> */}
               {/* <Route path="/Health" element={<HealthDetaills />} /> */}

@@ -210,6 +210,8 @@ exports.scheduleWorkout = async (req, res) => {
         message: 'User not found'
       });
     }
+
+
     // First check if the user has this workout plan active
     let UserWorkout = await userWorkout.findOne({
       where: {
@@ -218,16 +220,17 @@ exports.scheduleWorkout = async (req, res) => {
       }
     });
     
-    // If not found, create a new user workout association
+
     if (!UserWorkout) {
-      UserWorkout = await userWorkout.create({
-        userId,
-        workoutId: workoutPlanId,
-        startDate: new Date()
+      // If not found, create a new user workout association
+      res.status(400).json({
+        success: false,
+        message: 'User does not have this workout plan'
       });
     }
     
-    // Now schedule the workout
+    
+    // Now schedule the workout  
     const newSchedule = await workoutSchedule.create({
       UserId: userId,
       UserWorkoutId: UserWorkout.id,
@@ -237,7 +240,7 @@ exports.scheduleWorkout = async (req, res) => {
       reminderEnabled: reminderEnabled || true,
       status: 'scheduled'
     });
-    
+      
 // Get the complete schedule details to return
 const scheduleWithDetails = await workoutSchedule.findByPk(newSchedule.id, {
   include: [
@@ -291,7 +294,7 @@ return res.status(201).json({
 
 exports.deleteScheduledWorkout = async (req, res) => {
   try {
-    const userId = req.user.id; // Assuming user is extracted from auth middleware
+    const userId = req.decoded.id; // Assuming user is extracted from auth middleware
     const { id } = req.params;
     
     const workout = await workoutSchedule.findOne({
@@ -326,7 +329,7 @@ exports.deleteScheduledWorkout = async (req, res) => {
 
 exports.updateWorkoutStatus = async (req, res) => {
   try {
-    const userId = req.user.id; // Assuming user is extracted from auth middleware
+    const userId = req.id; // Assuming user is extracted from auth middleware
     const { id } = req.params;
     const { status } = req.body;
     

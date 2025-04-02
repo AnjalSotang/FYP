@@ -5,6 +5,10 @@ module.exports = (sequelize, Sequelize) => {
             primaryKey: true,
             autoIncrement: true
           },
+          dayNumber: {
+            type: Sequelize.INTEGER,
+            allowNull: false
+          },
           dayName: {
             type: Sequelize.STRING,
             allowNull: false

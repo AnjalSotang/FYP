@@ -41,9 +41,7 @@ export default function ExercisesPage() {
   useEffect(() => {
     if (status?.status === STATUSES.SUCCESS) {
       dispatch(setStatus(null));
-    } else if (status?.status === STATUSES.ERROR && status.message) {
-      toast.error(status.message);
-    }
+    } 
   }, [status, dispatch]);
 
   // Handler functions

@@ -168,7 +168,7 @@ useEffect(() => {
                       <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
                       <span>Duration</span>
                     </div>
-                    <div>{plan.duration} min</div>
+                    <div>{plan.duration}</div>
                   </div>
 
                   <div className="flex items-center justify-between">

@@ -12,18 +12,25 @@ const createWorkoutDay = async (req, res) => {
     // Ensure workoutId is not undefined
     console.log("Workout ID: ", id); // Log to verify the workoutId
 
-
-    console.log(id)
+    // Find the latest day number for this workout
+    const latestWorkoutDay = await workoutday.findOne({
+      where: { WorkoutId: id },
+      order: [['dayNumber', 'DESC']]
+    });
+    
+    // Set the dayNumber to be one more than the latest, or 1 if this is the first day
+    const dayNumber = latestWorkoutDay ? latestWorkoutDay.dayNumber + 1 : 1;
     
     const workoutDay = await workoutday.create({ 
       dayName,
-      WorkoutId: id
+      WorkoutId: id,
+      dayNumber // Add the day number field
     });
     
     return res.status(201).json(workoutDay);
   } catch (error) {
     console.error('Error creating workout day:', error);
-    return res.status(500).json({ error: 'Failed to create workout day' });
+    return res.status(500).json({ message: 'Failed to create workout day', error: error.message });
   }
 };
 
