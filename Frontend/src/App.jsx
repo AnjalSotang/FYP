@@ -34,14 +34,12 @@ const Dashboard = lazy(() => import("./pages/admin/dashboard.jsx"));
 const Excercise = lazy(() => import("./pages/admin/excercises/Excercise.jsx"));
 const Plans1 = lazy(() => import("./pages/user/plans/id/plans.jsx"));
 const UserDashboard = lazy(() => import("./pages/user/dashboard/page.jsx"));
+const Schedule= lazy(() => import("./pages/user/schedule/page.jsx"));
 const Profile = lazy(() => import("./pages/user/profile/page.jsx"));
-const Schedule = lazy(() => import("./pages/user/schedule/page.jsx"));
-const Schedule1= lazy(() => import("./pages/user/schedule/page1.jsx"));
-const Profile1 = lazy(() => import("./pages/user/profile/page1.jsx"));
 const MyWorkoutsPage = lazy(() => import("./pages/user/my-workouts/page.jsx"));
 const MyWorkoutsPage1 = lazy(() => import("./pages/user/my-workouts/page1.jsx"));
 const MyWorkoutsID = lazy(() => import("./pages/user/my-workouts/id/page.jsx"));
-
+const History = lazy(() => import("./pages/user/history/page.jsx"));
 
 
 
@@ -73,7 +71,6 @@ function App() {
               <Route path="/Landing" element={<Landing />} />
               <Route path="/Forgot" element={<ForgotPassword />} />
               <Route path="/Reset" element={<Resetword />} />
-              {/* <Route path="/userName" element={<UserName />} /> */}
               <Route path="/WelcomePage" element={<WelcomePage />} />
               <Route path="/AddExcercise" element={<AddExcercise  />} />
               <Route path="/admin/Excercise" element={<Excercise  />} />
@@ -91,19 +88,13 @@ function App() {
               <Route path="/admin/workout" element={<Workouts1/>} />
               <Route path="/user/Plan/:id" element={<Plans1/>} />
               <Route path="/user" element={<UserDashboard/>} />
-              <Route path="/user/profile" element={<Protected><Profile/></Protected>} />
               <Route path="/user/Schedule" element={<Schedule/>} />
-              <Route path="/user/Schedule1" element={<Schedule1/>} />
-              <Route path="/profile1" element={<Protected><Profile1/></Protected>} />
+              <Route path="/profile" element={<Protected><Profile/></Protected>} />
               <Route path="/MyWorkouts" element={<Protected><MyWorkoutsPage/></Protected>} />
               <Route path="/MyWorkouts1" element={<Protected><MyWorkoutsPage1/></Protected>} />
               <Route path="/MyWorkoutsID/:id" element={<Protected><MyWorkoutsID/></Protected>} />
+              <Route path="/History" element={<Protected><History/></Protected>} />
 
-              {/* <Route path="/addq" element={<Ex />} /> */}
-              {/* <Route path="/Motivation" element={<MotivationPage />} /> */}
-              {/* <Route path="/Health" element={<HealthDetaills />} /> */}
-              {/* <Route path="/Experience" element={<ExperienceForm />} /> */}
-              {/* <Route path="/Congrats" element={<CongratulationsPage />} /> */}
             </Routes>
           </Suspense>
         </ErrorBoundary>

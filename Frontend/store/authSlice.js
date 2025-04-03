@@ -191,7 +191,7 @@ export function fetchProfile() {
 
             if (response.status === 200) {
                 dispatch(setData(response.data?.data));
-                dispatch(setStatus({ status: STATUSES.SUCCESS, message: "Successful" }))
+                dispatch(setStatus({ status: STATUSES.SUCCESS}))
             }
         }
         catch (error) {

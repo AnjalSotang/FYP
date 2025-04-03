@@ -148,7 +148,7 @@ const filteredExercises = Array.isArray(exercises)
                 {filteredExercises.map((exercise) => {
                   const imageUrl = exercise.imagePath ? exercise.imagePath.replace(/\\/g, "/") : "";
                   const id = exercise.id || exercise._id;
-                  
+                  console.log(imageUrl)
                   return (
                     <TableRow key={id}>
                       <TableCell>

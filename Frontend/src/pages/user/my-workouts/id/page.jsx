@@ -20,7 +20,9 @@ import { fetchActiveWorkout, completeWorkoutDay } from "../../../../../store/use
 // Near the top of your file, import the toast components
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { setStatus } from "store/authSlice"
+import { setStatus } from "../../../../../store/userWorkoutSlice2"
+import RootLayout from '../../../../components/layout/UserLayout';
+
 
 export default function WorkoutPage() {
   const [showProgramCompleteDialog, setShowProgramCompleteDialog] = useState(false);
@@ -186,7 +188,7 @@ export default function WorkoutPage() {
           <div className="text-center">
             <h1 className="text-3xl font-bold mb-4">Error</h1>
             <p className="text-muted-foreground mb-6">{error || "An error occurred while loading the workout."}</p>
-            <Link to="/my-workouts">
+            <Link to="/MyWorkouts">
               <Button>My Workouts</Button>
             </Link>
           </div>
@@ -201,7 +203,7 @@ export default function WorkoutPage() {
           <div className="text-center">
             <h1 className="text-3xl font-bold mb-4">Workout Not Found</h1>
             <p className="text-muted-foreground mb-6">The workout you're looking for doesn't exist.</p>
-            <Link to="/my-workouts">
+            <Link to="/MyWorkouts">
               <Button>My Workouts</Button>
             </Link>
           </div>
@@ -210,9 +212,10 @@ export default function WorkoutPage() {
     }
 
   return (
+        <RootLayout>
     <div className="container mx-auto py-10 px-4">
       <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />
-      <Link to="/my-workouts" className="flex items-center text-muted-foreground hover:text-foreground mb-6">
+      <Link to="/MyWorkouts" className="flex items-center text-muted-foreground hover:text-foreground mb-6">
         <ChevronLeft className="mr-1 h-4 w-4" />
         Back to my workouts
       </Link>
@@ -484,5 +487,6 @@ export default function WorkoutPage() {
         </DialogContent>
       </Dialog>
     </div>
+    </RootLayout>
   )
 }

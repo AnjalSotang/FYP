@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -14,8 +14,38 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Bell, Calendar, Dumbbell, Home, LineChart, Menu, Plus, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchProfile } from "../../store/authSlice";
+
+
 
 export function Navbar() {
+  const dispatch = useDispatch();
+  const { data: profile } = useSelector((state) => state.auth);
+
+  const profileImageUrl = profile?.profileImage ? profile.profileImage.replace(/\\/g, "/") : "";
+  console.log(profileImageUrl);
+
+
+  useEffect(() => {
+    dispatch(fetchProfile());
+  }, [dispatch]);
+
+
+
+    // Get user initials for avatar fallback
+    const getInitials = () => {
+      if (!profile || !profile.name) return "A";
+      
+      const nameParts = profile.name.split(' ');
+      if (nameParts.length >= 2) {
+        return `${nameParts[0][0]}${nameParts[1][0]}`;
+      }
+      
+      return profile.name.substring(0, 2).toUpperCase();
+    };
+
+
   const [notifications, setNotifications] = useState([
     {
       id: 1,
@@ -47,8 +77,7 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-20 items-center px-12">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">      <div className="container flex h-20 items-center px-10">
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="outline" size="icon" className="md:hidden mr-4">
@@ -103,7 +132,7 @@ export function Navbar() {
           </SheetContent>
         </Sheet>
 
-        <Link to="/" className="flex items-center gap-2 mr-6">
+        <Link to="/" className="flex items-center gap-2 mr-12">
           <Dumbbell className="h-6 w-6" />
           <span className="font-bold text-xl hidden sm:inline-block">FitTrack</span>
         </Link>
@@ -160,6 +189,7 @@ export function Navbar() {
                   </Button>
                 )}
               </DropdownMenuLabel>
+
               <DropdownMenuSeparator />
               {notifications.length > 0 ? (
                 <>
@@ -187,9 +217,9 @@ export function Navbar() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src="/placeholder.svg?height=32&width=32" alt="User" />
-                  <AvatarFallback>JD</AvatarFallback>
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={`http://localhost:3001/${profileImageUrl}`} alt="User" />
+              <AvatarFallback>{getInitials()}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
@@ -197,7 +227,7 @@ export function Navbar() {
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>
-                <Link to="/profile1" className="flex w-full">
+                <Link to="/profile" className="flex w-full">
                   Profile
                 </Link>
               </DropdownMenuItem>
@@ -207,7 +237,7 @@ export function Navbar() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Link to="/my-workouts" className="flex w-full">
+                <Link to="/MyWorkouts" className="flex w-full">
                   My Workouts
                 </Link>
               </DropdownMenuItem>

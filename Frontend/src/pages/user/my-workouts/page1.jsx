@@ -1,6 +1,7 @@
-import { useEffect } from "react"
-import { Link } from "react-router-dom"
-import { useDispatch, useSelector } from "react-redux"
+"use client"
+
+import { useState } from "react"
+import {Link} from 'react-router-dom'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -16,38 +17,165 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { BarChart, Calendar, ChevronRight, Clock, Dumbbell, Plus, Trash2 } from "lucide-react"
-import WorkoutProgressChart from "../components/workout-progress-chart"
-import { fetchActiveWorkouts, fetchCompletedWorkouts, deleteWorkoutPlan, selectWorkout, restartWorkout, setStatus } from "../../../../store/userWorkoutSlice2"
-import { useState } from "react"
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { ToastContainer } from 'react-toastify';
+import {
+  BarChart,
+  Calendar,
+  ChevronRight,
+  Clock,
+  Dumbbell,
+  Plus,
+  Trash2,
+  Activity,
+  TrendingUp,
+  CheckCircle,
+} from "lucide-react"
+import { WorkoutProgressChart } from "../components/workout-progress-chart2"
+import { CalendarHeatmap } from "../components/calender-heatmap"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
+// Mock data for user's active workouts
+const initialActiveWorkouts = [
+  {
+    id: 1,
+    title: "30-Day Strength Challenge",
+    progress: 40,
+    nextWorkout: "Day 5: Upper Body",
+    lastCompleted: "2 days ago",
+    startDate: "Mar 1, 2025",
+    image: "/placeholder.svg?height=200&width=300",
+    category: "Strength",
+    level: "Intermediate",
+    completedWorkouts: 12,
+    totalWorkouts: 30,
+    streak: 3,
+    history: [
+      { date: "Mar 14", completed: true, duration: 45, performance: 95 },
+      { date: "Mar 13", completed: false, duration: 0, performance: 0 },
+      { date: "Mar 12", completed: true, duration: 50, performance: 90 },
+      { date: "Mar 11", completed: true, duration: 30, performance: 85 },
+      { date: "Mar 10", completed: false, duration: 0, performance: 0 },
+      { date: "Mar 9", completed: true, duration: 45, performance: 92 },
+      { date: "Mar 8", completed: true, duration: 60, performance: 88 },
+      { date: "Mar 7", completed: true, duration: 55, performance: 91 },
+      { date: "Mar 6", completed: false, duration: 0, performance: 0 },
+      { date: "Mar 5", completed: true, duration: 40, performance: 87 },
+      { date: "Mar 4", completed: true, duration: 45, performance: 89 },
+      { date: "Mar 3", completed: true, duration: 50, performance: 93 },
+      { date: "Mar 2", completed: false, duration: 0, performance: 0 },
+      { date: "Mar 1", completed: true, duration: 45, performance: 90 },
+    ],
+    metrics: {
+      totalDuration: 510,
+      averageDuration: 45,
+      totalCaloriesBurned: 3800,
+      averagePerformance: 90,
+      improvementRate: 5.2,
+      consistencyRate: 71,
+    },
+    muscleGroups: {
+      chest: 25,
+      back: 20,
+      legs: 20,
+      shoulders: 15,
+      arms: 10,
+      core: 10,
+    },
+    goals: [
+      { name: "Complete 30 workouts", progress: 40 },
+      { name: "Increase bench press by 10%", progress: 70 },
+      { name: "Maintain 4 workouts per week", progress: 85 },
+    ],
+  },
+  {
+    id: 2,
+    title: "Core Crusher",
+    progress: 25,
+    nextWorkout: "Day 3: Obliques Focus",
+    lastCompleted: "Yesterday",
+    startDate: "Mar 10, 2025",
+    image: "/placeholder.svg?height=200&width=300",
+    category: "Core",
+    level: "Intermediate",
+    completedWorkouts: 2,
+    totalWorkouts: 8,
+    streak: 1,
+    history: [
+      { date: "Mar 14", completed: true, duration: 30, performance: 88 },
+      { date: "Mar 13", completed: false, duration: 0, performance: 0 },
+      { date: "Mar 12", completed: true, duration: 35, performance: 85 },
+    ],
+    metrics: {
+      totalDuration: 65,
+      averageDuration: 32.5,
+      totalCaloriesBurned: 450,
+      averagePerformance: 86.5,
+      improvementRate: 3.5,
+      consistencyRate: 66,
+    },
+    muscleGroups: {
+      core: 70,
+      back: 15,
+      shoulders: 10,
+      legs: 5,
+    },
+    goals: [
+      { name: "Complete 8 core workouts", progress: 25 },
+      { name: "Improve plank time by 30s", progress: 40 },
+      { name: "Develop visible abs definition", progress: 15 },
+    ],
+  },
+]
+
+// Mock data for completed workout plans
+const completedWorkouts = [
+  {
+    id: 101,
+    title: "HIIT Fat Burner",
+    completedDate: "Feb 28, 2025",
+    duration: "3 weeks",
+    image: "/placeholder.svg?height=200&width=300",
+    category: "Cardio",
+    level: "Advanced",
+    completedWorkouts: 15,
+    totalWorkouts: 15,
+    rating: 4,
+    metrics: {
+      totalDuration: 450,
+      averageDuration: 30,
+      totalCaloriesBurned: 4500,
+      averagePerformance: 92,
+      improvementRate: 8.5,
+      consistencyRate: 100,
+    },
+  },
+  {
+    id: 102,
+    title: "Beginner Full Body",
+    completedDate: "Jan 15, 2025",
+    duration: "6 weeks",
+    image: "/placeholder.svg?height=200&width=300",
+    category: "Full Body",
+    level: "Beginner",
+    completedWorkouts: 18,
+    totalWorkouts: 18,
+    rating: 5,
+    metrics: {
+      totalDuration: 720,
+      averageDuration: 40,
+      totalCaloriesBurned: 5400,
+      averagePerformance: 88,
+      improvementRate: 15.2,
+      consistencyRate: 100,
+    },
+  },
+]
 
 export default function MyWorkoutsPage() {
-  const dispatch = useDispatch()
-  const { activeWorkouts, completedWorkouts, selectedWorkout, status, error } = useSelector(
-    (state) => ({
-      activeWorkouts: state.userWorkout2.data.activeWorkouts,
-      completedWorkouts: state.userWorkout2.data.completedWorkouts,
-      selectedWorkout: state.userWorkout2.data.selectedWorkout,
-      status: state.userWorkout2.status,
-      error: state.userWorkout2.error
-    })
-  )
+  const [activeWorkouts, setActiveWorkouts] = useState(initialActiveWorkouts)
+  const [selectedWorkout, setSelectedWorkout] = useState(activeWorkouts[0])
   const [workoutToDelete, setWorkoutToDelete] = useState(null)
-  console.log(activeWorkouts)
-
-  useEffect(() => {
-    // Fetch data when component mounts
-    dispatch(fetchActiveWorkouts())
-    dispatch(fetchCompletedWorkouts())
-  }, [dispatch])
-
-  const handleSelectWorkout = (id) => {
-    dispatch(selectWorkout(id))
-  }
+  const [selectedTimeframe, setSelectedTimeframe] = useState("all")
+  const [selectedMetric, setSelectedMetric] = useState("performance")
 
   const handleDeleteWorkout = (id) => {
     setWorkoutToDelete(id)
@@ -55,54 +183,43 @@ export default function MyWorkoutsPage() {
 
   const confirmDeleteWorkout = () => {
     if (workoutToDelete) {
-      dispatch(deleteWorkoutPlan(workoutToDelete))
+      setActiveWorkouts(activeWorkouts.filter((workout) => workout.id !== workoutToDelete))
       setWorkoutToDelete(null)
+
+      // If the deleted workout was the selected one, select the first available workout
+      if (selectedWorkout.id === workoutToDelete) {
+        const remainingWorkouts = activeWorkouts.filter((workout) => workout.id !== workoutToDelete)
+        if (remainingWorkouts.length > 0) {
+          setSelectedWorkout(remainingWorkouts[0])
+        }
+      }
     }
   }
 
+  // Filter history based on selected timeframe
+  const getFilteredHistory = () => {
+    if (!selectedWorkout) return []
 
-  useEffect(() => {
-     if (status?.status === "success") {
-      // navigate("/");
-      toast.success(status.message);
-      dispatch(setStatus(null));
+    const history = [...selectedWorkout.history].reverse() // Most recent first
+
+    if (selectedTimeframe === "week") {
+      return history.slice(0, 7)
+    } else if (selectedTimeframe === "month") {
+      return history.slice(0, 30)
     }
-  }, [status])
 
-  // Loading state
-  if (status === "loading" && !activeWorkouts.length) {
-    return (
-      <div className="container mx-auto py-10 px-4">
-        <h1 className="text-3xl font-bold mb-8">My Workouts</h1>
-        <div className="flex justify-center items-center h-64">
-          <div className="text-center">
-            <div className="animate-spin h-8 w-8 border-t-2 border-primary rounded-full mx-auto mb-4"></div>
-            <p>Loading your workouts...</p>
-          </div>
-        </div>
-      </div>
-    )
+    return history
   }
 
-  // Error state
-  if (status === "error" && error) {
-    return (
-      <div className="container mx-auto py-10 px-4">
-        <h1 className="text-3xl font-bold mb-8">My Workouts</h1>
-        <div className="bg-red-50 p-6 rounded-lg border border-red-200">
-          <h3 className="text-lg font-medium text-red-800 mb-2">Error Loading Data</h3>
-          <p className="text-red-600">{error}</p>
-          <Button onClick={() => dispatch(fetchActiveWorkouts())} className="mt-4">
-            Retry
-          </Button>
-        </div>
-      </div>
-    )
+  // Calculate completion percentage for the current week
+  const calculateWeeklyCompletion = (workout) => {
+    const lastSevenDays = workout.history.slice(0, 7)
+    const completedDays = lastSevenDays.filter((day) => day.completed).length
+    return (completedDays / 7) * 100
   }
 
   return (
     <div className="container mx-auto py-10 px-4">
-     <ToastContainer position="bottom-right" theme="dark" />
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-bold mb-1">My Workouts</h1>
@@ -110,13 +227,13 @@ export default function MyWorkoutsPage() {
         </div>
 
         <div className="flex gap-3">
-          <Link to="/">
+          <Link href="/plans">
             <Button variant="outline" className="gap-2">
               <Plus className="h-4 w-4" />
               Add Workout Plan
             </Button>
           </Link>
-          <Link to="/user/schedule1">
+          <Link href="/schedule">
             <Button className="gap-2">
               <Calendar className="h-4 w-4" />
               Schedule Workout
@@ -137,7 +254,7 @@ export default function MyWorkoutsPage() {
               <Dumbbell className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
               <h3 className="text-lg font-medium mb-2">No Active Workout Plans</h3>
               <p className="text-muted-foreground mb-6">You don't have any active workout plans yet.</p>
-              <Link to="/">
+              <Link href="/plans">
                 <Button>Browse Workout Plans</Button>
               </Link>
             </div>
@@ -148,10 +265,8 @@ export default function MyWorkoutsPage() {
                   {activeWorkouts.map((workout) => (
                     <Card
                       key={workout.id}
-                      className={`cursor-pointer hover:shadow-md transition-shadow ${
-                        selectedWorkout && selectedWorkout.id === workout.id ? "border-primary" : ""
-                      }`}
-                      onClick={() => handleSelectWorkout(workout.id)}
+                      className={`cursor-pointer hover:shadow-md transition-shadow ${selectedWorkout.id === workout.id ? "border-primary" : ""}`}
+                      onClick={() => setSelectedWorkout(workout)}
                     >
                       <div className="flex p-4">
                         <img
@@ -178,13 +293,18 @@ export default function MyWorkoutsPage() {
                             {workout.completedWorkouts} of {workout.totalWorkouts} workouts completed
                           </div>
                           <Progress value={workout.progress} className="h-2" />
+
+                          <div className="flex justify-between mt-2 text-xs text-muted-foreground">
+                            <span>Started: {workout.startDate}</span>
+                            <span>{workout.progress}% complete</span>
+                          </div>
                         </div>
                       </div>
                     </Card>
                   ))}
 
                   <Card className="border-dashed">
-                    <Link to="/" className="block p-4">
+                    <Link href="/plans" className="block p-4">
                       <div className="flex items-center justify-center h-20">
                         <div className="text-center">
                           <Plus className="h-6 w-6 mx-auto text-muted-foreground mb-2" />
@@ -196,97 +316,176 @@ export default function MyWorkoutsPage() {
                 </div>
               </div>
 
-              {selectedWorkout && (
-                <div className="lg:col-span-2">
-                  <Card>
-                    <CardHeader>
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <CardTitle>{selectedWorkout.title}</CardTitle>
-                          <CardDescription>Started on {selectedWorkout.startDate}</CardDescription>
-                        </div>
-                        <div className="flex gap-2">
-                          <Badge
-                            variant={
-                              selectedWorkout.level === "Beginner"
-                                ? "default"
-                                : selectedWorkout.level === "Intermediate"
-                                  ? "secondary"
-                                  : "destructive"
-                            }
-                          >
-                            {selectedWorkout.level}
-                          </Badge>
-                          <Badge variant="outline">{selectedWorkout.category}</Badge>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                      <div className="grid grid-cols-3 gap-4">
-                        <div className="bg-muted rounded-lg p-4 text-center">
-                          <div className="text-sm text-muted-foreground mb-1">Progress</div>
-                          <div className="text-2xl font-bold">{selectedWorkout.progress}%</div>
-                        </div>
-                        <div className="bg-muted rounded-lg p-4 text-center">
-                          <div className="text-sm text-muted-foreground mb-1">Workouts</div>
-                          <div className="text-2xl font-bold">
-                            {selectedWorkout.completedWorkouts}/{selectedWorkout.totalWorkouts}
+              <div className="lg:col-span-2">
+                {selectedWorkout && (
+                  <div className="space-y-6">
+                    <Card>
+                      <CardHeader>
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <CardTitle>{selectedWorkout.title}</CardTitle>
+                            <CardDescription>Started on {selectedWorkout.startDate}</CardDescription>
+                          </div>
+                          <div className="flex gap-2">
+                            <Badge
+                              variant={
+                                selectedWorkout.level === "Beginner"
+                                  ? "default"
+                                  : selectedWorkout.level === "Intermediate"
+                                    ? "secondary"
+                                    : "destructive"
+                              }
+                            >
+                              {selectedWorkout.level}
+                            </Badge>
+                            <Badge variant="outline">{selectedWorkout.category}</Badge>
                           </div>
                         </div>
-                        <div className="bg-muted rounded-lg p-4 text-center">
-                          <div className="text-sm text-muted-foreground mb-1">Streak</div>
-                          <div className="text-2xl font-bold">{selectedWorkout.streak} days</div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <h3 className="text-lg font-medium mb-4">Progress Tracking</h3>
-                        <div className="h-64">
-                          <WorkoutProgressChart history={selectedWorkout.history} />
-                        </div>
-                      </div>
-
-                      <div>
-                        <h3 className="text-lg font-medium mb-2">Recent Activity</h3>
-                        <div className="space-y-2">
-                          {selectedWorkout.history?.slice(0, 5).map((day, index) => (
-                            <div key={index} className="flex items-center py-2 border-b last:border-0">
-                              <div
-                                className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${
-                                  day.completed ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
-                                }`}
-                              >
-                                {day.completed ? <Dumbbell className="h-4 w-4" /> : <Clock className="h-4 w-4" />}
-                              </div>
-                              <div className="flex-1">
-                                <div className="font-medium">{day.completed ? "Workout Completed" : "Rest Day"}</div>
-                                <div className="text-sm text-muted-foreground">{day.date}</div>
-                              </div>
-                              {day.completed && (
-                                <div className="text-right">
-                                  <div className="font-medium">{day.duration} min</div>
-                                </div>
-                              )}
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        <div className="grid grid-cols-3 gap-4">
+                          <div className="bg-muted rounded-lg p-4 text-center">
+                            <div className="text-sm text-muted-foreground mb-1">Progress</div>
+                            <div className="text-2xl font-bold">{selectedWorkout.progress}%</div>
+                            <Progress value={selectedWorkout.progress} className="h-1.5 mt-2" />
+                          </div>
+                          <div className="bg-muted rounded-lg p-4 text-center">
+                            <div className="text-sm text-muted-foreground mb-1">Workouts</div>
+                            <div className="text-2xl font-bold">
+                              {selectedWorkout.completedWorkouts}/{selectedWorkout.totalWorkouts}
                             </div>
-                          ))}
+                            <Progress
+                              value={(selectedWorkout.completedWorkouts / selectedWorkout.totalWorkouts) * 100}
+                              className="h-1.5 mt-2"
+                            />
+                          </div>
+                          <div className="bg-muted rounded-lg p-4 text-center">
+                            <div className="text-sm text-muted-foreground mb-1">Weekly Goal</div>
+                            <div className="text-2xl font-bold">
+                              {calculateWeeklyCompletion(selectedWorkout).toFixed(0)}%
+                            </div>
+                            <Progress value={calculateWeeklyCompletion(selectedWorkout)} className="h-1.5 mt-2" />
+                          </div>
                         </div>
-                      </div>
-                    </CardContent>
-                    <CardFooter className="flex justify-between">
-                      <Button variant="outline" className="gap-1">
-                        <BarChart className="h-4 w-4" />
-                        Detailed Stats
-                      </Button>
-                      <Link to={`/MyWorkoutsID/${selectedWorkout.id}`}>
-                        <Button className="gap-1">
-                          Continue Workout
-                          <ChevronRight className="h-4 w-4" />
+
+                        <div>
+                          <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-medium">Progress Tracking</h3>
+                            <div className="flex gap-2">
+                              <Select value={selectedTimeframe} onValueChange={setSelectedTimeframe}>
+                                <SelectTrigger className="w-[120px]">
+                                  <SelectValue placeholder="Timeframe" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="week">Last Week</SelectItem>
+                                  <SelectItem value="month">Last Month</SelectItem>
+                                  <SelectItem value="all">All Time</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <Select value={selectedMetric} onValueChange={setSelectedMetric}>
+                                <SelectTrigger className="w-[120px]">
+                                  <SelectValue placeholder="Metric" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="performance">Performance</SelectItem>
+                                  <SelectItem value="duration">Duration</SelectItem>
+                                  <SelectItem value="completion">Completion</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                          <div className="h-64">
+                            <WorkoutProgressChart history={getFilteredHistory()} metric={selectedMetric} />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div>
+                            <h3 className="text-lg font-medium mb-4">Workout Metrics</h3>
+                            <div className="space-y-3">
+                              <div className="flex justify-between items-center">
+                                <div className="flex items-center gap-2">
+                                  <Clock className="h-4 w-4 text-muted-foreground" />
+                                  <span className="text-sm">Total Duration</span>
+                                </div>
+                                <span className="font-medium">{selectedWorkout.metrics.totalDuration} min</span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <div className="flex items-center gap-2">
+                                  <Activity className="h-4 w-4 text-muted-foreground" />
+                                  <span className="text-sm">Avg. Performance</span>
+                                </div>
+                                <span className="font-medium">{selectedWorkout.metrics.averagePerformance}%</span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <div className="flex items-center gap-2">
+                                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                                  <span className="text-sm">Improvement Rate</span>
+                                </div>
+                                <span className="font-medium">+{selectedWorkout.metrics.improvementRate}%</span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <div className="flex items-center gap-2">
+                                  <CheckCircle className="h-4 w-4 text-muted-foreground" />
+                                  <span className="text-sm">Consistency Rate</span>
+                                </div>
+                                <span className="font-medium">{selectedWorkout.metrics.consistencyRate}%</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div>
+                            <h3 className="text-lg font-medium mb-4">Workout Goals</h3>
+                            <div className="space-y-4">
+                              {selectedWorkout.goals.map((goal, index) => (
+                                <div key={index}>
+                                  <div className="flex justify-between items-center mb-1">
+                                    <span className="text-sm">{goal.name}</span>
+                                    <span className="text-sm font-medium">{goal.progress}%</span>
+                                  </div>
+                                  <Progress value={goal.progress} className="h-2" />
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <h3 className="text-lg font-medium mb-4">Activity Calendar</h3>
+                          <CalendarHeatmap workoutHistory={selectedWorkout.history} />
+                        </div>
+
+                        <div>
+                          <h3 className="text-lg font-medium mb-4">Muscle Group Focus</h3>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            {Object.entries(selectedWorkout.muscleGroups).map(([muscle, percentage]) => (
+                              <div key={muscle} className="bg-muted rounded-lg p-3">
+                                <div className="flex justify-between items-center mb-1">
+                                  <span className="text-sm capitalize">{muscle}</span>
+                                  <span className="text-xs font-medium">{percentage}%</span>
+                                </div>
+                                <Progress value={percentage} className="h-1.5" />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </CardContent>
+                      <CardFooter className="flex justify-between">
+                        <Button variant="outline" className="gap-1">
+                          <BarChart className="h-4 w-4" />
+                          Detailed Stats
                         </Button>
-                      </Link>
-                    </CardFooter>
-                  </Card>
-                </div>
-              )}
+                        <Link href={`/workout/${selectedWorkout.id}`}>
+                          <Button className="gap-1">
+                            Continue Workout
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </Link>
+                      </CardFooter>
+                    </Card>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </TabsContent>
@@ -345,14 +544,28 @@ export default function MyWorkoutsPage() {
                         {workout.level}
                       </Badge>
                     </div>
-                    <div className="text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1 mb-1">
-                        <Clock className="h-4 w-4" />
-                        <span>{workout.duration}</span>
+
+                    <div className="space-y-3 mt-4">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">Total Duration</span>
+                        </div>
+                        <span className="text-sm font-medium">{workout.metrics.totalDuration} min</span>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Dumbbell className="h-4 w-4" />
-                        <span>{workout.completedWorkouts} workouts completed</span>
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <Activity className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">Avg. Performance</span>
+                        </div>
+                        <span className="text-sm font-medium">{workout.metrics.averagePerformance}%</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">Improvement</span>
+                        </div>
+                        <span className="text-sm font-medium">+{workout.metrics.improvementRate}%</span>
                       </div>
                     </div>
                   </CardContent>
@@ -362,9 +575,7 @@ export default function MyWorkoutsPage() {
                       <Button variant="outline" className="flex-1">
                         View Details
                       </Button>
-                      <Button className="flex-1" onClick={() => dispatch(restartWorkout(workout.id))}>
-                        Restart Plan
-                      </Button>
+                      <Button className="flex-1">Restart Plan</Button>
                     </div>
                   </CardFooter>
                 </Card>
@@ -391,3 +602,4 @@ export default function MyWorkoutsPage() {
     </div>
   )
 }
+

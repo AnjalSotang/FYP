@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -20,181 +20,222 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format } from "date-fns"
 import { CalendarIcon, ChevronLeft, ChevronRight, Clock, Dumbbell, Plus, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { ToastContainer, toast } from "react-toastify";
+import { useDispatch, useSelector } from "react-redux"
+
 import {
   // Status and common actions
   setStatus,
+
   // Workout plan actions
   fetchWorkouts,
-  selectFormData,
+  fetchWorkout,
+
+  // Scheduling actions
+  fetchScheduledWorkouts,
+  fetchWorkoutsForDate,
+  fetchUpcomingWorkouts,
+  setSelectedDate,
+  scheduleWorkout,
+  deleteScheduledWorkout,
+
+  // Form actions
+  setFormWorkoutPlan,
+  setFormWorkoutDay,
+  setFormTime,
+  setFormReminder,
+  setDialogOpen,
+  resetForm,
+
+  // Selectors
   selectWorkoutPlans,
+  selectScheduledWorkouts,
+  selectWorkoutsForSelectedDate,
+  selectUpcomingWorkouts,
+  selectSelectedDate,
+  selectFormData,
+  selectIsDialogOpen,
+  selectStatus,
+  selectDatesWithWorkouts,
   selectWorkoutPlanById,
+} from "../../../../store/workoutScheduleSlice" // Adjust path as needed
+import STATUSES from "@/globals/status/statuses";
+import RootLayout from '../../../components/layout/UserLayout';
 
-
-  
-} from "../../../../store/workoutScheduleSlice"
-import { useDispatch, useSelector } from "react-redux";
-
-
-// Mock data for scheduled workouts
-const initialScheduledWorkouts = [
-  {
-    id: 1,
-    workoutPlan: "30-Day Strength Challenge",
-    day: "Day 5: Upper Body",
-    date: new Date(2025, 2, 16), // March 16, 2025
-    time: "18:00",
-    reminder: true,
-  },
-  {
-    id: 2,
-    workoutPlan: "Core Crusher",
-    day: "Day 3: Obliques Focus",
-    date: new Date(2025, 2, 18), // March 18, 2025
-    time: "07:30",
-    reminder: true,
-  },
-  {
-    id: 3,
-    workoutPlan: "HIIT Fat Burner",
-    day: "Day 1: Full Body",
-    date: new Date(2025, 2, 20), // March 20, 2025
-    time: "19:00",
-    reminder: false,
-  },
-]
-
-// // Mock data for available workout plans
-// const availableWorkoutPlans = [
-//   {
-//     id: 1,
-//     title: "30-Day Strength Challenge",
-//     days: [
-//       "Day 1: Upper Body",
-//       "Day 2: Lower Body",
-//       "Day 3: Rest & Recovery",
-//       "Day 4: Push (Chest, Shoulders, Triceps)",
-//       "Day 5: Pull (Back, Biceps)",
-//       "Day 6: Legs & Core",
-//       "Day 7: Rest & Recovery",
-//     ],
-//   },
-//   {
-//     id: 2,
-//     title: "Core Crusher",
-//     days: ["Day 1: Core Basics", "Day 2: Obliques Focus", "Day 3: Lower Abs", "Day 4: Full Core Circuit"],
-//   },
-//   {
-//     id: 3,
-//     title: "HIIT Fat Burner",
-//     days: [
-//       "Day 1: Full Body",
-//       "Day 2: Upper Body Focus",
-//       "Day 3: Lower Body Focus",
-//       "Day 4: Core & Cardio",
-//       "Day 5: Total Body Burnout",
-//     ],
-//   },
-// ]
 
 export default function SchedulePage() {
   const dispatch = useDispatch()
-  
 
   // Use Redux selectors to access state
   const workoutPlans = useSelector(selectWorkoutPlans)
-  // const scheduledWorkouts = useSelector(selectScheduledWorkouts)
-  // const workoutsForSelectedDate = useSelector(selectWorkoutsForSelectedDate)
-  // const upcomingWorkouts = useSelector(selectUpcomingWorkouts)
-  // const selectedDate = useSelector(selectSelectedDate)
+  const scheduledWorkouts = useSelector(selectScheduledWorkouts)
+  const workoutsForSelectedDate = useSelector(selectWorkoutsForSelectedDate)
+  const upcomingWorkouts = useSelector(selectUpcomingWorkouts)
+  const selectedDate = useSelector(selectSelectedDate)
   const formData = useSelector(selectFormData)
-  // const isDialogOpen = useSelector(selectIsDialogOpen)
-  // const status = useSelector(selectStatus)
-  // const datesWithWorkouts = useSelector(selectDatesWithWorkouts)
+  const isDialogOpen = useSelector(selectIsDialogOpen)
+  const status = useSelector(selectStatus)
+  const datesWithWorkouts = useSelector(selectDatesWithWorkouts)
 
+  // Convert loading/error states from Redux status
+  const isLoading = status === "LOADING"
+  const error = status?.status === "ERROR" ? status.message : null
 
-  const [date, setDate] = useState(new Date());
-  const [scheduledWorkouts, setScheduledWorkouts] = useState(initialScheduledWorkouts)
-
-  // New workout form state
-  const [selectedWorkoutPlan, setSelectedWorkoutPlan] = useState("")
-  const [selectedDay, setSelectedDay] = useState("")
-  const [selectedTime, setSelectedTime] = useState("08:00")
-  const [enableReminder, setEnableReminder] = useState(true)
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-
-  // Get the selected workout plan object
-  // const workoutPlan = availableWorkoutPlans.find((plan) => plan.title === selectedWorkoutPlan)
-
-   // Get the selected workout plan object using the selector
-    const workoutPlan = useSelector((state) => 
-      selectWorkoutPlanById(state, formData.selectedWorkoutPlanId)
-    )
-
-    // Initial data loading
-    useEffect(() => {
-      // Fetch all required data on initial load
-      dispatch(fetchWorkouts())
-      // dispatch(fetchScheduledWorkouts())
-      // dispatch(fetchUpcomingWorkouts())
-      // dispatch(fetchWorkoutsForDate(selectedDate))
-    }, [dispatch])
-
-    
-
-
-  // Filter workouts for the selected date
-  const workoutsForSelectedDate = scheduledWorkouts.filter(
-    (workout) => date && workout.date.toDateString() === date.toDateString(),
+  // Get the selected workout plan object using the selector
+  const workoutPlan = useSelector((state) =>
+    selectWorkoutPlanById(state, formData.selectedWorkoutPlanId)
   )
 
-  // Get all dates that have workouts scheduled
-  const datesWithWorkouts = scheduledWorkouts.map((workout) => workout.date.toDateString())
+  // Initial data loading
+  useEffect(() => {
+    // Fetch all required data on initial load
+    dispatch(fetchWorkouts())
+    dispatch(fetchScheduledWorkouts())
+    dispatch(fetchUpcomingWorkouts())
+    dispatch(fetchWorkoutsForDate(selectedDate))
+  }, [dispatch])
+
+  // // Initial data loading
+  // useEffect(() => {
+  //   // Fetch all required data on initial load
+  //   dispatch(fetchWorkouts())
+  //   dispatch(fetchScheduledWorkouts())
+  //   dispatch(fetchUpcomingWorkouts())
+  //   dispatch(fetchWorkoutsForDate(selectedDate))
+  // }, [dispatch, selectedDate])
+
+
+
+  // Handle date selection - wrapped in useCallback
+  const handleDateChange = useCallback((date) => {
+    if (date) {
+      dispatch(setSelectedDate(date.toISOString()));
+      dispatch(fetchWorkoutsForDate(date));
+    }
+  }, [dispatch]);
+
+  // Navigate to previous month
+  const handlePrevMonth = () => {
+    const prevMonth = new Date(selectedDate);
+    prevMonth.setMonth(prevMonth.getMonth() - 1);
+    dispatch(setSelectedDate(prevMonth.toISOString()));
+  };
+
+  // Navigate to next month
+  const handleNextMonth = () => {
+    const nextMonth = new Date(selectedDate);
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
+    dispatch(setSelectedDate(nextMonth.toISOString()));
+  };
+
+
+
+  // Handle workout plan selection - wrapped in useCallback
+  const handleWorkoutPlanChange = useCallback((value) => {
+    dispatch(setFormWorkoutPlan(value));
+  }, [dispatch]);
+
+  // Handle day selection - wrapped in useCallback
+  const handleDaySelection = useCallback((value) => {
+    dispatch(setFormWorkoutDay(value));
+  }, [dispatch]);
+
+  // Handle time selection - wrapped in useCallback
+  const handleTimeChange = useCallback((e) => {
+    dispatch(setFormTime(e.target.value));
+  }, [dispatch]);
+
+  // Handle reminder toggle - wrapped in useCallback
+  const handleReminderChange = useCallback((checked) => {
+    dispatch(setFormReminder(checked));
+  }, [dispatch]);
+
+  // Handle dialog open/close - wrapped in useCallback
+  const handleDialogChange = useCallback((open) => {
+    dispatch(setDialogOpen(open));
+    if (!open) {
+      dispatch(resetForm());
+    }
+  }, [dispatch]);
+
+
 
   // Handle scheduling a new workout
   const handleScheduleWorkout = () => {
-    if (!date || !selectedWorkoutPlan || !selectedDay || !selectedTime) return
-
-    const newWorkout = {
-      id: scheduledWorkouts.length + 1,
-      workoutPlan: selectedWorkoutPlan,
-      day: selectedDay,
-      date: date,
-      time: selectedTime,
-      reminder: enableReminder,
+    if (!selectedDate || !formData.selectedWorkoutPlanId || !formData.selectedDayId || !formData.selectedTime) {
+      toast.error("Please fill out all required fields.");
+      return;
     }
 
-    setScheduledWorkouts([...scheduledWorkouts, newWorkout])
-    setIsDialogOpen(false)
+    const workoutData = {
+      workoutPlanId: parseInt(formData.selectedWorkoutPlanId),
+      workoutDayId: parseInt(formData.selectedDayId),
+      scheduledDate: format(selectedDate, "yyyy-MM-dd"),
+      scheduledTime: formData.selectedTime,
+      reminderEnabled: formData.enableReminder
+    }
 
-    // Reset form
-    setSelectedWorkoutPlan("")
-    setSelectedDay("")
-    setSelectedTime("08:00")
-    setEnableReminder(true)
+    console.log("Workout Data:", workoutData);
+
+    dispatch(scheduleWorkout(workoutData));
+    dispatch(setDialogOpen(false));
   }
+
+
+
 
   // Handle deleting a scheduled workout
   const handleDeleteWorkout = (id) => {
-    setScheduledWorkouts(scheduledWorkouts.filter((workout) => workout.id !== id))
+    dispatch(deleteScheduledWorkout(id));
   }
 
+
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="container mx-auto py-10 px-4 flex justify-center items-center min-h-[60vh]">
+        <p>Loading workout schedule...</p>
+      </div>
+    )
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="container mx-auto py-10 px-4">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          <p>{error || "Error loading workout data. Please try again later."}</p>
+        </div>
+      </div>
+    )
+  }
+
+ // 🔥 Handle Status Updates
+ useEffect(() => {
+ if (status?.status === STATUSES.ERROR) {
+    toast.error(status.message);
+  }
+}, [status]);
+
+
   return (
-    <div className="container mx-auto py-10 px-4">
+    <RootLayout>
+    <div className="container mx-auto py-9 px-12">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-bold mb-1">Workout Schedule</h1>
           <p className="text-muted-foreground">Plan and organize your workout sessions</p>
         </div>
 
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        {/* / Workout Schedule */}
+        <Dialog open={isDialogOpen} onOpenChange={handleDialogChange}>
           <DialogTrigger asChild>
             <Button className="gap-2">
               <Plus className="h-4 w-4" />
               Schedule Workout
             </Button>
           </DialogTrigger>
-
-
 
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
@@ -203,23 +244,18 @@ export default function SchedulePage() {
                 Plan your next workout session. Set the date, time, and enable reminders.
               </DialogDescription>
             </DialogHeader>
-            
 
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
                 <Label htmlFor="workout-plan">Workout Plan</Label>
-
-
-                <Select value={formData.selectedWorkoutPlanId} onValueChange={setSelectedWorkoutPlan}>
-
-                {/* <Select value={selectedWorkoutPlan} onValueChange={setSelectedWorkoutPlan}> */}
+                <Select value={formData.selectedWorkoutPlanId} onValueChange={handleWorkoutPlanChange}>
                   <SelectTrigger id="workout-plan">
                     <SelectValue placeholder="Select workout plan" />
                   </SelectTrigger>
                   <SelectContent>
                     {workoutPlans.map((plan) => (
                       <SelectItem key={plan.id} value={plan.id.toString()}>
-                        {plan.title}
+                        {plan.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -228,8 +264,9 @@ export default function SchedulePage() {
 
               <div className="grid gap-2">
                 <Label htmlFor="workout-day">Workout Day</Label>
-                <Select 
-                  value={formData.selectedDayId} 
+                <Select
+                  value={formData.selectedDayId}
+                  onValueChange={handleDaySelection}
                   disabled={!formData.selectedWorkoutPlanId}
                 >
                   <SelectTrigger id="workout-day">
@@ -251,28 +288,33 @@ export default function SchedulePage() {
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
-                      className={cn("w-full justify-start text-left font-normal", !date && "text-muted-foreground")}
+                      className={cn("w-full justify-start text-left font-normal", !selectedDate && "text-muted-foreground")}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {date ? format(date, "PPP") : "Pick a date"}
+                      {selectedDate ? format(selectedDate, "PPP") : "Pick a date"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
-                    <Calendar mode="single" selected={date} onSelect={setDate} initialFocus />
+                    <Calendar mode="single" selected={selectedDate} onSelect={handleDateChange} initialFocus />
                   </PopoverContent>
                 </Popover>
               </div>
 
               <div className="grid gap-2">
                 <Label htmlFor="time">Time</Label>
-                <Input id="time" type="time" value={selectedTime} onChange={(e) => setSelectedTime(e.target.value)} />
+                <Input
+                  id="time"
+                  type="time"
+                  value={formData.selectedTime}
+                  onChange={handleTimeChange}
+                />
               </div>
 
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="reminder"
-                  checked={enableReminder}
-                  onCheckedChange={(checked) => setEnableReminder(checked)}
+                  checked={formData.enableReminder}
+                  onCheckedChange={handleReminderChange}
                 />
                 <label
                   htmlFor="reminder"
@@ -282,8 +324,9 @@ export default function SchedulePage() {
                 </label>
               </div>
             </div>
+
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+              <Button variant="outline" onClick={() => dispatch(setDialogOpen(false))}>
                 Cancel
               </Button>
               <Button onClick={handleScheduleWorkout}>Schedule</Button>
@@ -292,7 +335,13 @@ export default function SchedulePage() {
         </Dialog>
       </div>
 
+
+
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        {/* Workout Calendar */}
+
         <Card className="lg:col-span-1">
           <CardHeader>
             <CardTitle>Calendar</CardTitle>
@@ -301,43 +350,42 @@ export default function SchedulePage() {
           <CardContent>
             <Calendar
               mode="single"
-              selected={date}
-              onSelect={setDate}
-              className="rounded-md border"
+              selected={selectedDate}
+              onSelect={handleDateChange}
+  
+  
+              className="rounded-md border border-[#1E3A6D] p-3"
               modifiers={{
-                workout: (date) => datesWithWorkouts.includes(date.toDateString()),
+                workout: (date) => datesWithWorkouts.includes(new Date(date).toDateString()),
               }}
               modifiersStyles={{
                 workout: {
                   fontWeight: "bold",
-                  backgroundColor: "hsl(var(--primary) / 0.1)",
-                  color: "hsl(var(--primary))",
+                  backgroundColor: "rgba(163, 209, 30, 0.1)",  // Semi-transparent background
+                  color: "#9FE830",  // Text color
                   borderRadius: "0.25rem",
                 },
               }}
             />
+
           </CardContent>
+
+
           <CardFooter className="flex justify-between">
             <Button
               variant="outline"
               size="sm"
-              onClick={() => {
-                const prevMonth = new Date(!date)
-                prevMonth.setMonth(prevMonth.getMonth() - 1)
-                setDate(prevMonth)
-              }}
+              onClick={handlePrevMonth}
             >
               <ChevronLeft className="h-4 w-4 mr-1" />
               Previous
             </Button>
+
+
             <Button
               variant="outline"
               size="sm"
-              onClick={() => {
-                const nextMonth = new Date(!date)
-                nextMonth.setMonth(nextMonth.getMonth() + 1)
-                setDate(nextMonth)
-              }}
+              onClick={handleNextMonth}
             >
               Next
               <ChevronRight className="h-4 w-4 ml-1" />
@@ -345,56 +393,96 @@ export default function SchedulePage() {
           </CardFooter>
         </Card>
 
+
+
+
+
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>{date ? format(date, "MMMM d, yyyy") : "Select a date"}</CardTitle>
+            <CardTitle>{selectedDate ? format(selectedDate, "MMMM d, yyyy") : "Select a date"}</CardTitle>
+
+
             <CardDescription>
               {workoutsForSelectedDate.length === 0
                 ? "No workouts scheduled for this date"
                 : `${workoutsForSelectedDate.length} workout${workoutsForSelectedDate.length > 1 ? "s" : ""} scheduled`}
             </CardDescription>
+
+
           </CardHeader>
+
+
+
           <CardContent>
             {workoutsForSelectedDate.length === 0 ? (
               <div className="text-center py-8">
                 <Dumbbell className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
                 <p className="text-muted-foreground">No workouts scheduled for this date</p>
-                <Button variant="outline" className="mt-4" onClick={() => setIsDialogOpen(true)}>
+                <Button variant="outline" className="mt-4" onClick={() => dispatch(setDialogOpen(true))}>
                   Schedule a Workout
                 </Button>
               </div>
             ) : (
+
+
               <div className="space-y-4">
                 {workoutsForSelectedDate.map((workout) => (
                   <Card key={workout.id}>
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between">
+                   <CardContent className="p-4 border border-[#1E3A6D] rounded-">
+                    <div className="flex items-start justify-between"> 
                         <div className="flex items-start gap-3">
                           <div className="mt-1 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                             <Dumbbell className="h-5 w-5 text-primary" />
                           </div>
                           <div>
                             <h3 className="font-medium">{workout.workoutPlan}</h3>
-                            <p className="text-sm text-muted-foreground">{workout.day}</p>
+                            <p className="text-sm text-muted-md">{workout.day}</p>
+
+
                             <div className="flex items-center mt-2 text-sm">
                               <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
-                              <span>{workout.time}</span>
+                              <span>
+                                {new Date(`2000-01-01T${workout.time}`).toLocaleTimeString('en-US', {
+                                  hour: 'numeric',
+                                  minute: '2-digit',
+                                  hour12: true
+                                })}
+                              </span>
                               {workout.reminder && (
                                 <span className="ml-3 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
                                   Reminder On
                                 </span>
                               )}
+
+
+                              {workout.status && workout.status !== 'scheduled' && (
+                                <span className={`ml-3 text-xs ${workout.status === 'completed'
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-yellow-100 text-yellow-800'
+                                  } px-2 py-0.5 rounded-full`}>
+                                  {workout.status.charAt(0).toUpperCase() + workout.status.slice(1)}
+                                </span>
+                              )}
                             </div>
                           </div>
                         </div>
-                        <Button variant="ghost" size="icon" onClick={() => handleDeleteWorkout(workout.id)}>
-                          <Trash2 className="h-4 w-4 text-muted-foreground" />
+                       
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDeleteWorkout(workout.id)}
+                          className="group"
+                        >
+                            <Trash2 className="h-4 w-4 text-muted-foreground group-hover:text-blue-800 transition-colors duration-200" />
                         </Button>
                       </div>
                     </CardContent>
                   </Card>
                 ))}
               </div>
+
+
+
             )}
           </CardContent>
           <CardFooter>
@@ -403,40 +491,59 @@ export default function SchedulePage() {
         </Card>
       </div>
 
+
+
       <div className="mt-8">
         <h2 className="text-2xl font-bold mb-6">Upcoming Workouts</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {scheduledWorkouts
-            .filter((workout) => workout.date >= new Date())
-            .sort((a, b) => a.date.getTime() - b.date.getTime())
-            .slice(0, 3)
-            .map((workout) => (
+          {upcomingWorkouts.length === 0 ? (
+            <div className="col-span-full text-center py-8">
+              <p className="text-muted-foreground">No upcoming workouts scheduled</p>
+              <Button variant="outline" className="mt-4" onClick={() => dispatch(setDialogOpen(true))}>
+                Schedule a Workout
+              </Button>
+            </div>
+          ) : (
+            upcomingWorkouts.map((workout) => (
               <Card key={workout.id} className="flex flex-col">
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-start">
                     <CardTitle className="text-lg">{workout.workoutPlan}</CardTitle>
-                    <div className="text-sm font-medium text-primary">{format(workout.date, "MMM d")}</div>
+                    <div className="text-sm font-medium text-primary">
+                      {format(new Date(workout.date), "MMM d")}
+                    </div>
                   </div>
                   <CardDescription>{workout.day}</CardDescription>
                 </CardHeader>
                 <CardContent className="pb-2 pt-0">
                   <div className="flex items-center text-sm">
                     <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
-                    <span>{workout.time}</span>
+                    <span>
+                      {new Date(`2000-01-01T${workout.time}`).toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true
+                      })}
+                    </span>
                   </div>
                 </CardContent>
                 <CardFooter className="pt-2">
-                  <Link href={`/workout/${workout.workoutPlan.toLowerCase().replace(/\s+/g, "-")}`} className="w-full">
+                  <Link
+                    to={`/workout/${workout.id}`}
+                    className="w-full"
+                  >
                     <Button variant="outline" className="w-full">
                       View Workout
                     </Button>
                   </Link>
                 </CardFooter>
               </Card>
-            ))}
+            ))
+          )}
         </div>
       </div>
+      <ToastContainer />
     </div>
+    </RootLayout>
   )
 }
-
