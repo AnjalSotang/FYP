@@ -18,7 +18,7 @@ export function AddWorkoutCard() {
             Generate Plan
           </Button>
         </Link>
-        <Link href="/plans">
+        <Link to="/">
           <Button size="sm">Browse Plans</Button>
         </Link>
       </div>

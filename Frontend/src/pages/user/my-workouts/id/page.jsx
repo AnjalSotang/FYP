@@ -35,7 +35,7 @@ export default function WorkoutPage() {
   const activeWorkout = useSelector((state) => state.userWorkout2.data.activeWorkouts1); // ✅ Safe access
   const { status } = useSelector((state) => state.userWorkout2); // ✅ Safe access
 
-  
+
   // console.log(status)
   const workout = activeWorkout;
   console.log(workout)
@@ -55,7 +55,7 @@ export default function WorkoutPage() {
     if (id) {
       dispatch(fetchActiveWorkout(id));
     }
-  }, [dispatch, id]); 
+  }, [dispatch, id]);
 
   // Update local state when workout data is loaded
   useEffect(() => {
@@ -110,12 +110,12 @@ export default function WorkoutPage() {
       setWorkoutTimer(0);
       setWorkoutStarted(false);
       setWorkoutComplete(false);
-    
+
       // Check if the program is complete
       if (result && result.nextWorkout === "All Workouts Completed") {
         setShowProgramCompleteDialog(true);
       }
-   
+
     } catch (error) {
       console.error("Error completing workout:", error);
       toast.error("Failed to save your workout progress. Please try again.", {
@@ -129,12 +129,12 @@ export default function WorkoutPage() {
     }
   };
 
-//   // Add this useEffect to your component
-// useEffect(() => {
-//   if (workout && workout.nextWorkout === "All Workouts Completed") {
-//     setShowProgramCompleteDialog(true);
-//   }
-// }, [workout]);
+  //   // Add this useEffect to your component
+  // useEffect(() => {
+  //   if (workout && workout.nextWorkout === "All Workouts Completed") {
+  //     setShowProgramCompleteDialog(true);
+  //   }
+  // }, [workout]);
   // const completeWorkout = async () => {
   //   if (timerInterval) {
   //     clearInterval(timerInterval);
@@ -161,332 +161,344 @@ export default function WorkoutPage() {
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
   }
 
-  
+
   // Handle status updates
   useEffect(() => {
-    if (status?.status === 'success') {
-      dispatch(setStatus(null));
-      toast.success(status.message);
-    }
-  }, [status, dispatch]);
+    if (status && status.status === 'success') {
+      // First, capture the message to use in toast
+      const message = status.message;
 
-    // Loading state
-    if (status === 'loading') {
-      return (
-        <div className="container mx-auto py-10 px-4">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold mb-4">Loading workout...</h1>
-          </div>
-        </div>
-      )
+      // Clear the status first to prevent infinite loop
+      // dispatch(setStatus(null));
+
+      // Show the success toast with the captured message
+      toast.success(message);
+
+      // Now fetch the updated workout data
+      // We need to wrap this in a setTimeout to ensure the status is fully cleared
+      // before triggering a new action that might set status again
+      // window.location.reload();
+
     }
-  
-    // Error state
-    if (status === 'error') {
-      return (
-        <div className="container mx-auto py-10 px-4">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold mb-4">Error</h1>
-            <p className="text-muted-foreground mb-6">{error || "An error occurred while loading the workout."}</p>
-            <Link to="/MyWorkouts">
-              <Button>My Workouts</Button>
-            </Link>
-          </div>
+  }, [status]);
+
+  // Loading state
+  if (status === 'loading') {
+    return (
+      <div className="container mx-auto py-10 px-4">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold mb-4">Loading workout...</h1>
         </div>
-      )
-    }
-  
-    // Not found state
-    if (!workout) {
-      return (
-        <div className="container mx-auto py-10 px-4">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold mb-4">Workout Not Found</h1>
-            <p className="text-muted-foreground mb-6">The workout you're looking for doesn't exist.</p>
-            <Link to="/MyWorkouts">
-              <Button>My Workouts</Button>
-            </Link>
-          </div>
+      </div>
+    )
+  }
+
+  // Error state
+  if (status === 'error') {
+    return (
+      <div className="container mx-auto py-10 px-4">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold mb-4">Error</h1>
+          <p className="text-muted-foreground mb-6">{error || "An error occurred while loading the workout."}</p>
+          <Link to="/MyWorkouts">
+            <Button>My Workouts</Button>
+          </Link>
         </div>
-      )
-    }
+      </div>
+    )
+  }
+
+  // Not found state
+  if (!workout) {
+    return (
+      <div className="container mx-auto py-10 px-4">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold mb-4">Workout Not Found</h1>
+          <p className="text-muted-foreground mb-6">The workout you're looking for doesn't exist.</p>
+          <Link to="/MyWorkouts">
+            <Button>My Workouts</Button>
+          </Link>
+        </div>
+      </div>
+    )
+  }
 
   return (
-        <RootLayout>
-    <div className="container mx-auto py-10 px-4">
-      <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />
-      <Link to="/MyWorkouts" className="flex items-center text-muted-foreground hover:text-foreground mb-6">
-        <ChevronLeft className="mr-1 h-4 w-4" />
-        Back to my workouts
-      </Link>
+    <RootLayout>
+      <div className="container mx-auto py-10 px-4">
+        <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />
+        <Link to="/MyWorkouts" className="flex items-center text-muted-foreground hover:text-foreground mb-6">
+          <ChevronLeft className="mr-1 h-4 w-4" />
+          Back to my workouts
+        </Link>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2">
-          <div className="mb-6">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-2 gap-2">
-              <div>
-                <h1 className="text-3xl font-bold">{workout.title}</h1>
-                <p className="text-muted-foreground">
-                  Day {workout.currentDay} of {workout.totalDays}: {workout?.days?.find(day => day.day === workout.currentDay)?.dayName || "No workout today"}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
+            <div className="mb-6">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-2 gap-2">
+                <div>
+                  <h1 className="text-3xl font-bold">{workout.title}</h1>
+                  <p className="text-muted-foreground">
+                    Day {workout.currentDay} of {workout.totalDays}: {workout?.days?.find(day => day.day === workout.currentDay)?.dayName || "No workout today"}
 
-                </p>
+                  </p>
+                </div>
+
+                {workoutStarted ? (
+                  <div className="flex items-center gap-2">
+                    <div className="text-lg font-mono bg-primary/10 text-primary px-3 py-1 rounded-md">
+                      {formatTime(workoutTimer)}
+                    </div>
+                    {workoutComplete ? (
+                      <Button onClick={completeWorkout} className="gap-2">
+                        <Trophy className="h-4 w-4" />
+                        Finish Workout
+                      </Button>
+                    ) : (
+                      <Button variant="outline" disabled>
+                        In Progress
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <Button onClick={startWorkout} className="gap-2">
+                    <Play className="h-4 w-4" />
+                    Start Workout
+                  </Button>
+                )}
               </div>
 
-              {workoutStarted ? (
-                <div className="flex items-center gap-2">
-                  <div className="text-lg font-mono bg-primary/10 text-primary px-3 py-1 rounded-md">
-                    {formatTime(workoutTimer)}
-                  </div>
-                  {workoutComplete ? (
-                    <Button onClick={completeWorkout} className="gap-2">
-                      <Trophy className="h-4 w-4" />
-                      Finish Workout
-                    </Button>
-                  ) : (
-                    <Button variant="outline" disabled>
-                      In Progress
-                    </Button>
-                  )}
-                </div>
-              ) : (
-                <Button onClick={startWorkout} className="gap-2">
-                  <Play className="h-4 w-4" />
-                  Start Workout
-                </Button>
-              )}
+              <div className="flex flex-wrap gap-2 mb-4">
+                <Badge
+                  variant={
+                    workout.level === "Beginner"
+                      ? "default"
+                      : workout.level === "Intermediate"
+                        ? "secondary"
+                        : "destructive"
+                  }
+                >
+                  {workout.level}
+                </Badge>
+                <Badge variant="outline">{workout.category}</Badge>
+                <Badge variant="outline">{activeExercises.length} exercises</Badge>
+              </div>
+
+              <Progress value={workout.progress} className="h-2 mb-2" />
+              <div className="text-sm text-muted-foreground">{workout.progress}% of program completed</div>
             </div>
 
-            <div className="flex flex-wrap gap-2 mb-4">
-              <Badge
-                variant={
-                  workout.level === "Beginner"
-                    ? "default"
-                    : workout.level === "Intermediate"
-                      ? "secondary"
-                      : "destructive"
-                }
-              >
-                {workout.level}
-              </Badge>
-              <Badge variant="outline">{workout.category}</Badge>
-              <Badge variant="outline">{activeExercises.length} exercises</Badge>
-            </div>
-
-            <Progress value={workout.progress} className="h-2 mb-2" />
-            <div className="text-sm text-muted-foreground">{workout.progress}% of program completed</div>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Exercises</CardTitle>
-              <CardDescription>Complete all exercises to finish today's workout</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {activeExercises.map((exercise, index) => (
-                  <div
-                    key={exercise.id}
-                    className={`p-4 rounded-lg border ${exercise.completed ? "bg-primary/5 border-primary/20" : "bg-background"}`}
-                  >
-                    <div className="flex items-start">
-                      <div className="mr-4">
-                        <Checkbox
-                          checked={exercise.completed}
-                          onCheckedChange={() => toggleExerciseComplete(exercise.id)}
-                          disabled={!workoutStarted}
-                          className="mt-1"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
-                          <h3 className="font-medium text-lg">
-                            {index + 1}. {exercise.name}
-                          </h3>
-                          <Badge variant="outline" className="w-fit">
-                            {exercise.equipment}
-                          </Badge>
+            <Card>
+              <CardHeader>
+                <CardTitle>Exercises</CardTitle>
+                <CardDescription>Complete all exercises to finish today's workout</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {activeExercises.map((exercise, index) => (
+                    <div
+                      key={exercise.id}
+                      className={`p-4 rounded-lg border ${exercise.completed ? "bg-primary/5 border-primary/20" : "bg-background"}`}
+                    >
+                      <div className="flex items-start">
+                        <div className="mr-4">
+                          <Checkbox
+                            checked={exercise.completed}
+                            onCheckedChange={() => toggleExerciseComplete(exercise.id)}
+                            disabled={!workoutStarted}
+                            className="mt-1"
+                          />
                         </div>
+                        <div className="flex-1">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
+                            <h3 className="font-medium text-lg">
+                              {index + 1}. {exercise.name}
+                            </h3>
+                            <Badge variant="outline" className="w-fit">
+                              {exercise.equipment}
+                            </Badge>
+                          </div>
 
-                        <div className="grid grid-cols-3 gap-4 text-sm">
-                          <div>
-                            <span className="text-muted-foreground">Sets: </span>
-                            <span className="font-medium">{exercise.sets}</span>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Reps: </span>
-                            <span className="font-medium">{exercise.reps}</span>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Rest: </span>
-                            <span className="font-medium">{exercise.rest}</span>
+                          <div className="grid grid-cols-3 gap-4 text-sm">
+                            <div>
+                              <span className="text-muted-foreground">Sets: </span>
+                              <span className="font-medium">{exercise.sets}</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Reps: </span>
+                              <span className="font-medium">{exercise.reps}</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Rest: </span>
+                              <span className="font-medium">{exercise.rest}</span>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div>
+            <Card className="sticky top-6">
+              <CardHeader>
+                <CardTitle>Workout Summary</CardTitle>
+                <CardDescription>Track your progress for this workout</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Exercises:</span>
+                    <span>
+                      {activeExercises.filter((e) => e.completed).length} of {activeExercises.length} completed
+                    </span>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                  <Progress
+                    value={(activeExercises.filter((e) => e.completed).length / activeExercises.length) * 100}
+                    className="h-2"
+                  />
+                </div>
+
+                <div className="pt-2 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Clock className="h-5 w-5 mr-2 text-muted-foreground" />
+                      <span>Workout Time</span>
+                    </div>
+                    <div className="font-mono">{formatTime(workoutTimer)}</div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Dumbbell className="h-5 w-5 mr-2 text-muted-foreground" />
+                      <span>Total Sets</span>
+                    </div>
+                    <div>{activeExercises.reduce((sum, ex) => sum + parseInt(ex.sets || 0), 0)}</div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Trophy className="h-5 w-5 mr-2 text-muted-foreground" />
+                      <span>Status</span>
+                    </div>
+                    <div>
+                      {!workoutStarted ? (
+                        <Badge variant="outline">Not Started</Badge>
+                      ) : workoutComplete ? (
+                        <Badge variant="default" className="bg-green-500 hover:bg-green-600">
+                          Completed
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary">In Progress</Badge>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter className="flex flex-col gap-3">
+                {workoutComplete ? (
+                  <Button className="w-full gap-2" onClick={completeWorkout}>
+                    <Trophy className="h-4 w-4" />
+                    Finish Workout
+                  </Button>
+                ) : !workoutStarted ? (
+                  <Button className="w-full gap-2" onClick={startWorkout}>
+                    <Play className="h-4 w-4" />
+                    Start Workout
+                  </Button>
+                ) : (
+                  <Button className="w-full" disabled>
+                    Complete All Exercises
+                  </Button>
+                )}
+
+                <Button variant="outline" className="w-full gap-2">
+                  <Share className="h-4 w-4" />
+                  Share Workout
+                </Button>
+              </CardFooter>
+            </Card>
+          </div>
         </div>
 
-        <div>
-          <Card className="sticky top-6">
-            <CardHeader>
-              <CardTitle>Workout Summary</CardTitle>
-              <CardDescription>Track your progress for this workout</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Exercises:</span>
-                  <span>
-                    {activeExercises.filter((e) => e.completed).length} of {activeExercises.length} completed
+        {/* Add this dialog at the end of your component */}
+        <Dialog open={showProgramCompleteDialog} onOpenChange={setShowProgramCompleteDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Program Completed!</DialogTitle>
+              <DialogDescription>Congratulations! You've completed the entire workout program.</DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <div className="flex items-center justify-center mb-6">
+                <Trophy className="h-16 w-16 text-yellow-500" />
+              </div>
+              <div className="space-y-4">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Program:</span>
+                  <span className="font-medium">{workout.title}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Workouts Completed:</span>
+                  <span className="font-medium">{workout.completedWorkouts}/{workout.totalWorkouts}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Your Streak:</span>
+                  <span className="font-medium">{workout.streak} days</span>
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button asChild className="w-full">
+                <Link to="/my-workouts">View All Workouts</Link>
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={workoutComplete && workoutStarted} onOpenChange={(open) => setWorkoutComplete(open)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Workout Completed!</DialogTitle>
+              <DialogDescription>Great job! You've completed today's workout.</DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <div className="flex items-center justify-center mb-6">
+                <Trophy className="h-16 w-16 text-yellow-500" />
+              </div>
+              <div className="space-y-4">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Workout:</span>
+                  <span className="font-medium">{workout.title}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Day:</span>
+                  <span className="font-medium">
+                    Day {workout?.days?.[0]?.day} - {workout?.days?.[0]?.focus}
                   </span>
                 </div>
-                <Progress
-                  value={(activeExercises.filter((e) => e.completed).length / activeExercises.length) * 100}
-                  className="h-2"
-                />
-              </div>
-
-              <div className="pt-2 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <Clock className="h-5 w-5 mr-2 text-muted-foreground" />
-                    <span>Workout Time</span>
-                  </div>
-                  <div className="font-mono">{formatTime(workoutTimer)}</div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Duration:</span>
+                  <span className="font-medium">{formatTime(workoutTimer)}</span>
                 </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <Dumbbell className="h-5 w-5 mr-2 text-muted-foreground" />
-                    <span>Total Sets</span>
-                  </div>
-                  <div>{activeExercises.reduce((sum, ex) => sum + parseInt(ex.sets || 0), 0)}</div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <Trophy className="h-5 w-5 mr-2 text-muted-foreground" />
-                    <span>Status</span>
-                  </div>
-                  <div>
-                    {!workoutStarted ? (
-                      <Badge variant="outline">Not Started</Badge>
-                    ) : workoutComplete ? (
-                      <Badge variant="default" className="bg-green-500 hover:bg-green-600">
-                        Completed
-                      </Badge>
-                    ) : (
-                      <Badge variant="secondary">In Progress</Badge>
-                    )}
-                  </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Exercises Completed:</span>
+                  <span className="font-medium">
+                    {activeExercises.length}/{activeExercises.length}
+                  </span>
                 </div>
               </div>
-            </CardContent>
-            <CardFooter className="flex flex-col gap-3">
-              {workoutComplete ? (
-                <Button className="w-full gap-2" onClick={completeWorkout}>
-                  <Trophy className="h-4 w-4" />
-                  Finish Workout
-                </Button>
-              ) : !workoutStarted ? (
-                <Button className="w-full gap-2" onClick={startWorkout}>
-                  <Play className="h-4 w-4" />
-                  Start Workout
-                </Button>
-              ) : (
-                <Button className="w-full" disabled>
-                  Complete All Exercises
-                </Button>
-              )}
-
-              <Button variant="outline" className="w-full gap-2">
-                <Share className="h-4 w-4" />
-                Share Workout
+            </div>
+            <DialogFooter>
+              <Button onClick={completeWorkout} className="w-full">
+                Save & Continue
               </Button>
-            </CardFooter>
-          </Card>
-        </div>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
-
-      {/* Add this dialog at the end of your component */}
-      <Dialog open={showProgramCompleteDialog} onOpenChange={setShowProgramCompleteDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Program Completed!</DialogTitle>
-            <DialogDescription>Congratulations! You've completed the entire workout program.</DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            <div className="flex items-center justify-center mb-6">
-              <Trophy className="h-16 w-16 text-yellow-500" />
-            </div>
-            <div className="space-y-4">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Program:</span>
-                <span className="font-medium">{workout.title}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Workouts Completed:</span>
-                <span className="font-medium">{workout.completedWorkouts}/{workout.totalWorkouts}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Your Streak:</span>
-                <span className="font-medium">{workout.streak} days</span>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button asChild className="w-full">
-              <Link to="/my-workouts">View All Workouts</Link>
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={workoutComplete && workoutStarted} onOpenChange={(open) => setWorkoutComplete(open)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Workout Completed!</DialogTitle>
-            <DialogDescription>Great job! You've completed today's workout.</DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            <div className="flex items-center justify-center mb-6">
-              <Trophy className="h-16 w-16 text-yellow-500" />
-            </div>
-            <div className="space-y-4">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Workout:</span>
-                <span className="font-medium">{workout.title}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Day:</span>
-                <span className="font-medium">
-                  Day {workout?.days?.[0]?.day} - {workout?.days?.[0]?.focus}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Duration:</span>
-                <span className="font-medium">{formatTime(workoutTimer)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Exercises Completed:</span>
-                <span className="font-medium">
-                  {activeExercises.length}/{activeExercises.length}
-                </span>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button onClick={completeWorkout} className="w-full">
-              Save & Continue
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
     </RootLayout>
   )
 }

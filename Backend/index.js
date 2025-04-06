@@ -7,6 +7,7 @@ const workoutRoutes = require("./routes/workoutRoutes")
 const workoutDayRoutes = require("./routes/workoutdayRoutes")
 const userWorkoutRoutes = require("./routes/user/userWorkoutRoutes")
 const workoutScheduleRoutes = require("./routes/user/workoutScheduleRoutes")
+const workoutHistoryRoutes = require("./routes/user/userWorkoutHistoryRoutes")
 
 const path = require("path");
 const cors = require("cors");
@@ -31,7 +32,7 @@ app.use(express.urlencoded({ extended: true })); // Parse URL-encoded payloads p
 
 
 app.use('/auth', userRoutes)
-app.use('/api', addRoutes, excerciseRoutes, workoutRoutes, workoutDayRoutes, userWorkoutRoutes, workoutScheduleRoutes)
+app.use('/api', addRoutes, excerciseRoutes, workoutRoutes, workoutDayRoutes, userWorkoutRoutes, workoutScheduleRoutes, workoutHistoryRoutes)
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 

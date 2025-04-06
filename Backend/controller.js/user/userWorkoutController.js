@@ -141,6 +141,8 @@ const getActiveWorkouts = async (req, res) => {
           };
         });
 
+        console.log(UserWorkout.workouts.imagePath,);
+
         return {
           id: UserWorkout.id,
           workoutId: UserWorkout.workoutId,
@@ -149,8 +151,8 @@ const getActiveWorkouts = async (req, res) => {
           nextWorkout: UserWorkout.nextWorkout,
           // lastCompleted: lastCompleted,
           startDate: new Date(UserWorkout.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-          image: UserWorkout.workouts.imagePath || "/placeholder.svg?height=200&width=300",
-          category: UserWorkout.workouts.goal,
+          image: UserWorkout.workouts.imagePath,
+          category: UserWorkout.workouts.goal,  
           level: UserWorkout.workouts.level,
           completedWorkouts: UserWorkout.completedWorkouts,
           totalWorkouts: UserWorkout.totalWorkouts,
@@ -571,9 +573,11 @@ const completeWorkoutDay = async (req, res) => {
         // Find the current workout day
         // Find the current workout day with proper cycling
           const toDaysInWorkout = UserWorkout.workouts.days.length;
+          const caloriesBurned = UserWorkout.workouts.calories ? parseInt(UserWorkout.workouts.calories, 10) || 0 : 0;
           const currentDayIndex = (UserWorkout.currentDay - 1) % toDaysInWorkout;
           const currentWorkoutDay = UserWorkout.workouts.days[currentDayIndex];
 
+          console.log(caloriesBurned)
 
         if (!currentWorkoutDay) {
           return res.status(400).json({ message: "Invalid workout day" });
@@ -582,6 +586,7 @@ const completeWorkoutDay = async (req, res) => {
         // Check if it's a Rest Day
         if (currentWorkoutDay.dayName === "Rest Day") {
           duration = 0; // Set duration to 0 for rest days
+          caloriesBurned = 0;
         }
         
 
@@ -590,6 +595,7 @@ const completeWorkoutDay = async (req, res) => {
       UserWorkoutId: UserWorkout.id,
       completed: true,
       duration: duration || 30, // Default to 30 minutes if not provided
+      caloriesBurned: caloriesBurned,
       notes: `Completed day ${UserWorkout.currentDay}`
     });
 

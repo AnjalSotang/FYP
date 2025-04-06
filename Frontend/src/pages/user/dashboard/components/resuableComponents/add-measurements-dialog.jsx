@@ -20,7 +20,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 
-export function AddMeasurementsDialog() {
+export function AddMeasurementsDialog({type}) {
   const [open, setOpen] = useState(false)
   const [date, setDate] = useState()
 
@@ -34,12 +34,16 @@ export function AddMeasurementsDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="w-full">Add Measurements</Button>
+        <Button className="w-full">{type === "add" ? "Add Measurements" : "Update Measurements"}</Button>
       </DialogTrigger>
+
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Add Body Measurements</DialogTitle>
-          <DialogDescription>Track your physical progress by recording your body measurements.</DialogDescription>
+          <DialogTitle>{type === "add" ? "Add Body Measurements" : "Update Body Measurements"}</DialogTitle>
+          <DialogDescription>
+  {type === "add" ? "Track your physical progress by recording your body measurements." : "Update & track your body measurements to track your progress."}
+</DialogDescription>
+
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <Tabs defaultValue="measurements" className="w-full">
@@ -108,7 +112,10 @@ export function AddMeasurementsDialog() {
           </div>
 
           <DialogFooter className="mt-6">
-            <Button type="submit">Save Measurements</Button>
+            <Button type="submit">
+  {type === "add" ? "Save Measurements": "Update Measurements"}
+
+</Button>
           </DialogFooter>
         </form>
       </DialogContent>

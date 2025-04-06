@@ -7,15 +7,25 @@ import { Badge } from "@/components/ui/badge"
 import { BarChart } from "lucide-react"
 
 export function WorkoutCard({ workout, compact = false }) {
+  const profileImageUrl = workout?.image ? workout.image.replace(/\\/g, "/") : "";
+  // console.log(profileImageUrl);
   if (compact) {
+    // console.log(profile)
+
+
     return (
       <Card key={workout.id} className="overflow-hidden">
         <div className="flex">
-          <img
-            src={workout.image || "/placeholder.svg"}
-            alt={workout.title}
-            className="w-24 h-full object-cover"
-          />
+          <div className="flex h-full items-center justify-center">
+            <div className="w-24 h-24 flex-shrink-0 relative overflow-hidden">
+              <img
+                src={profileImageUrl ? `http://localhost:3001/${profileImageUrl}` : undefined}
+                alt={workout.title}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            </div>
+          </div>
+
           <div className="flex-1">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg">{workout.title}</CardTitle>
@@ -29,7 +39,7 @@ export function WorkoutCard({ workout, compact = false }) {
               </div>
             </CardContent>
             <CardFooter>
-              <Link href={`/workout/${workout.id}`} className="w-full">
+              <Link to={`/MyWorkoutsID/${workout.id}`} className="w-full">
                 <Button variant="outline" className="w-full text-sm">
                   Continue Workout
                 </Button>
@@ -45,9 +55,9 @@ export function WorkoutCard({ workout, compact = false }) {
     <Card key={workout.id} className="flex flex-col h-full">
       <div className="relative">
         <img
-          src={workout.image || "/placeholder.svg"}
+          src={profileImageUrl ? `http://localhost:3001/${profileImageUrl}` : undefined}
           alt={workout.title}
-          className="w-full h-48 object-cover rounded-t-lg"
+          className="w-full h-full object-cover rounded-t-lg"
         />
         <Badge className="absolute top-3 right-3">{workout.progress}% Complete</Badge>
       </div>
@@ -63,7 +73,7 @@ export function WorkoutCard({ workout, compact = false }) {
       </CardContent>
 
       <CardFooter className="flex gap-3">
-        <Link href={`/workout/${workout.id}`} className="flex-1">
+        <Link to={`/MyWorkoutsID/${workout.id}`} className="flex-1">
           <Button className="w-full">Continue</Button>
         </Link>
         <Button variant="outline" size="icon">
@@ -73,3 +83,4 @@ export function WorkoutCard({ workout, compact = false }) {
     </Card>
   )
 }
+

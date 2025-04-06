@@ -311,41 +311,6 @@ export function deleteWorkoutPlan(id) {
     };
 }
 
-// export function completeWorkoutDay({ id, duration }) {
-//     return async function completeWorkoutDayThunk(dispatch) {
-//         dispatch(setStatus(STATUSES.LOADING));
-//         try {
-//             console.log(id, duration);
-//             const token = localStorage.getItem('token');
-
-//             const response = await API.post(`/api/completeWorkoutDay/${id}`,{ duration },{
-//                 headers: {
-//                     Authorization: `Bearer ${token}`
-//                 }
-//             });
-//             console.log("Response from API:", response);
-            
-//             if (response.status === 200) {
-//                 dispatch(updateWorkout({ id, ...response.data, duration }));
-//                 dispatch(setStatus({ status: STATUSES.SUCCESS, message: "Workout day completed successfully" }));
-//             }
-//         } catch (error) {
-//             let errorMessage = "Failed to complete workout day";
-
-//             if (error.response) {
-//                 errorMessage = error.response.data.message || errorMessage;
-//             } else if (error.request) {
-//                 errorMessage = "Cannot connect to the server. Please check your internet or try again later.";
-//             } else {
-//                 errorMessage = error.message;
-//             }
-
-//             dispatch(setError(errorMessage));
-//             dispatch(setStatus({ status: STATUSES.ERROR, message: errorMessage }));
-//         }
-//     };
-// }
-
 export function completeWorkoutDay({ id, duration }) {
     return async function completeWorkoutDayThunk(dispatch) {
         dispatch(setStatus(STATUSES.LOADING));
@@ -361,6 +326,7 @@ export function completeWorkoutDay({ id, duration }) {
             if (response.status === 200) {
                 dispatch(updateWorkout({ id, ...response.data, duration }));
                 dispatch(setStatus({ status: STATUSES.SUCCESS, message: "Workout day completed successfully" }));
+                dispatch(fetchActiveWorkout(id))    
                 return response.data; // Return the data so it can be accessed by the component
             }
         } catch (error) {

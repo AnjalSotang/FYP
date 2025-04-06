@@ -3,19 +3,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Activity, CreditCard, Dumbbell, ListTodo, TrendingUp, Users } from "lucide-react"
 import {
-  Chart,
   ChartContainer,
-  ChartGrid,
-  ChartLine,
   ChartTooltip,
-  ChartXAxis,
-  ChartYAxis,
+  ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
 } from "@/components/ui/chart"
+import * as RechartsPrimitive from "recharts"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import DashboardLayout from '../../components/layout/DashboardLayout';
-
 
 export default function AdminDashboard() {
   return (
@@ -159,35 +157,53 @@ function UserGrowthChart() {
     { date: "Jan 30", users: 500 },
   ]
 
+  // Config object for the new chart component
+  const chartConfig = {
+    users: {
+      color: "#0ea5e9",
+      label: "Users",
+      theme: {
+        light: "#0ea5e9",
+        dark: "#0ea5e9"
+      }
+    }
+  }
+
   return (
-    <ChartContainer className="h-[300px]">
-      <Chart data={data}>
-        <ChartXAxis dataKey="date" />
-        <ChartYAxis />
-        <ChartGrid vertical={false} />
-        <ChartLine dataKey="users" stroke="#0ea5e9" strokeWidth={2} dot={{ fill: "#0ea5e9", r: 4 }} />
-        <ChartTooltip
-          content={({ active, payload }) => {
-            if (active && payload && payload.length) {
-              return (
-                <div className="rounded-lg border bg-background p-2 shadow-sm">
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="flex flex-col">
-                      <span className="text-[0.70rem] uppercase text-muted-foreground">Date</span>
-                      <span className="font-bold text-muted-foreground">{payload[0].payload.date}</span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-[0.70rem] uppercase text-muted-foreground">Users</span>
-                      <span className="font-bold">{payload[0].value}</span>
-                    </div>
-                  </div>
-                </div>
-              )
-            }
-            return null
-          }}
+    <ChartContainer className="h-[300px]" config={chartConfig}>
+      <RechartsPrimitive.ComposedChart data={data}>
+        <RechartsPrimitive.XAxis 
+          dataKey="date" 
+          tickLine={false}
+          axisLine={false}
         />
-      </Chart>
+        <RechartsPrimitive.YAxis 
+          tickLine={false}
+          axisLine={false}
+          tickFormatter={(value) => `${value}`}
+        />
+        <RechartsPrimitive.CartesianGrid vertical={false} strokeDasharray="3 3" />
+        <RechartsPrimitive.Line 
+          dataKey="users"
+          type="monotone"
+          strokeWidth={2}
+          dot={{ fill: "#0ea5e9", r: 4 }}
+        />
+        <ChartTooltip
+          content={({active, payload}) => (
+            <ChartTooltipContent 
+              active={active} 
+              payload={payload}
+              labelKey="date"
+            />
+          )}
+        />
+        <ChartLegend
+          content={props => (
+            <ChartLegendContent {...props} />
+          )}
+        />
+      </RechartsPrimitive.ComposedChart>
     </ChartContainer>
   )
 }
@@ -337,4 +353,3 @@ function NewUsers() {
     </Table>
   )
 }
-

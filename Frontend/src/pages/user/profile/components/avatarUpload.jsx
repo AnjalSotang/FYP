@@ -10,26 +10,26 @@ const AvatarUpload = () => {
   const userData = useSelector(state => state.auth.data); // Get user data from Redux store
   const [avatarSrc, setAvatarSrc] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
-  
-  // Update the avatar source whenever userData changes
- // Update the avatar source whenever userData changes
- useEffect(() => {
-  if (userData?.profileImage) {
-    // Add your backend URL to the path
-    const baseUrl = 'http://localhost:3001'; // Adjust to your backend URL
-    const normalizedPath = userData.profileImage.replace(/\\/g, "/");
-    setAvatarSrc(`${baseUrl}/${normalizedPath}`);
-  } else if (userData?.avatar) {
-    // Similar treatment for avatar
-    const baseUrl = 'http://localhost:3001  ';
-    const normalizedPath = userData.avatar.replace(/\\/g, "/");
-    setAvatarSrc(`${baseUrl}/${normalizedPath}`);
-  }
-}, [userData]);
 
-// Add this to your component to see the actual path value
-console.log("Image path from userData:", userData?.profileImage);
-console.log("Normalized avatar src:", avatarSrc);
+  // Update the avatar source whenever userData changes
+  // Update the avatar source whenever userData changes
+  useEffect(() => {
+    if (userData?.profileImage) {
+      // Add your backend URL to the path
+      const baseUrl = 'http://localhost:3001'; // Adjust to your backend URL
+      const normalizedPath = userData.profileImage.replace(/\\/g, "/");
+      setAvatarSrc(`${baseUrl}/${normalizedPath}`);
+    } else if (userData?.avatar) {
+      // Similar treatment for avatar
+      const baseUrl = 'http://localhost:3001  ';
+      const normalizedPath = userData.avatar.replace(/\\/g, "/");
+      setAvatarSrc(`${baseUrl}/${normalizedPath}`);
+    }
+  }, [userData]);
+
+  // Add this to your component to see the actual path value
+  console.log("Image path from userData:", userData?.profileImage);
+  console.log("Normalized avatar src:", avatarSrc);
   // Handle file selection
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
@@ -41,7 +41,7 @@ console.log("Normalized avatar src:", avatarSrc);
         setAvatarSrc(newAvatarSrc);
       };
       reader.readAsDataURL(file);
-      
+
       // Upload to server
       setIsUploading(true);
       try {
@@ -65,12 +65,12 @@ console.log("Normalized avatar src:", avatarSrc);
       }
     }
   };
-  
+
   // Trigger file input click when button is clicked
   const triggerFileInput = () => {
     document.getElementById('avatar-upload').click();
   };
-  
+
   // Get initials for avatar fallback
   const getInitials = (name) => {
     if (!name) return "U";
@@ -79,7 +79,7 @@ console.log("Normalized avatar src:", avatarSrc);
       .map((n) => n[0])
       .join("");
   };
-  
+
   // If no user data yet, show loading state
   if (!userData) {
     return (
@@ -96,13 +96,13 @@ console.log("Normalized avatar src:", avatarSrc);
 
   return (
     <div className="relative inline-block">
-      <Avatar className="h-24 w-24">
-        <AvatarImage src={avatarSrc}   />
-        <AvatarFallback>
+      <Avatar className="h-40 w-40 rounded-full overflow-hidden">
+        <AvatarImage src={avatarSrc} alt="User Avatar" className="w-full h-full object-cover" />
+        <AvatarFallback className="flex items-center justify-center h-full w-full bg-gray-200 text-xl font-semibold">
           {getInitials(userData?.firstName || userData?.name)}
         </AvatarFallback>
       </Avatar>
-      
+
       <Button
         size="icon"
         variant="outline"
@@ -116,7 +116,7 @@ console.log("Normalized avatar src:", avatarSrc);
           <Upload className="h-4 w-4" />
         )}
       </Button>
-      
+
       <input
         id="avatar-upload"
         type="file"

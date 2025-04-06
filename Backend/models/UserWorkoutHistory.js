@@ -15,7 +15,7 @@ module.exports = (sequelize, Sequelize) => {
           caloriesBurned: {
             type: Sequelize.INTEGER,
           },
-          notes: {
+          notes : {
             type: Sequelize.TEXT,
           },
           rating: {
