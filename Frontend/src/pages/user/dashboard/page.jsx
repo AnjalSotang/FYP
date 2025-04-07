@@ -1,13 +1,12 @@
-// DashboardPage.jsx
+// DashboardPage.jsx - Fixed StatsTab reference
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Plus, Calendar } from "lucide-react"
 import RootLayout from '../../../components/layout/UserLayout'
-// import { fetchProfile } from "../../../../store/authSlice";
-import { useSelector } from "react-redux";
-
+import { useDispatch, useSelector } from "react-redux";
+import { fetchMeasurements, setStatus } from "../../../../store/measurementSlice";
 // Import tab content components
 import { OverviewTab } from "./components/tabComponents/OverviewTab"
 import { WorkoutsTab } from "./components/tabComponents/workoutsTab"
@@ -15,58 +14,20 @@ import { ProgressTab } from "./components/tabComponents/progressTab"
 import { StatsTab } from "./components/tabComponents/statsTab"
 import { PersonalRecordsCard } from "./components/resuableComponents/PersonalCard"
 import { MeasurementsHistory } from "./components/resuableComponents/MeasurementHistory"
-
-
-// Initial personal records data
-const initialRecords = [
-  // { id: 1, exercise: "Bench Press", value: 185, unit: "lbs", type: "1 rep max" },
-  // { id: 2, exercise: "Squat", value: 225, unit: "lbs", type: "1 rep max" },
-  // { id: 3, exercise: "Deadlift", value: 275, unit: "lbs", type: "1 rep max" },
-]
-
-
-// Initial measurements data
-const initialMeasurements = [
-  {
-    date: new Date("2024-03-01"),
-    weight: 182,
-    bodyFat: 18,
-    chest: 42,
-    waist: 34,
-    arms: 15,
-    thighs: 24,
-  },
-  {
-    date: new Date("2024-03-15"),
-    weight: 180,
-    bodyFat: 17.5,
-    chest: 42.5,
-    waist: 33.5,
-    arms: 15.2,
-    thighs: 24.2,
-  },
-]
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from 'react-toastify';
 
 export default function DashboardPage() {
-  
-  // const dispatch = useDispatch();
   const { data } = useSelector((state) => state.auth || {});
+  const dispatch = useDispatch();
+  
+  useEffect(() => {
+    // Fetch data when component mounts
+    dispatch(fetchMeasurements());
+  }, [dispatch])
+
   const [activeTab, setActiveTab] = useState("overview")
-
-
-  const [measurements, setMeasurements] = useState(initialMeasurements)
-  const [records, setRecords] = useState(initialRecords)
-
-   // Handle adding a new measurement
-   const handleAddMeasurement = (newMeasurement) => {
-    setMeasurements([...measurements, newMeasurement])
-  }
-
-  // Handle updating personal records
-  const handleUpdateRecords = (updatedRecords) => {
-    setRecords(updatedRecords)
-  }
-
 
   return (
     <RootLayout>
@@ -75,7 +36,7 @@ export default function DashboardPage() {
           <div>
             <h1 className="text-3xl font-bold mb-1">{data?.username || "User"} Dashboard</h1>
             <p className="text-muted-foreground">Track your progress and manage your workout plans</p>
-          </div>  
+          </div>
 
           <div className="flex gap-3">
             <Link href="/generate">
@@ -108,16 +69,15 @@ export default function DashboardPage() {
           </TabsContent>
 
           <TabsContent value="progress" className="mt-6">
-            <ProgressTab /> 
+            <ProgressTab />
           </TabsContent>
 
           <TabsContent value="stats" className="mt-6">
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <StatsTab  measurements={measurements} />
-            <PersonalRecordsCard records={records} onUpdateRecords={handleUpdateRecords} />
-          </div>
-            <MeasurementsHistory/>
-
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <StatsTab />  
+              <PersonalRecordsCard />
+            </div>
+            <MeasurementsHistory />
           </TabsContent>
         </Tabs>
       </div>

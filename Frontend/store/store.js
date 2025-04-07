@@ -8,6 +8,8 @@ import userWorkoutSlice from './userWorkoutSlice'
 import userWorkoutSlice2 from './userWorkoutSlice2'
 import workoutScheduleSlice from './workoutScheduleSlice'
 import userWorkoutHistorySlice from './userWorkoutHistorySlice'
+import personalRecordSlice from './personalRecordsSlice'
+import measurementSlice from './measurementSlice'
 
 const store = configureStore({
     reducer: {
@@ -19,7 +21,9 @@ const store = configureStore({
         userWorkout: userWorkoutSlice,
         userWorkout2: userWorkoutSlice2,
         workoutSchedule: workoutScheduleSlice,
-        userWorkoutHistory: userWorkoutHistorySlice
+        userWorkoutHistory: userWorkoutHistorySlice,
+        personalRecord: personalRecordSlice,
+        measurement: measurementSlice
     }
 })
 

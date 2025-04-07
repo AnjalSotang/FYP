@@ -9,12 +9,14 @@ import { AddWorkoutCard } from "../resuableComponents/AddWorkoutCard"
 import { ActivityItem } from "../resuableComponents/ActivityItem"
 import { fetchActiveWorkoutsWithHistory, fetchWorkoutHistory } from "../../../../../../store/userWorkoutHistorySlice";
 import { useSelector, useDispatch } from "react-redux";
-import { useEffect, useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { WorkoutHistoryModal } from "../resuableComponents/WorkoutHistoryModal"
 
 export function OverviewTab() {
   const dispatch = useDispatch();
   const historyEntries = useSelector((state) => state.userWorkoutHistory?.data?.historyEntries || []);
   const activeWorkoutEntries = useSelector((state) => state.userWorkoutHistory?.data?.activeWorkoutsHistory || []);
+  const [historyModalOpen, setHistoryModalOpen] = useState(false);
 
   useEffect(() => {
     dispatch(fetchWorkoutHistory());
@@ -225,6 +227,7 @@ export function OverviewTab() {
     return value.toString();
   };
 
+  console.log(recentActivityEntries)
   return (
     <>
       {/* New Week Welcome Message */}
@@ -348,6 +351,7 @@ export function OverviewTab() {
         <CardContent>
           <div className="space-y-2">
             {recentActivityEntries && recentActivityEntries.length > 0 ? (
+ 
               recentActivityEntries.map((day, index) => (
                 <ActivityItem key={index} day={day} index={index} />
               ))
@@ -357,16 +361,13 @@ export function OverviewTab() {
           </div>
         </CardContent>
         <CardFooter>
-          <CardFooter>
-            <Button asChild variant="outline" className="w-full gap-1">
-              <Link to="/history">
+              <Button variant="outline" className="w-full gap-1" onClick={() => setHistoryModalOpen(true)}>
                 View Full History
                 <ChevronRight className="h-4 w-4" />
-              </Link>
-            </Button>
-          </CardFooter>
-
-        </CardFooter>
+              </Button>
+            </CardFooter>
+             {/* Workout History Modal */}
+          <WorkoutHistoryModal open={historyModalOpen} onOpenChange={setHistoryModalOpen} />
       </Card>
     </>
   )

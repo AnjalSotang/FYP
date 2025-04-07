@@ -112,7 +112,7 @@ export default function WorkoutsPage() {
                     Edit Plan
                   </Link>
                 </Button>
-                <NewWorkoutDayDialog id={numericId} />
+                <NewWorkoutDayDialog Dialog id={numericId} />
               </div>
             </DashboardHeader>
 

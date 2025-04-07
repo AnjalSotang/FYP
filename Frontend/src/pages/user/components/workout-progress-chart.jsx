@@ -7,6 +7,7 @@ const WorkoutProgressChart = ({ history = [] }) => {
     setIsMounted(true);
   }, []);
 
+  console.log(history)
   // Find the maximum duration for scaling
   const maxDuration = Math.max(...history.map((day) => day.duration || 0), 30);
 

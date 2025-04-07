@@ -14,7 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Checkbox } from "@/components/ui/checkbox"
-import { ChevronLeft, Clock, Dumbbell, Play, Share, Trophy } from "lucide-react"
+import { ChevronLeft, Clock, Dumbbell, Play, Share, Trophy, Battery, Check } from "lucide-react"
 import { useParams } from "react-router-dom";
 import { fetchActiveWorkout, completeWorkoutDay } from "../../../../../store/userWorkoutSlice2"
 // Near the top of your file, import the toast components
@@ -25,7 +25,6 @@ import RootLayout from '../../../../components/layout/UserLayout';
 
 
 export default function WorkoutPage() {
-  const [showProgramCompleteDialog, setShowProgramCompleteDialog] = useState(false);
   const { id } = useParams();
   const dispatch = useDispatch();
   console.log(id)
@@ -48,6 +47,9 @@ export default function WorkoutPage() {
   const [workoutStarted, setWorkoutStarted] = useState(false)
   const [workoutTimer, setWorkoutTimer] = useState(0)
   const [timerInterval, setTimerInterval] = useState(null)
+  const [isRestDay, setIsRestDay] = useState(false)
+  const [showProgramCompleteDialog, setShowProgramCompleteDialog] = useState(false);
+
 
 
   // Fetch workout data when component mounts or ID changes
@@ -60,7 +62,14 @@ export default function WorkoutPage() {
   // Update local state when workout data is loaded
   useEffect(() => {
     if (workout && workout.days && workout.days.length > 0) {
-      setActiveExercises(workout.days[0].exercises || []);
+      const currentDay = workout.days.find(day => day.day === workout.currentDay);
+      if (currentDay && currentDay.dayName === "Rest Day") {
+        setIsRestDay(true);
+        // No exercises to set for rest days
+      } else {
+        setActiveExercises(workout.days[0].exercises || []);
+        setIsRestDay(false);
+      }
     }
   }, [workout]);
 
@@ -129,31 +138,42 @@ export default function WorkoutPage() {
     }
   };
 
-  //   // Add this useEffect to your component
-  // useEffect(() => {
-  //   if (workout && workout.nextWorkout === "All Workouts Completed") {
-  //     setShowProgramCompleteDialog(true);
-  //   }
-  // }, [workout]);
-  // const completeWorkout = async () => {
-  //   if (timerInterval) {
-  //     clearInterval(timerInterval);
-  //     setTimerInterval(null);
-  //   }
+  // Function to handle rest day completion
+  const completeRestDay = async () => {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      setTimerInterval(null);
+    }
+    
+    try {
+      // Same API call as regular workouts, but with isRestDay flag
 
-  //   try {
-  //     await dispatch(completeWorkoutDay({ id: workout.id, duration: workoutTimer }));
-
-  //     // Reset state after completion
-  //     setWorkoutTimer(0);
-  //     setWorkoutStarted(false);
-  //     setWorkoutComplete(false);
-
-  //     dispatch(fetchActiveWorkout(id));
-  //   } catch (error) {
-  //     console.error("Error completing workout:", error);
-  //   }
-  // };
+      const result = await dispatch(completeWorkoutDay({ 
+        id: workout.id, 
+        duration: workoutTimer,
+        isRestDay: true 
+      }));
+        
+      // Reset state after completion
+      setWorkoutTimer(0);
+      setWorkoutStarted(false);
+      
+      // Check if the program is complete
+      if (result && result.nextWorkout === "All Workouts Completed") {
+        setShowProgramCompleteDialog(true);
+      }
+    } catch (error) {
+      console.error("Error completing rest day:", error);
+      toast.error("Failed to save your rest day progress. Please try again.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    }
+  };
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60)
@@ -240,7 +260,6 @@ export default function WorkoutPage() {
                   <h1 className="text-3xl font-bold">{workout.title}</h1>
                   <p className="text-muted-foreground">
                     Day {workout.currentDay} of {workout.totalDays}: {workout?.days?.find(day => day.day === workout.currentDay)?.dayName || "No workout today"}
-
                   </p>
                 </div>
 
@@ -249,10 +268,10 @@ export default function WorkoutPage() {
                     <div className="text-lg font-mono bg-primary/10 text-primary px-3 py-1 rounded-md">
                       {formatTime(workoutTimer)}
                     </div>
-                    {workoutComplete ? (
-                      <Button onClick={completeWorkout} className="gap-2">
+                    {workoutComplete || isRestDay ? (
+                      <Button onClick={isRestDay ? completeRestDay : completeWorkout} className="gap-2">
                         <Trophy className="h-4 w-4" />
-                        Finish Workout
+                        Finish {isRestDay ? "Rest Day" : "Workout"}
                       </Button>
                     ) : (
                       <Button variant="outline" disabled>
@@ -263,7 +282,7 @@ export default function WorkoutPage() {
                 ) : (
                   <Button onClick={startWorkout} className="gap-2">
                     <Play className="h-4 w-4" />
-                    Start Workout
+                    Start {isRestDay ? "Rest Day" : "Workout"}
                   </Button>
                 )}
               </div>
@@ -281,65 +300,89 @@ export default function WorkoutPage() {
                   {workout.level}
                 </Badge>
                 <Badge variant="outline">{workout.category}</Badge>
-                <Badge variant="outline">{activeExercises.length} exercises</Badge>
+                {!isRestDay && <Badge variant="outline">{activeExercises.length} exercises</Badge>}
+                {isRestDay && <Badge variant="outline">Rest Day</Badge>}
               </div>
 
               <Progress value={workout.progress} className="h-2 mb-2" />
               <div className="text-sm text-muted-foreground">{workout.progress}% of program completed</div>
             </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Exercises</CardTitle>
-                <CardDescription>Complete all exercises to finish today's workout</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {activeExercises.map((exercise, index) => (
-                    <div
-                      key={exercise.id}
-                      className={`p-4 rounded-lg border ${exercise.completed ? "bg-primary/5 border-primary/20" : "bg-background"}`}
-                    >
-                      <div className="flex items-start">
-                        <div className="mr-4">
-                          <Checkbox
-                            checked={exercise.completed}
-                            onCheckedChange={() => toggleExerciseComplete(exercise.id)}
-                            disabled={!workoutStarted}
-                            className="mt-1"
-                          />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
-                            <h3 className="font-medium text-lg">
-                              {index + 1}. {exercise.name}
-                            </h3>
-                            <Badge variant="outline" className="w-fit">
-                              {exercise.equipment}
-                            </Badge>
+            {isRestDay ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Rest Day</CardTitle>
+                  <CardDescription>Today is your scheduled rest day. Focus on recovery!</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="py-8 text-center">
+                    <div className="mb-4">
+                      <Battery className="h-16 w-16 mx-auto text-green-500" />
+                    </div>
+                    <h3 className="text-xl font-medium mb-2">Recovery Recommendations:</h3>
+                    <ul className="text-left space-y-2 max-w-md mx-auto">
+                      <li>• Stay hydrated</li>
+                      <li>• Get adequate sleep</li>
+                      <li>• Light stretching if needed</li>
+                      <li>• Proper nutrition</li>
+                    </ul>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Exercises</CardTitle>
+                  <CardDescription>Complete all exercises to finish today's workout</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {activeExercises.map((exercise, index) => (
+                      <div
+                        key={exercise.id}
+                        className={`p-4 rounded-lg border ${exercise.completed ? "bg-primary/5 border-primary/20" : "bg-background"}`}
+                      >
+                        <div className="flex items-start">
+                          <div className="mr-4">
+                            <Checkbox
+                              checked={exercise.completed}
+                              onCheckedChange={() => toggleExerciseComplete(exercise.id)}
+                              disabled={!workoutStarted}
+                              className="mt-1"
+                            />
                           </div>
+                          <div className="flex-1">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
+                              <h3 className="font-medium text-lg">
+                                {index + 1}. {exercise.name}
+                              </h3>
+                              <Badge variant="outline" className="w-fit">
+                                {exercise.equipment}
+                              </Badge>
+                            </div>
 
-                          <div className="grid grid-cols-3 gap-4 text-sm">
-                            <div>
-                              <span className="text-muted-foreground">Sets: </span>
-                              <span className="font-medium">{exercise.sets}</span>
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">Reps: </span>
-                              <span className="font-medium">{exercise.reps}</span>
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">Rest: </span>
-                              <span className="font-medium">{exercise.rest}</span>
+                            <div className="grid grid-cols-3 gap-4 text-sm">
+                              <div>
+                                <span className="text-muted-foreground">Sets: </span>
+                                <span className="font-medium">{exercise.sets}</span>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Reps: </span>
+                                <span className="font-medium">{exercise.reps}</span>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Rest: </span>
+                                <span className="font-medium">{exercise.rest}</span>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           <div>
@@ -349,18 +392,20 @@ export default function WorkoutPage() {
                 <CardDescription>Track your progress for this workout</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Exercises:</span>
-                    <span>
-                      {activeExercises.filter((e) => e.completed).length} of {activeExercises.length} completed
-                    </span>
+                {!isRestDay && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Exercises:</span>
+                      <span>
+                        {activeExercises.filter((e) => e.completed).length} of {activeExercises.length} completed
+                      </span>
+                    </div>
+                    <Progress
+                      value={(activeExercises.filter((e) => e.completed).length / activeExercises.length) * 100}
+                      className="h-2"
+                    />
                   </div>
-                  <Progress
-                    value={(activeExercises.filter((e) => e.completed).length / activeExercises.length) * 100}
-                    className="h-2"
-                  />
-                </div>
+                )}
 
                 <div className="pt-2 space-y-4">
                   <div className="flex items-center justify-between">
@@ -371,13 +416,15 @@ export default function WorkoutPage() {
                     <div className="font-mono">{formatTime(workoutTimer)}</div>
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <Dumbbell className="h-5 w-5 mr-2 text-muted-foreground" />
-                      <span>Total Sets</span>
+                  {!isRestDay && (
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <Dumbbell className="h-5 w-5 mr-2 text-muted-foreground" />
+                        <span>Total Sets</span>
+                      </div>
+                      <div>{activeExercises.reduce((sum, ex) => sum + parseInt(ex.sets || 0), 0)}</div>
                     </div>
-                    <div>{activeExercises.reduce((sum, ex) => sum + parseInt(ex.sets || 0), 0)}</div>
-                  </div>
+                  )}
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
@@ -387,6 +434,8 @@ export default function WorkoutPage() {
                     <div>
                       {!workoutStarted ? (
                         <Badge variant="outline">Not Started</Badge>
+                      ) : isRestDay ? (
+                        <Badge variant="secondary">Rest Day</Badge>
                       ) : workoutComplete ? (
                         <Badge variant="default" className="bg-green-500 hover:bg-green-600">
                           Completed
@@ -399,19 +448,29 @@ export default function WorkoutPage() {
                 </div>
               </CardContent>
               <CardFooter className="flex flex-col gap-3">
-                {workoutComplete ? (
-                  <Button className="w-full gap-2" onClick={completeWorkout}>
-                    <Trophy className="h-4 w-4" />
-                    Finish Workout
-                  </Button>
-                ) : !workoutStarted ? (
+                {workoutStarted ? (
+                  isRestDay ? (
+                    <Button 
+                      className="w-full gap-2" 
+                      onClick={completeRestDay}
+                    >
+                      <Check className="h-4 w-4" />
+                      Complete Rest Day
+                    </Button>
+                  ) : workoutComplete ? (
+                    <Button className="w-full gap-2" onClick={completeWorkout}>
+                      <Trophy className="h-4 w-4" />
+                      Finish Workout
+                    </Button>
+                  ) : (
+                    <Button className="w-full" disabled>
+                      Complete All Exercises
+                    </Button>
+                  )
+                ) : (
                   <Button className="w-full gap-2" onClick={startWorkout}>
                     <Play className="h-4 w-4" />
-                    Start Workout
-                  </Button>
-                ) : (
-                  <Button className="w-full" disabled>
-                    Complete All Exercises
+                    Start {isRestDay ? "Rest Day" : "Workout"}
                   </Button>
                 )}
 
@@ -458,7 +517,7 @@ export default function WorkoutPage() {
           </DialogContent>
         </Dialog>
 
-        <Dialog open={workoutComplete && workoutStarted} onOpenChange={(open) => setWorkoutComplete(open)}>
+        <Dialog open={workoutComplete && workoutStarted && !isRestDay} onOpenChange={(open) => setWorkoutComplete(open)}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Workout Completed!</DialogTitle>

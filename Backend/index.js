@@ -8,6 +8,8 @@ const workoutDayRoutes = require("./routes/workoutdayRoutes")
 const userWorkoutRoutes = require("./routes/user/userWorkoutRoutes")
 const workoutScheduleRoutes = require("./routes/user/workoutScheduleRoutes")
 const workoutHistoryRoutes = require("./routes/user/userWorkoutHistoryRoutes")
+const userRecordsRoutes = require("./routes/user/userRecordsRoutes")
+const userMeasurementsRoutes = require("./routes/user/userMeasurementsRoutes")
 
 const path = require("path");
 const cors = require("cors");
@@ -16,7 +18,7 @@ const bcrypt = require('bcrypt')
 
 
 // Synchronize the models with the database
-sequelize.sync({ force: 0}) // Use 'false' to prevent dropping tables
+sequelize.sync({ force: 0})// Use 'false' to prevent dropping tables
   .then(() => {
     console.log('Database synced successfully');
   })
@@ -32,7 +34,7 @@ app.use(express.urlencoded({ extended: true })); // Parse URL-encoded payloads p
 
 
 app.use('/auth', userRoutes)
-app.use('/api', addRoutes, excerciseRoutes, workoutRoutes, workoutDayRoutes, userWorkoutRoutes, workoutScheduleRoutes, workoutHistoryRoutes)
+app.use('/api', addRoutes, excerciseRoutes, workoutRoutes, workoutDayRoutes, userWorkoutRoutes, workoutScheduleRoutes, workoutHistoryRoutes, userRecordsRoutes, userMeasurementsRoutes)
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 

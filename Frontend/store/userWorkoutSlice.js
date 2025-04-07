@@ -58,6 +58,7 @@ export function addUserWorkout(planId) {
                 dispatch(setWorkout(response.data.data))
                 console.log(response.data.data)
                 dispatch(setStatus({ status: STATUSES.SUCCESS, message: response.data.message }))
+                        // dispatch(fe)
                 console.log(response.data.message)
 
             }
