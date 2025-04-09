@@ -1,3 +1,6 @@
+const UserWorkout = require("./UserWorkout");
+const Workout = require("./Workout");
+
 module.exports = (sequelize, Sequelize) => {
     const UserWorkoutHistory = sequelize.define("UserWorkoutHistory", {
         date: {
@@ -20,6 +23,9 @@ module.exports = (sequelize, Sequelize) => {
           },
           rating: {
             type: Sequelize.INTEGER, // user rating of the workout (1-5)
+          },
+          workoutdayId: {
+            type: Sequelize.INTEGER,
           }
     }, { timestamps: true });
 

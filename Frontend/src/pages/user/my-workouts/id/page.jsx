@@ -174,7 +174,7 @@ export default function WorkoutPage() {
       });
     }
   };
-
+  
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60

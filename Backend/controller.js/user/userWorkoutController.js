@@ -8,6 +8,8 @@ const createUserWorkout = async (req, res) => {
     if (!userId) {
       return res.status(400).json({ message: "User ID not found in token." });
     }
+
+    console.log("0-0",users)
     console.log("Decoded User ID:", userId);
 
     const userExists = await users.findOne({ where: { id: userId } });
@@ -501,7 +503,8 @@ const completeWorkoutDay = async (req, res) => {
         duration: 0, // Set duration to 0 for rest days
         caloriesBurned: 0,
         isRestDay: true, // Add this flag
-        notes: `Completed rest day ${UserWorkout.currentDay}`
+        notes: `Completed rest day ${UserWorkout.currentDay}`,
+        workoutdayId: currentWorkoutDay.id
       }).then(record => {
         console.log("Rest day record created:", record.id);
       }).catch(err => {
@@ -516,7 +519,8 @@ const completeWorkoutDay = async (req, res) => {
         duration: duration,
         caloriesBurned: caloriesBurned,
         notes: `Completed ${currentWorkoutDay.dayName}`,
-        isRestDay: false // Set this flag to false
+        isRestDay: false, // Set this flag to false
+        workoutdayId: currentWorkoutDay.id
       }).then(record => {
         console.log("Workout record created:", record.id);
       }).catch(err => {

@@ -21,7 +21,7 @@ export function ActivityItem({ day, index }) {
 
       <div className="flex-1">
         {/* {console.log(day.duration)} */}
-        <div className="font-medium">{day.calories ? "Workout Completed" : "Rest Day"}</div>
+        <div className="font-medium">{day.duration ? "Workout Completed" : "Rest Day"}</div>
         <div className="text-sm text-muted-foreground">{formattedDate}</div>
       </div>
       {day.duration !== 0 && (
