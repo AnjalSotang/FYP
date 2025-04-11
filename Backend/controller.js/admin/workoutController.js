@@ -1,5 +1,7 @@
 const { Op, Sequelize } = require("sequelize");
-const { workout, workoutday, excercise, workoutdayExcercise } = require('../../models/index');
+const { workout, workoutday, excercise, workoutdayExcercise, users, sequelize, userWorkout } = require('../../models/index');
+// Import the notification service
+const { createNotification } = require('../notificationController');
 
 console.log("workoutdayExcercise:", workout);
 
@@ -28,7 +30,7 @@ const createWorkout = async (req, res) => {
     const imagePath = image.path;  // Path to the uploaded image
 
     // 3️⃣ Create the Workout in the DB
-    const response = await workout.create({
+    const newWorkout = await workout.create({
       name,
       description,
       level,
@@ -36,13 +38,29 @@ const createWorkout = async (req, res) => {
       goal,
       calories,
       equipment,
-      imagePath// Save the file path to the database
+      imagePath // Save the file path to the database
     });
 
-    // 4️⃣ Response
+    // 4️⃣ Get all users and create notifications for them
+    const Users = await users.findAll();
+    
+
+    // Create a notification for each user
+    for (const user of Users) {
+      await createNotification(
+        user.id,
+        "New Workout Plan",
+        `A new workout '${name}' (${level} level) has been added to the system. Check it out!`,
+        'workout_added',
+        newWorkout.id,
+        'Workout'
+      );  
+    }
+
+    // 5️⃣ Response
     res.status(201).json({
       message: "Workout created successfully!",
-      data: response,
+      data: newWorkout,
     });
 
   } catch (error) {
@@ -51,8 +69,6 @@ const createWorkout = async (req, res) => {
   }
 };
 
-
-// Get all workout plans
 const getAllWorkout = async (req, res) => {
   try {
     const workoutPlans = await workout.findAll({
@@ -96,6 +112,48 @@ const getAllWorkout = async (req, res) => {
     return res.status(500).json({ error: 'Failed to fetch workout plans' });
   }
 };
+
+const getWorkoutMetrics = async (req, res) => {
+  try {
+      // Get current date and first day of current month
+      const currentDate = new Date();
+      const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+      
+      // Count total active workout plans
+      const totalWorkoutPlans = await workout.count({
+          where: { 
+              is_active: true 
+          }
+      });
+      
+      // Count new workout plans added this month
+      const newWorkoutPlansThisMonth = await workout.count({
+          where: {
+              is_active: true,
+              createdAt: {
+                  [Op.gte]: firstDayOfMonth
+              }
+          }
+      });
+      
+      // Format the description string
+      const description = `+${newWorkoutPlansThisMonth} new this month`;
+      
+      res.status(200).json({
+          title: "Workout Plans",
+          value: totalWorkoutPlans.toString(),
+          description: description,
+          icon: "ListTodo"
+      });
+  } catch (error) {
+      console.error("Error fetching workout plan metrics:", error);
+      res.status(500).json({
+          message: "An internal server error occurred. Please try again later.",
+          error: error.message
+      });
+  }
+};
+
 
 const deleteWorkout = async (req, res) => {
   try {
@@ -267,11 +325,101 @@ const getWorkout = async (req, res) => {
   }
 };
 
+const getPopularWorkoutPlans = async (req, res) => {
+  try {
+    // Get all workouts
+    const workouts = await workout.findAll({
+      attributes: [
+        'id',
+        'name',
+        'goal',
+        'level',
+        'imagePath'
+      ]
+    });
+
+    // Get count of users per workout
+    const userCounts = await userWorkout.findAll({
+      attributes: [
+        'workoutId',
+        [sequelize.fn('COUNT', sequelize.col('id')), 'userCount']
+      ],
+      group: ['workoutId']
+    });
+
+    // Get count of users who joined in last 7 days per workout
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    
+    const recentUserCounts = await userWorkout.findAll({
+      attributes: [
+        'workoutId',
+        [sequelize.fn('COUNT', sequelize.col('id')), 'recentCount']
+      ],
+      where: {
+        createdAt: {
+          [Op.gte]: sevenDaysAgo
+        }
+      },
+      group: ['workoutId']
+    });
+
+    // Create a map for quick lookup
+    const countMap = {};
+    userCounts.forEach(count => {
+      countMap[count.workoutId] = parseInt(count.get('userCount'));
+    });
+
+    const recentCountMap = {};
+    recentUserCounts.forEach(count => {
+      recentCountMap[count.workoutId] = parseInt(count.get('recentCount'));
+    });
+
+    // Merge data and calculate trends
+    const formattedWorkouts = workouts.map(workoutItem => {
+      const count = countMap[workoutItem.id] || 0;
+      const recentCount = recentCountMap[workoutItem.id] || 0;
+      
+      // Calculate trend (up if more than 10% of users joined in the last week)
+      const trend = (recentCount / (count || 1)) > 0.1 ? 'up' : 'down';
+      
+      return {
+        id: workoutItem.id,
+        name: workoutItem.name,
+        users: count,
+        trend: trend,
+        category: workoutItem.goal,
+        level: workoutItem.level,
+        image: workoutItem.imagePath || "/placeholder.svg?height=40&width=40"
+      };
+    });
+
+    // Sort by user count and limit to top 5
+    formattedWorkouts.sort((a, b) => b.users - a.users);
+    const topWorkouts = formattedWorkouts.slice(0, 5);
+
+    // Return response
+    res.status(200).json({
+      data: topWorkouts
+    });
+  } catch (error) {
+    console.error("Error fetching popular workout plans:", error);
+    res.status(500).json({
+      message: "An internal server error occurred while fetching popular workout plans.",
+      error: error.message
+    });
+  }
+};
+
+
+
 module.exports = {
   createWorkout,
   getAllWorkout,
   deleteWorkout,
   updateWorkout,
   searchWorkouts,
-  getWorkout
+  getWorkout,
+  getWorkoutMetrics,
+  getPopularWorkoutPlans
 }

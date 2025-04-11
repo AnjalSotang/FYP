@@ -150,6 +150,7 @@ export function fetchAllHistory() {
 
             if (response.status === 200) {
                 // Format the workout data with history information
+                console.log("Response from API:", response.data);
                 dispatch(setAllHistory(response.data));
                 dispatch(setStatus({ status: STATUSES.SUCCESS }));
             }

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { ArrowUpDown, Edit, MoreHorizontal, Search, Trash2, UserPlus } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -26,114 +26,39 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import DashboardLayout from '../../../components/layout/DashboardLayout';
-
-// Mock data for users
-const users = [
-  {
-    id: "1",
-    name: "Sarah Johnson",
-    email: "sarah.johnson@example.com",
-    role: "admin",
-    status: "active",
-    joined: "Jan 10, 2023",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "2",
-    name: "Michael Chen",
-    email: "michael.chen@example.com",
-    role: "user",
-    status: "active",
-    joined: "Feb 15, 2023",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "3",
-    name: "Emma Davis",
-    email: "emma.davis@example.com",
-    role: "trainer",
-    status: "active",
-    joined: "Mar 22, 2023",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "4",
-    name: "James Wilson",
-    email: "james.wilson@example.com",
-    role: "user",
-    status: "inactive",
-    joined: "Apr 5, 2023",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "5",
-    name: "Olivia Martinez",
-    email: "olivia.martinez@example.com",
-    role: "user",
-    status: "active",
-    joined: "May 18, 2023",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "6",
-    name: "William Taylor",
-    email: "william.taylor@example.com",
-    role: "trainer",
-    status: "active",
-    joined: "Jun 30, 2023",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "7",
-    name: "Sophia Brown",
-    email: "sophia.brown@example.com",
-    role: "user",
-    status: "pending",
-    joined: "Jul 12, 2023",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "8",
-    name: "Liam Garcia",
-    email: "liam.garcia@example.com",
-    role: "user",
-    status: "active",
-    joined: "Aug 25, 2023",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "9",
-    name: "Ava Rodriguez",
-    email: "ava.rodriguez@example.com",
-    role: "user",
-    status: "inactive",
-    joined: "Sep 8, 2023",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "10",
-    name: "Noah Lee",
-    email: "noah.lee@example.com",
-    role: "trainer",
-    status: "active",
-    joined: "Oct 17, 2023",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-]
+import { toast, ToastContainer } from "react-toastify"
+import { useDispatch } from "react-redux"
+import { fetchUsers, updateUser, deleteUser, setStatus } from "../../../../store/adminUsersSlice";
+import STATUSES from "../../../globals/status/statuses";
+import { Link } from "react-router-dom"
+import "react-toastify/dist/ReactToastify.css";
+import { useSelector } from "react-redux"
 
 export default function UsersPage() {
+  const { data: users, status } = useSelector((state) => state.adminUsers);
+  const dispatch = useDispatch();
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [roleFilter, setRoleFilter] = useState("all")
-  const [isAddUserOpen, setIsAddUserOpen] = useState(false)
   const [isEditUserOpen, setIsEditUserOpen] = useState(false)
   const [selectedUser, setSelectedUser] = useState(null);
+  // Add state to track form data
+  const [editFormData, setEditFormData] = useState({
+    name: '',
+    email: '',
+    role: '',
+    status: ''
+  });
+
+  useEffect(() => {
+    dispatch(fetchUsers());
+  }, [dispatch]);
 
   // Filter users based on search term and filters
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
+      (user?.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (user?.email?.toLowerCase() || '').includes(searchTerm.toLowerCase());
 
     const matchesStatus = statusFilter === "all" || user.status === statusFilter
     const matchesRole = roleFilter === "all" || user.role === roleFilter
@@ -141,249 +66,289 @@ export default function UsersPage() {
     return matchesSearch && matchesStatus && matchesRole
   })
 
+  // Update handleEditUser to initialize form data
   const handleEditUser = (user) => {
     setSelectedUser(user);
+    setEditFormData({
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      status: user.status
+    });
     setIsEditUserOpen(true);
   };
-  
+
+  // Add handlers for form changes
+  const handleInputChange = (e) => {
+    const { id, value } = e.target;
+    setEditFormData(prev => ({
+      ...prev,
+      [id.replace('edit-', '')]: value
+    }));
+  };
+
+  const handleRoleChange = (value) => {
+    setEditFormData(prev => ({
+      ...prev,
+      role: value
+    }));
+  };
+
+  const handleStatusChange = (value) => {
+    setEditFormData(prev => ({
+      ...prev,
+      status: value
+    }));
+  };
+
+  // Updated save function to use state values
+  const handleSaveUserChanges = () => {
+    if (!selectedUser) return;
+
+    const userData = {
+      id: selectedUser.id,
+      name: editFormData.name,
+      email: editFormData.email,
+      role: editFormData.role,
+      status: editFormData.status
+    };
+
+    dispatch(updateUser(userData));
+    setIsEditUserOpen(false);
+    toast.info("Updating user...");
+  };
+
+  const handleDeleteUser = (userId) => {
+    // Confirm before deleting
+    if (window.confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
+      dispatch(deleteUser(userId));
+      toast.info("Deleting user...");
+    }
+  };
 
   return (
     <DashboardLayout>
-  <div className="min-h-screen p-4 md:p-6 lg:p-8 space-y-6">
-    {/* Header section with improved spacing */}
-    <div className="mb-8">
-      <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">Users</h1>
-      <p className="text-sm md:text-base text-muted-foreground">Manage user accounts and permissions</p>
-    </div>
-
-    {/* Filter and search section with better responsiveness */}
-    <div className="flex flex-col gap-6 mb-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="relative w-full">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Search users..."
-            className="pl-10 h-10"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+      <div className="min-h-screen p-4 md:p-6 lg:p-8 space-y-6">
+        {/* Add a toast container in your component if not already present */}
+        <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
+        {/* Header section with improved spacing */}
+        <div className="mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">Users</h1>
+          <p className="text-sm md:text-base text-muted-foreground">Manage user accounts and permissions</p>
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="h-10">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="inactive">Inactive</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={roleFilter} onValueChange={setRoleFilter}>
-          <SelectTrigger className="h-10">
-            <SelectValue placeholder="Filter by role" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Roles</SelectItem>
-            <SelectItem value="admin">Admin</SelectItem>
-            <SelectItem value="trainer">Trainer</SelectItem>
-            <SelectItem value="user">User</SelectItem>
-          </SelectContent>
-        </Select>
-        <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
-          <DialogTrigger asChild>
-            <Button className="h-10">
-              <UserPlus className="mr-2 h-4 w-4" />
-              Add User
-            </Button>
-          </DialogTrigger>
+
+        {/* Filter and search section with better responsiveness */}
+        <div className="flex flex-col gap-6 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search users..."
+                className="pl-10 h-10"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="h-10">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={roleFilter} onValueChange={setRoleFilter}>
+              <SelectTrigger className="h-10">
+                <SelectValue placeholder="Filter by role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Roles</SelectItem>
+                <SelectItem value="admin">Admin</SelectItem>
+                {/* <SelectItem value="trainer">Trainer</SelectItem> */}
+                <SelectItem value="user">User</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Table Card with improved spacing */}
+        <Card className="shadow-sm border-slate-200">
+          <CardHeader className="px-6 pt-6 pb-4">
+            <CardTitle className="text-lg md:text-xl">All Users</CardTitle>
+          </CardHeader>
+          <CardContent className="px-6">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[300px]">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">User</span>
+                        <Button variant="ghost" size="sm" className="h-8 p-0">
+                          <ArrowUpDown className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableHead>
+                    <TableHead className="font-medium">Role</TableHead>
+                    <TableHead className="font-medium">Status</TableHead>
+                    <TableHead className="font-medium">Joined</TableHead>
+                    <TableHead className="text-right font-medium">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredUsers.map((user) => {
+                    const imageUrl = user?.avatar ? user.avatar.replace(/\\/g, "/") : "";
+
+                    return (
+                      <TableRow key={user.id}>
+                        <TableCell className="py-4">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-10 w-10">
+                              <AvatarImage src={`http://localhost:3001/${imageUrl}`} alt={user.name} />
+                              <AvatarFallback>
+                                {user?.name ? user.name.substring(0, 2).toUpperCase() : 'U'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-medium">{user.name}</p>
+                              <p className="text-xs md:text-sm text-muted-foreground">{user.email}</p>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={user.role === "admin" ? "destructive" : "secondary"}
+                              className="capitalize px-3 py-1"
+                            >
+                              {user.role}
+                            </Badge>
+                          </TableCell>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={
+                              user.status === "active" ? "default" : user.status === "inactive" ? "secondary" : "outline"
+                            }
+                            className="capitalize px-3 py-1"
+                          >
+                            {user.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-sm">{user.joined}</TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuItem onClick={() => handleEditUser(user)}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                className="text-destructive"
+                                onClick={() => handleDeleteUser(user.id)}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Edit User Dialog with better spacing - UPDATED WITH CONTROLLED COMPONENTS */}
+        <Dialog open={isEditUserOpen} onOpenChange={setIsEditUserOpen}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader className="space-y-2">
-              <DialogTitle className="text-xl">Add New User</DialogTitle>
-              <DialogDescription>Add a new user to your fitness platform.</DialogDescription>
+              <DialogTitle className="text-xl">Edit User</DialogTitle>
+              <DialogDescription>Make changes to the user profile.</DialogDescription>
             </DialogHeader>
-            <div className="grid gap-5 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right text-sm">
-                  Name
-                </Label>
-                <Input id="name" className="col-span-3" />
+            {selectedUser && (
+              <div className="grid gap-5 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="edit-name" className="text-right text-sm">
+                    Name
+                  </Label>
+                  <Input
+                    id="edit-name"
+                    value={editFormData.name}
+                    onChange={handleInputChange}
+                    className="col-span-3"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="edit-email" className="text-right text-sm">
+                    Email
+                  </Label>
+                  <Input
+                    id="edit-email"
+                    type="email"
+                    value={editFormData.email}
+                    onChange={handleInputChange}
+                    className="col-span-3"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="edit-role" className="text-right text-sm">
+                    Role
+                  </Label>
+                  <Select
+                    value={editFormData.role}
+                    onValueChange={handleRoleChange}
+                  >
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="user">User</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="edit-status" className="text-right text-sm">
+                    Status
+                  </Label>
+                  <Select
+                    value={editFormData.status}
+                    onValueChange={handleStatusChange}
+                  >
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="email" className="text-right text-sm">
-                  Email
-                </Label>
-                <Input id="email" type="email" className="col-span-3" />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="role" className="text-right text-sm">
-                  Role
-                </Label>
-                <Select>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="trainer">Trainer</SelectItem>
-                    <SelectItem value="user">User</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+            )}
             <DialogFooter className="px-2 pt-2">
-              <Button type="submit">Add User</Button>
+              <Button type="button" onClick={handleSaveUserChanges}>Save Changes</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
-    </div>
-
-    {/* Table Card with improved spacing */}
-    <Card className="shadow-sm border-slate-200">
-      <CardHeader className="px-6 pt-6 pb-4">
-        <CardTitle className="text-lg md:text-xl">All Users</CardTitle>
-      </CardHeader>
-      <CardContent className="px-6">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[300px]">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">User</span>
-                    <Button variant="ghost" size="sm" className="h-8 p-0">
-                      <ArrowUpDown className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableHead>
-                <TableHead className="font-medium">Role</TableHead>
-                <TableHead className="font-medium">Status</TableHead>
-                <TableHead className="font-medium">Joined</TableHead>
-                <TableHead className="text-right font-medium">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredUsers.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell className="py-4">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={user.avatar} alt={user.name} />
-                        <AvatarFallback>{user.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">{user.name}</p>
-                        <p className="text-xs md:text-sm text-muted-foreground">{user.email}</p>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="capitalize px-3 py-1">
-                      {user.role}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        user.status === "active" ? "default" : user.status === "inactive" ? "secondary" : "outline"
-                      }
-                      className="capitalize px-3 py-1"
-                    >
-                      {user.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-sm">{user.joined}</TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => handleEditUser(user)}>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-destructive">
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </CardContent>
-    </Card>
-
-    {/* Edit User Dialog with better spacing */}
-    <Dialog open={isEditUserOpen} onOpenChange={setIsEditUserOpen}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader className="space-y-2">
-          <DialogTitle className="text-xl">Edit User</DialogTitle>
-          <DialogDescription>Make changes to the user profile.</DialogDescription>
-        </DialogHeader>
-        {selectedUser && (
-          <div className="grid gap-5 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-name" className="text-right text-sm">
-                Name
-              </Label>
-              <Input id="edit-name" defaultValue={selectedUser.name} className="col-span-3" />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-email" className="text-right text-sm">
-                Email
-              </Label>
-              <Input id="edit-email" type="email" defaultValue={selectedUser.email} className="col-span-3" />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-role" className="text-right text-sm">
-                Role
-              </Label>
-              <Select defaultValue={selectedUser.role}>
-                <SelectTrigger className="col-span-3">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="trainer">Trainer</SelectItem>
-                  <SelectItem value="user">User</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-status" className="text-right text-sm">
-                Status
-              </Label>
-              <Select defaultValue={selectedUser.status}>
-                <SelectTrigger className="col-span-3">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        )}
-        <DialogFooter className="px-2 pt-2">
-          <Button type="submit">Save Changes</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  </div>
-</DashboardLayout>
+    </DashboardLayout>
   )
 }
-

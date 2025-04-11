@@ -189,23 +189,30 @@ const findAllHistory = async (req, res) => {
             // Get the associated workout
             const currentUserWorkout = entry.UserWorkout;
             const currentWorkout = currentUserWorkout?.workouts;
+            console.log({
+                entryId: entry.id,
+                workoutdayId: entry.workoutdayId,
+                workoutId: currentWorkout.id,
+              });
 
             
             // Each history entry needs day information - either from history data or from UserWorkout
             // Assuming that when a history entry is created, it records the day that was just completed
             // You might need to adjust this based on your app's logic
             const completedDayNumber = entry.workoutdayId;
-            console.log("MLK"+completedDayNumber)
+            console.log("cOMPLETE   "+completedDayNumber)
             console.log(currentWorkout.id)
             let WorkoutDay = null;
             let exercises = [];
+
+            console.log("MLK"+completedDayNumber)
             
             if (currentWorkout && currentWorkout.id) {
                 // Find the specific day that corresponds to this history entry
                 WorkoutDay = await workoutday.findOne({
                     where: { 
                         WorkoutId: currentWorkout.id,
-                        dayNumber: completedDayNumber 
+                        id: completedDayNumber 
                     },
                     include: [{
                         model: excercise,
@@ -244,6 +251,8 @@ const findAllHistory = async (req, res) => {
                 } : null
             };
         }));
+
+        // console.log("kfkf", fullHistory)
 
         return res.status(200).json(fullHistory);
     } catch (err) {

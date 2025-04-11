@@ -18,12 +18,15 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchProfile } from "../../store/authSlice";
 import axios from "axios";
 
-const fetchNotifications = async (userId, page = 1, limit = 10) => {
+// const fetchNotifications = async (userId, page = 1, limit = 10) => {
+  const fetchNotifications = async (userId) => {
   try {
-    const response = await axios.get(`http://localhost:3001/api/notifications/user/${userId}?page=${page}&limit=${limit}`);
+    // const response = await axios.get(`http://localhost:3001/api/notifications/user/${userId}?page=${page}&limit=${limit}`);
+    const response = await axios.get(`http://localhost:3001/api/notifications/user/${userId}`);
+
     console.log(response.data); 
     return response.data;
-  } catch (error) {
+  } catch (error) { 
     console.error("Error fetching notifications:", error);
     return { notifications: [], pagination: { currentPage: 1, totalPages: 1, totalNotifications: 0 } };
   }

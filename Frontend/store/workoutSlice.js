@@ -1,11 +1,14 @@
 import { createSlice } from '@reduxjs/toolkit';
 import STATUSES from '../src/globals/status/statuses';
 import API from '../src/http';
+import { set } from 'lodash';
 
 const workoutSlice = createSlice({
     name: 'workout',
     initialState: {
         data: [], //It holds object alright
+        popularData: [],
+        workoutMetrics: null,
         selectedDate: new Date().toISOString(),
         data1: null,
         token: null,
@@ -18,8 +21,14 @@ const workoutSlice = createSlice({
         setWorkout(state, action) {
             state.data = action.payload
         },
+        setPopularWorkout(state, action) {
+            state.popularData = action.payload
+        },
         setWorkout1(state, action) {
             state.data1 = action.payload
+        },
+        setWorkoutMetrics(state, action) {
+            state.workoutMetrics = action.payload
         },
         setToken(state, action) {
             state.token = action.payload
@@ -37,7 +46,7 @@ const workoutSlice = createSlice({
 });
 
 //Step 2: Now Action
-export const { setStatus, setWorkout, setWorkout1, setToken, updateWorkoutDayInState } = workoutSlice.actions;
+export const { setStatus, setWorkout, setPopularWorkout, setWorkoutMetrics, setWorkout1, setToken, updateWorkoutDayInState } = workoutSlice.actions;
 export default workoutSlice.reducer
 
 
@@ -112,6 +121,76 @@ export function fetchWorkouts() {
             dispatch(setStatus({ status: STATUSES.ERROR, message: errorMessage }));
         }
     }
+}
+
+export function fetchPopularWorkouts() {
+    return async function fetchWorkoutsThunk(dispatch) {
+        dispatch(setStatus(STATUSES.LOADING))
+        try {
+            const response = await API.get('api/admin/workout/popular')
+            if (response.status === 200) {
+                const workout= response.data?.data || [];
+
+
+                if (workout.length > 0) {
+                    dispatch(setPopularWorkout(workout));
+                    console.log(workout)
+                    dispatch(setStatus({ status: STATUSES.SUCCESS }))
+                }
+            }
+        }
+        catch (error) {
+            let errorMessage = "An unexpected error occurred.";
+
+
+            if (error.response) {
+                // Server responded with an error status (e.g., 400, 409)
+                errorMessage = error.response.data.message || "Registration failed.";
+            } else if (error.request) {
+                // Request was made but no response (backend is down or network issue)
+                errorMessage = "Cannot connect to the server. Please check your internet or try again later.";
+            } else {
+                // Other unexpected errors (e.g., something wrong with frontend code)
+                errorMessage = error.message;
+            }
+
+            dispatch(setStatus({ status: STATUSES.ERROR, message: errorMessage }));
+        }
+    }
+}
+
+export function fetchWorkoutMetrics() {
+    return async function fetchWorkoutMetricsThunk(dispatch) {
+        dispatch(setStatus(STATUSES.LOADING));
+        try {
+            const response = await API.get('api/admin/workout/metrics');
+
+            if (response.status === 200) {
+                const metrics = response.data;
+                console.log(metrics)
+
+                if (metrics) {
+                    dispatch(setWorkoutMetrics(metrics));
+                    dispatch(setStatus({ status: STATUSES.SUCCESS }));
+                } else {
+                    dispatch(setUserMetrics(null)); // or {} if your reducer expects an object
+                    dispatch(setStatus({ status: STATUSES.SUCCESS, message: "No user metrics found" }));
+                }
+            }
+        } catch (error) {
+            let errorMessage = "An unexpected error occurred.";
+
+            if (error.response) {
+                errorMessage = error.response.data.message || "Failed to fetch user metrics.";
+            } else if (error.request) {
+                errorMessage = "Cannot connect to the server. Please check your internet or try again later.";
+            } else {
+                errorMessage = error.message;
+            }
+
+            dispatch(setStatus({ status: STATUSES.ERROR, message: errorMessage }));
+        }
+    };
 }
 
 
@@ -231,6 +310,7 @@ export function fetchWorkout(id) {
                     const newData = currentData.filter(ex => ex.id !== id);
                     dispatch(setWorkout(newData));
                     dispatch(setStatus({ status: STATUSES.SUCCESS, message: "Successfully deleted" }));
+                    dispatch(fetchWorkouts())
                 }
             } catch (error) {
                 dispatch(setStatus({ status: STATUSES.ERROR, message: "Deletion failed" }));

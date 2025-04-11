@@ -22,7 +22,7 @@ const Sidebar = ({ onToggle }) => {
     { to: "/admin/users", label: "Users", icon: Users },
     // { to: "", label: "Analytics", icon: BarChart2 },
     { to: "", label: "Notification", icon: Bell },
-    { to: "", label: "Settings", icon: Settings },
+    { to: "/admin/settings", label: "Settings", icon: Settings },
   ];
 
   // Toggle Sidebar

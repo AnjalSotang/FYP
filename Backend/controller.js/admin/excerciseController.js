@@ -99,6 +99,49 @@ const getAllExcercises = async (req, res) => {
 }
 
 
+const getExerciseMetrics = async (req, res) => {
+    try {
+        // Get current date and first day of current month
+        const currentDate = new Date();
+        const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+        
+        // Count total active exercises
+        const totalExercises = await excercise.count({
+            where: { is_active: true }
+        });
+        
+        // Count new exercises added this month
+        const newExercisesThisMonth = await excercise.count({
+            where: {
+                is_active: true,
+                createdAt: {
+                    [Op.gte]: firstDayOfMonth
+                }
+            }
+        });
+        
+        // Format the total exercises with commas
+        const formattedTotal = totalExercises.toLocaleString();
+        
+        // Format the description
+        const description = `+${newExercisesThisMonth} new this month`;
+        
+        res.status(200).json({
+            title: "Total Exercises",
+            value: formattedTotal,
+            description: description,
+            icon: "Dumbbell"
+        });
+    } catch (error) {
+        console.error("Error fetching exercise metrics:", error);
+        res.status(500).json({
+            message: "An internal server error occurred. Please try again later.",
+            error: error.message
+        });
+    }
+};
+
+
 const searchExercises = async (req, res) => {
     try {
         let { query } = req.query;
@@ -313,5 +356,6 @@ module.exports = {
     getExcercise,
     deleteExcercise,
     updateExcercise,
-    searchExercises
+    searchExercises,
+    getExerciseMetrics
 }

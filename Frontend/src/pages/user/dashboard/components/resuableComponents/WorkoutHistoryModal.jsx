@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { CheckCircle2, Clock, Filter, Flame } from "lucide-react"
+import { CheckCircle2, Clock, CloudFog, Filter, Flame } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { fetchAllHistory } from "../../../../../../store/userWorkoutHistorySlice";
@@ -15,6 +15,8 @@ import { useEffect } from "react"
 export function WorkoutHistoryModal({ open, onOpenChange }) {
   const dispatch = useDispatch();
   const workoutHistory = useSelector((state) => state.userWorkoutHistory?.data?.allHistory || []);
+
+  console.log(workoutHistory)
 
   const [activeTab, setActiveTab] = useState("list")
   const [filterType, setFilterType] = useState("all")

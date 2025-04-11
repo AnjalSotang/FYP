@@ -13,7 +13,7 @@ router.patch("/notifications/:id/read", notificationController.markAsRead);
 router.patch("/notifications/user/:userId/read-all", notificationController.markAllAsRead);
 
 // Delete notification
-router.delete("/:id", notificationController.deleteNotification);
+router.delete("/notifications/user/:id", notificationController.deleteNotification);
 
 // Get unread notification count
 router.get("/:userId/user/unread-count", notificationController.getUnreadCount);

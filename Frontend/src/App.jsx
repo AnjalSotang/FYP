@@ -30,7 +30,7 @@ const Workout = lazy(() => import("./pages/admin/workouts/id/workout.jsx"));
 const Plans = lazy(() => import("./pages/user/plans/page.jsx"));
 const UserManagementLoading = lazy(() => import("./pages/admin/users/loading.jsx"));
 const UserManagemen = lazy(() => import("./pages/admin/users/page.jsx"));
-const Dashboard = lazy(() => import("./pages/admin/dashboard.jsx"));
+const Dashboard = lazy(() => import("./pages/admin/dashboard/page.jsx"));
 const Excercise = lazy(() => import("./pages/admin/excercises/Excercise.jsx"));
 const Plans1 = lazy(() => import("./pages/user/plans/id/plans.jsx"));
 const UserDashboard = lazy(() => import("./pages/user/dashboard/page.jsx"));
@@ -40,6 +40,8 @@ const MyWorkoutsPage = lazy(() => import("./pages/user/my-workouts/page.jsx"));
 const MyWorkoutsPage1 = lazy(() => import("./pages/user/my-workouts/page1.jsx"));
 const MyWorkoutsID = lazy(() => import("./pages/user/my-workouts/id/page.jsx"));
 const History = lazy(() => import("./pages/user/history/page.jsx"));
+const Notifications = lazy(() => import("./pages/notifications/page.jsx"));
+const Settings = lazy(() => import("./pages/admin/settings/page.jsx"));
 
 
 
@@ -94,7 +96,8 @@ function App() {
               <Route path="/MyWorkouts1" element={<Protected><MyWorkoutsPage1/></Protected>} />
               <Route path="/MyWorkoutsID/:id" element={<Protected><MyWorkoutsID/></Protected>} />
               <Route path="/History" element={<Protected><History/></Protected>} />
-
+              <Route path="/notifications" element={<Protected><Notifications/></Protected>} />
+              <Route path="/admin/settings" element={<Protected><Settings/></Protected>} />
             </Routes>
           </Suspense>
         </ErrorBoundary>

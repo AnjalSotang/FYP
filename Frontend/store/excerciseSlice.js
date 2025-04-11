@@ -6,6 +6,7 @@ const excerciseSlice = createSlice({
     name: 'excercise',
     initialState: {
         data: [], //It holds object alright
+        excerciseMetrics: null,
         token: null,
         status: null //We will see about this
     },
@@ -18,12 +19,15 @@ const excerciseSlice = createSlice({
         },
         setToken(state, action) {
             state.token = action.payload
+        },
+        setExcerciseMetrics(state, action) {
+            state.excerciseMetrics = action.payload
         }
     }
 });
 
 //Step 2: Now Action
-export const { setStatus, setExcercise, setToken } = excerciseSlice.actions;
+export const { setStatus, setExcercise, setToken, setExcerciseMetrics } = excerciseSlice.actions;
 export default excerciseSlice.reducer
 
 
@@ -96,6 +100,40 @@ export function fetchExcercises() {
             dispatch(setStatus({ status: STATUSES.ERROR, message: errorMessage }));
         }
     }
+}
+
+export function fetchExcerciseMetrics() {
+    return async function fetchExcerciseMetricsThunk(dispatch) {
+        dispatch(setStatus(STATUSES.LOADING));
+        try {
+            const response = await API.get('api/admin/excercises/metrics');
+
+            if (response.status === 200) {
+                const metrics = response.data;
+                console.log(metrics)
+
+                if (metrics) {
+                    dispatch(setExcerciseMetrics(metrics));
+                    dispatch(setStatus({ status: STATUSES.SUCCESS }));
+                } else {
+                    dispatch(setExcerciseMetrics(null)); // or {} if your reducer expects an object
+                    dispatch(setStatus({ status: STATUSES.SUCCESS, message: "No user metrics found" }));
+                }
+            }
+        } catch (error) {
+            let errorMessage = "An unexpected error occurred.";
+
+            if (error.response) {
+                errorMessage = error.response.data.message || "Failed to fetch user metrics.";
+            } else if (error.request) {
+                errorMessage = "Cannot connect to the server. Please check your internet or try again later.";
+            } else {
+                errorMessage = error.message;
+            }
+
+            dispatch(setStatus({ status: STATUSES.ERROR, message: errorMessage }));
+        }
+    };
 }
 
 export function searchExercises(query) {

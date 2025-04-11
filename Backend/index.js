@@ -1,6 +1,5 @@
 const express = require('express');
 const app = express();
-
 const { sequelize, users } = require("./models/index");
 const bcrypt = require('bcrypt');
 const path = require("path");
@@ -28,6 +27,7 @@ const workoutHistoryRoutes = require("./routes/user/userWorkoutHistoryRoutes");
 const userRecordsRoutes = require("./routes/user/userRecordsRoutes");
 const userMeasurementsRoutes = require("./routes/user/userMeasurementsRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
+const adminUserRoutes = require("./routes/admin/userRoutes");
 
 // Initialize the notification scheduler
 const setupNotificationScheduler = require('./services/notificationSchedulers');
@@ -50,7 +50,8 @@ app.use('/api',
   workoutHistoryRoutes, 
   userRecordsRoutes, 
   userMeasurementsRoutes,
-  notificationRoutes
+  notificationRoutes,
+  adminUserRoutes
 );
 
 // Synchronize database
@@ -98,7 +99,7 @@ io.on('connection', (socket) => {
 });
 
 // Start the notification scheduler
-setupNotificationScheduler();
+// setupNotificationScheduler();
 
 // Make io available for other modules
 app.set('io', io);
