@@ -1,29 +1,71 @@
-/* Shaking Animation */
+/* Existing animations and styles */
 @keyframes shake {
-    0% {
-        transform: translateX(0);
-    }
-    25% {
-        transform: translateX(-5px);
-    }
-    50% {
-        transform: translateX(5px);
-    }
-    75% {
-        transform: translateX(-5px);
-    }
-    100% {
-        transform: translateX(0);
-    }
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-5px); }
+  100% { transform: translateX(0); }
 }
+
+/* Add theme variables here */
+:root {
+/* Light theme (default) */
+--background: #ffffff;
+--foreground: #112240;
+--card: #f8fafc;
+--card-foreground: #112240;
+--popover: #ffffff;
+--popover-foreground: #112240;
+--primary: #b4e61d;
+--primary-foreground: #112240;
+--secondary: #4a90e2;
+--secondary-foreground: #f1f5f9;
+--muted: #f1f5f9;
+--muted-foreground: #64748b;
+--accent: #3b82f6;
+--accent-foreground: #f0fdfa;
+--destructive: #ef4444;
+--destructive-foreground: #fee2e2;
+--border: #e2e8f0;
+--input: #f1f5f9;
+--ring: #4a90e2;
+}
+
+.dark {
+/* Dark theme */
+--background: #0b1129;
+--foreground: #f8fafc;
+--card: #112240;
+--card-foreground: #f8fafc;
+--popover: #1e293b;
+--popover-foreground: #f8fafc;
+--primary: #b4e61d;
+--primary-foreground: #112240;
+--secondary: #4a90e2;
+--secondary-foreground: #f1f5f9;
+--muted: #1e293b;
+--muted-foreground: #cbd5e1;
+--accent: #3b82f6;
+--accent-foreground: #f0fdfa;
+--destructive: #ef4444;
+--destructive-foreground: #fee2e2;
+--border: #1e293b;
+--input: #1a2c50;
+--ring: #4a90e2;
+}
+
+/* Continue with your existing styles */
 body {
-    font-family: "Inter", sans-serif;
-  }
-  
+  font-family: "Inter", sans-serif;
+  background-color: var(--background);
+  color: var(--foreground);
+}
 
 .shake {
-    animation: shake 0.3s ease-in-out;
+  animation: shake 0.3s ease-in-out;
 }
+
+/* Rest of your CSS */
 
 /* Fade-In Effect for Error Messages */
 @keyframes fadeInError {

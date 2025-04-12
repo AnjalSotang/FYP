@@ -145,7 +145,7 @@ export default function WorkoutPlansPage() {
                     </CardContent>
 
                     <CardFooter className="pt-0">
-                      <Link to={`/user/Plan/${plan.id}`} className="w-full">
+                      <Link to={`/plan/${plan.id}`} className="w-full">
                         <Button variant="outline" className="w-full">
                           View Plan
                         </Button>

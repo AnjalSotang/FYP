@@ -3,6 +3,8 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const validator = require("validator");
 const nodemailer = require('nodemailer');
+const adminNotificationController = require('../controller.js/admin/adminNotificationController');
+
 
 const register = async (req, res) => {
   try {
@@ -36,6 +38,20 @@ const register = async (req, res) => {
     // Create the new user
     const newUser = await users.create({ email: email, password: hashedPassword, username: userName, age: age, weight: weight, heightFeet: heightFeet, heightInches: heightInches, fitness_level: experienceLevel });
 
+        // Send admin notification about new user registration
+        try {
+          await adminNotificationController.notifyNewUserRegistration({
+            id: newUser.id,
+            firstName: userName,
+            email: email
+          });
+          console.log(`Admin notification sent for new user: ${email}`);
+        } catch (notificationError) {
+          // Don't let notification errors affect registration
+          console.error("Error sending admin notification:", notificationError);
+        }
+
+      
     return res.status(201).json({
       message: "Registration successful!",
       user: {
@@ -43,8 +59,8 @@ const register = async (req, res) => {
       },
     });
 
-  } catch (erroror) {
-    console.erroror("erroror during registration:", erroror);
+  } catch (error) {
+    console.erroror("erroror during registration:", error);
     return res.status(500).json({
       message: "An internal server erroror occurred. Please try again later.",
     });
@@ -247,7 +263,28 @@ const getUserProfile = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+// Get user profile
+const getAdminProfile = async (req, 
+  res) => {
+  try {
+    let id = req.decoded.id;
 
+    console.log(id)
+
+    const user = await users.findByPk(id, {
+      attributes: { exclude: ['password'] } // Don't send password to client
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({ data: user });
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
 // Update user profile
 const updateUserProfile = async (req, res) => {
   try {
@@ -381,21 +418,17 @@ const deleteAccount = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-
-    // Consider handling related data (cascade deletes or separate cleanup)
-    // For example, you might want to delete user workout data, settings, etc.
-    // This could be handled by database constraints (ON DELETE CASCADE) or here:
-    
-    // Example of manual cleanup if needed:
-    // await userWorkouts.destroy({ where: { userId: id } });
-    // await userSettings.destroy({ where: { userId: id } });
-
     // Delete the user
     await user.destroy();
-
-    // Clear any active tokens (if you're tracking them in a database)
-    // await tokens.destroy({ where: { userId: id } });
-
+ // Send admin notification about account deletion
+ try {
+  const adminNotificationController = require('./admin/adminNotificationController');
+  await adminNotificationController.notifyUserAccountDeletion(userInfo);
+  console.log(`Admin notification sent for account deletion: ${userInfo.email}`);
+} catch (notificationError) {
+  // Don't let notification errors affect the account deletion process
+  console.error("Error sending admin notification:", notificationError);
+}
     // Return success
     res.status(200).json({ message: 'Account successfully deleted' });
   } catch (error) {
@@ -403,6 +436,8 @@ const deleteAccount = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
+
 // Get user stats
 const getUserStats = async (req, res) => {
   try {
@@ -470,7 +505,7 @@ module.exports = {
   updateUserProfile,
   changePassword,
   deleteAccount,
-
+  getAdminProfile
 }
 
 

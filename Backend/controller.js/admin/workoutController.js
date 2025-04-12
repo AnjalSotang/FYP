@@ -1,7 +1,9 @@
 const { Op, Sequelize } = require("sequelize");
 const { workout, workoutday, excercise, workoutdayExcercise, users, sequelize, userWorkout } = require('../../models/index');
 // Import the notification service
-const { createNotification } = require('../notificationController');
+const { createUserNotification } = require('../user/notificationController');
+// Import admin notification controller
+const adminNotificationController = require('../admin/adminNotificationController');
 
 console.log("workoutdayExcercise:", workout);
 
@@ -47,7 +49,7 @@ const createWorkout = async (req, res) => {
 
     // Create a notification for each user
     for (const user of Users) {
-      await createNotification(
+      await createUserNotification(
         user.id,
         "New Workout Plan",
         `A new workout '${name}' (${level} level) has been added to the system. Check it out!`,
@@ -56,6 +58,21 @@ const createWorkout = async (req, res) => {
         'Workout'
       );  
     }
+
+       // 5️⃣ Create admin notification about the new workout
+       try {
+        await adminNotificationController.notifyNewWorkoutCreation({
+          id: newWorkout.id,
+          name: name,
+          level: level,
+          duration: duration
+        });
+        console.log(`Admin notification sent for new workout creation: ${name}`);
+      } catch (notificationError) {
+        // Don't let notification errors affect workout creation
+        console.error("Error sending admin notification:", notificationError);
+      }
+  
 
     // 5️⃣ Response
     res.status(201).json({
@@ -66,6 +83,9 @@ const createWorkout = async (req, res) => {
   } catch (error) {
     console.error("Error creating workout:", error); // Detailed error logging
     res.status(500).json({ message: `Internal Server Error: ${error.message}` });
+    if (!res.headersSent) {
+      return res.status(500).json({ message: `Internal Server Error: ${error.message}` });
+    }
   }
 };
 

@@ -89,12 +89,12 @@ export function PersonalRecordsCard() {
       dispatch(setStatus(null));
       setOperationType(null);
     }
-    else if (status?.status === "error") {
-      console.log(status.message);
-      toast.error(status.message);
-      dispatch(setStatus(null));
-      setOperationType(null);
-    }
+    // else if (status?.status === "error") {
+    //   console.log(status.message);
+    //   toast.error(status.message);
+    //   dispatch(setStatus(null));
+    //   setOperationType(null);
+    // }
   }, [status, dispatch, operationType])
 
   const hasRecords = records && records.length > 0;

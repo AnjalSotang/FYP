@@ -7,10 +7,8 @@ import { ErrorBoundary } from "react-error-boundary";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import DashboardLayout from "../../../components/layout/DashboardLayout";
-import Sidebar from "../../../components/navbar/Sidebar";
-
-
-const ExerciseForm = lazy(() => import("./components/form/ExcerciseForm"));
+import Sidebar from "../../../components/navbar/admin/Sidebar";
+import ExerciseForm from "./components/form/ExcerciseForm";
 
 const AddExercise = () => {
   const { status } = useSelector((state) => state.excercise)
@@ -55,4 +53,4 @@ const AddExercise = () => {
   );
 };
 
-export default React.memo(AddExercise);
+export default AddExercise;

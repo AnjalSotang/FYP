@@ -250,7 +250,7 @@ const handleFileChange = (e) => {
     <div className="min-h-screen bg-gradient-to-br from-[#0b1129] to-[#1a2c50] flex flex-col items-center px-10 py-10 sm:px-6 relative pt-20">
       <div className="w-full max-w-xl mx-auto my-auto">
         <ToastContainer position="top-center" autoClose={3000} />
-        <Link to="/" className="w-full sm:w-auto">
+        <Link to="/admin/excercise" className="w-full sm:w-auto">
           <button className="mb-7 flex items-center gap-2 px-3 py-2 border border-[#A3E635] text-[#A3E635] rounded-md hover:bg-[#A3E635] hover:text-[#111827] transition-colors">
             <ArrowLeft className="h-4 w-4" />
             Back to Exercise Manager

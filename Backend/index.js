@@ -26,7 +26,8 @@ const workoutScheduleRoutes = require("./routes/user/workoutScheduleRoutes");
 const workoutHistoryRoutes = require("./routes/user/userWorkoutHistoryRoutes");
 const userRecordsRoutes = require("./routes/user/userRecordsRoutes");
 const userMeasurementsRoutes = require("./routes/user/userMeasurementsRoutes");
-const notificationRoutes = require("./routes/notificationRoutes");
+const notificationRoutes = require("./routes/user/notificationRoutes");
+const adminNotificationsRoutes = require("./routes/admin/notificationRoutes");
 const adminUserRoutes = require("./routes/admin/userRoutes");
 
 // Initialize the notification scheduler
@@ -51,11 +52,12 @@ app.use('/api',
   userRecordsRoutes, 
   userMeasurementsRoutes,
   notificationRoutes,
-  adminUserRoutes
+  adminUserRoutes,
+  adminNotificationsRoutes
 );
 
 // Synchronize database
-sequelize.sync({ force: 0 })
+sequelize.sync({ force: false })
   .then(() => {
     console.log('Database synced successfully');
   })

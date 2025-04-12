@@ -1,5 +1,9 @@
 const { Op, Sequelize } = require("sequelize");
 const { userWorkout, workout, users, workoutday, userWorkoutHistory, sequelize, workoutdayExcercise, excercise } = require('../../models/index');
+const adminNotificationController = require('../admin/adminNotificationController');
+// Import the user notification controller
+const { createUserNotification } = require('../user/notificationController');
+
 
 const createUserWorkout = async (req, res) => {
   try {
@@ -9,7 +13,7 @@ const createUserWorkout = async (req, res) => {
       return res.status(400).json({ message: "User ID not found in token." });
     }
 
-    console.log("0-0",users)
+    console.log("0-0", users)
     console.log("Decoded User ID:", userId);
 
     const userExists = await users.findOne({ where: { id: userId } });
@@ -81,6 +85,31 @@ const createUserWorkout = async (req, res) => {
       nextWorkout: nextWorkout,
       startDate: new Date()
     });
+
+    // Send admin notification about new workout creation
+    try {
+      await adminNotificationController.notifyUserWorkoutCreation(
+        userId,
+        WorkoutId,
+        workoutPlan.name || "Unnamed workout"
+      );
+      console.log(`Admin notification sent for new workout creation by user: ${userId}`);
+
+      await createUserNotification(
+        userId,
+        "New Workout Plan Added",
+        `You've successfully added "${workoutPlan.name}" to your workout plans.`,
+        'workout_added',
+        newUserWorkout.id,
+        'UserWorkout'
+      );
+      console.log(`User notification sent for workout addition to user: ${userId}`);
+
+
+    } catch (notificationError) {
+      // Don't let notification errors affect workout creation
+      console.error("Error sending admin notification:", notificationError);
+    }
 
     // Respond with success message
     res.status(201).json({
@@ -421,15 +450,49 @@ const deleteUserWorkout = async (req, res) => {
     // Check if the user has the workout in their plan
     const existingUserWorkout = await userWorkout.findOne({
       where: { userId, id: id },
+      include: [
+        {
+          model: workout,
+          as: 'workouts' // Make sure this alias matches your association
+        }
+      ]
     });
+
+
     if (!existingUserWorkout) {
       return res.status(404).json({ message: "Workout not found in your plan." });
     }
 
-    // Delete the UserWorkout record
-    // await userWorkout.destroy({
-    //   where: { userId, workoutId: WorkoutId },
-    // });
+        // Get workout name for notifications
+    const workoutName = existingUserWorkout.workouts ? 
+    existingUserWorkout.workouts.name : "Unnamed workout";
+    const workoutId = existingUserWorkout.workoutId;
+
+        // Send notifications about workout deletion
+        try {
+          // Find user info for admin notification
+          const user = await users.findOne({
+            where: { id: userId },
+            attributes: ['username', 'email']
+          });
+    
+          // Notify admin about workout removal
+          await adminNotificationController.notifyWorkoutRemoval({
+            userId: userId,
+            username: user.username,
+            email: user.email,
+            workoutId: workoutId,
+            workoutName: workoutName
+          });
+
+          console.log(`User notification sent for workout removal to user: ${userId}`);
+        } catch (notificationError) {
+          console.error("Error sending notifications:", notificationError);
+          // Continue execution even if notification fails
+        }
+    
+  
+  
 
     await userWorkout.destroy({
       where: { id: id },
@@ -457,6 +520,14 @@ const completeWorkoutDay = async (req, res) => {
     const { duration } = req.body;
     console.log(`Completing workout: userId=${userId}, workoutId=${id}, duration=${duration}`);
 
+    // Get user information for notification
+    const user = await users.findByPk(userId, {
+      attributes: ['id', 'username', 'email']
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
     const UserWorkout = await userWorkout.findOne({
       where: {
@@ -548,11 +619,13 @@ const completeWorkoutDay = async (req, res) => {
     // Check if we've completed all workouts in the plan
     let nextWorkout = "";
     let isActive = true;
+    let isWorkoutCompleted = false;
 
     if (completedWorkouts >= totalWorkouts) {
       // All workouts in the plan are complete
       nextWorkout = "All Workouts Completed";
       isActive = false;
+      isWorkoutCompleted = true;
     } else {
       const totalDaysInCycle = UserWorkout.workouts.days.length;
 
@@ -605,6 +678,39 @@ const completeWorkoutDay = async (req, res) => {
     }, {
       where: { id: UserWorkout.id }
     });
+
+    // Send notification to admin if workout is completed
+    if (isWorkoutCompleted) {
+      try {
+
+        await adminNotificationController.notifyWorkoutCompletion({
+          userId: userId,
+          username: user.username,
+          email: user.email,
+          workoutId: UserWorkout.workoutId,
+          workoutName: UserWorkout.workouts.name || "Unnamed workout",
+          completedDate: today
+        });
+        console.log(`Admin notification sent for workout completion by user: ${userId}`);
+
+        // Create notification for the user who completed the workout
+        await createUserNotification(
+          userId,
+          "Workout Plan Completed",
+          `Congratulations! You've completed the "${UserWorkout.workouts.name}" workout plan.`,
+          'achievement',
+          UserWorkout.id,
+          'Achievement'
+        );
+        console.log(`User notification sent for workout completion to user: ${userId}`);
+
+
+
+      } catch (notificationError) {
+        console.error("Error sending admin notification:", notificationError);
+        // Continue execution even if notification fails
+      }
+    }
 
     return res.status(200).json({
       message: "Workout day completed successfully",

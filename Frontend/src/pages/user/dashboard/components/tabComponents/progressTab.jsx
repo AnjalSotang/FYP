@@ -1,6 +1,6 @@
 // components/dashboard/ProgressTab.jsx
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
-import { ProgressChart } from "../../../components/progress-chart"
+import { ProgressChart } from "../resuableComponents/progress-chart"
 import { StatItem } from "../resuableComponents/StatItem"
 import { useSelector, useDispatch } from "react-redux";
 import { fetchWorkoutHistory } from "../../../../../../store/userWorkoutHistorySlice";

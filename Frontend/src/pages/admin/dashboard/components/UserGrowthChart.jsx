@@ -12,7 +12,7 @@ import { useDispatch } from "react-redux"
 import { fetchUserGrowth } from "../../../../../store/adminUsersSlice";
 import { useSelector } from "react-redux"
 
-export function UserGrowthChart() {
+const UserGrowthChart = () => {
       const { userGrowthChart: data, status } = useSelector((state) => state.adminUsers);
 
       const dispatch = useDispatch();
@@ -102,3 +102,5 @@ export function UserGrowthChart() {
     </div>
   )
 }
+
+export default React.memo(UserGrowthChart);

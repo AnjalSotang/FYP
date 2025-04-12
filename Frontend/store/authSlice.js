@@ -93,6 +93,7 @@ export function login(data) {
                 const token = localStorage.getItem('token');
                 console.log(token);
             }
+            
         } catch (error) {
             let errorMessage = "An unexpected error occurred.";
 
@@ -209,6 +210,47 @@ export function fetchProfile() {
         }
     }
 }
+
+export function fetchAdminProfile() {
+    return async function fetchProfileThunk(dispatch) {
+        dispatch(setStatus(STATUSES.LOADING))
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                throw new Error("No token found in localStorage.");
+            }
+
+            console.log("Token before request:", token);
+
+            const response = await API.get('auth/admin/profile', {
+                headers: {
+                    'Authorization': `Bearer ${token}` // Fixed: Using token correctly
+                }
+            });
+
+            console.log(response.data.data)
+
+            if (response.status === 200) {
+                dispatch(setData(response.data?.data));
+                dispatch(setStatus({ status: STATUSES.SUCCESS}))
+            }
+        }
+        catch (error) {
+            let errorMessage = "An unexpected error occurred.";
+
+            if (error.response) {
+                errorMessage = error.response.data.message || "Failed to fetch profile.";
+            } else if (error.request) {
+                errorMessage = "Cannot connect to the server. Please check your internet or try again later.";
+            } else {
+                errorMessage = error.message;
+            }
+
+            dispatch(setStatus({ status: STATUSES.ERROR, message: errorMessage }));
+        }
+    }
+}
+
 
 
 export function changeProfilePassword(formData) {

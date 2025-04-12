@@ -6,20 +6,13 @@ import {fetchPopularWorkouts } from "../../../../../store/workoutSlice";
 import { useSelector } from "react-redux"
 
 
-export function PopularWorkoutPlans() {
+const PopularWorkoutPlans = () => {
    const { popularData: plans } = useSelector((state) => state.workout);
   const dispatch = useDispatch();
   
     useEffect(() => {
       dispatch(fetchPopularWorkouts());
     }, [dispatch]);
-  
-  // const plans = [
-  //   { id: 1, name: "30-Day Strength Challenge", users: 1245, trend: "up" },
-  //   { id: 2, name: "HIIT Cardio Blast", users: 987, trend: "up" },
-  //   { id: 3, name: "Yoga for Beginners", users: 876, trend: "down" },
-  //   { id: 4, name: "Full Body Transformation", users: 654, trend: "up" },
-  // ]
 
   return (
     <div className="space-y-4">
@@ -41,3 +34,5 @@ export function PopularWorkoutPlans() {
     </div>
   )
 }
+
+export default React.memo(PopularWorkoutPlans);

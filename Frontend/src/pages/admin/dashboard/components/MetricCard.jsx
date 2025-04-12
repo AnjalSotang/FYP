@@ -1,7 +1,8 @@
 import React from "react"
+import PropTypes from 'prop-types';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
-export default function MetricCard({ title, value, description, icon }) {
+function MetricCard({ title, value, description, icon }) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -15,3 +16,12 @@ export default function MetricCard({ title, value, description, icon }) {
     </Card>
   )
 }
+
+MetricCard.propTypes = {
+  title: PropTypes.string.isRequired,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  description: PropTypes.string,
+  icon: PropTypes.element,
+};
+
+export default React.memo(MetricCard);

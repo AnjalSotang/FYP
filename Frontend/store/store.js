@@ -11,13 +11,15 @@ import userWorkoutHistorySlice from './userWorkoutHistorySlice'
 import personalRecordSlice from './personalRecordsSlice'
 import measurementSlice from './measurementSlice'
 import adminUsersSlice from './adminUsersSlice'
+import adminNotificationSlice from './adminNotficationSlice'
+
+{/* <div className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg py-1 text-gray-800 z-50"> */}
 
 const store = configureStore({
     reducer: {
         auth: authSlice,
         excercise: excerciseSlice,
         workout: workoutSlice, 
-        // workoutExercise: workoutExcerciseSlice,
         workoutDaySlice: workoutDaySlice,
         userWorkout: userWorkoutSlice,
         userWorkout2: userWorkoutSlice2,
@@ -26,6 +28,7 @@ const store = configureStore({
         personalRecord: personalRecordSlice,
         measurement: measurementSlice,
         adminUsers: adminUsersSlice,
+        adminNotification: adminNotificationSlice
     }
 })
 

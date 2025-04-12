@@ -7,10 +7,9 @@ import { ErrorBoundary } from "react-error-boundary";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import DashboardLayout from "../../../components/layout/DashboardLayout";
-import Sidebar from "../../../components/navbar/Sidebar";
+import Sidebar from "../../../components/navbar/admin/Sidebar";
+import WorkoutForm from "./components/form/Form";
 
-
-const WorkoutForm = lazy(() => import("./components/form/Form"));
 
 const UpdateWorkout = () => {
   const { id } = useParams();  // Get the exercise id from the URL

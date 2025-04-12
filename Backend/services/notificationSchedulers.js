@@ -1,5 +1,5 @@
 const cron = require('node-cron');
-const notificationController = require('../controller.js/notificationController');
+const notificationController = require('../controller.js/user/notificationController');
 
 // Schedule to run every 5 minutes
 const setupNotificationScheduler = () => {

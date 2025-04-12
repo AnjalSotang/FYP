@@ -17,7 +17,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { BarChart, Calendar, ChevronRight, Clock, Dumbbell, Plus, Trash2 } from "lucide-react"
-import WorkoutProgressChart from "../components/workout-progress-chart"
+import WorkoutProgressChart from "./components/workout-progress-chart"
 import { fetchActiveWorkouts, fetchCompletedWorkouts, deleteWorkoutPlan, selectWorkout, restartWorkout, setStatus } from "../../../../store/userWorkoutSlice2"
 import { useState } from "react"
 import { toast } from "react-toastify";

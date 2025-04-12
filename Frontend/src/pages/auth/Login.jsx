@@ -21,8 +21,12 @@ const Login = () => {
 
   // 🔥 Handle Status Updates
   useEffect(() => {
-    if (status?.status === STATUSES.SUCCESS) {
-      navigate("/");
+    if (status?.status === STATUSES.SUCCESS && user) {
+      if (user.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/user");
+      }
       dispatch(setStatus(null));
     } else if (status?.status === STATUSES.ERROR) {
       toast.error(status.message);

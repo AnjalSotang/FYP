@@ -9,11 +9,11 @@ import {ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import DashboardLayout from '../../../../components/layout/DashboardLayout';
 import { NewWorkoutDayDialog } from '../components/form/new-workoutday'
-const WorkoutDayList = lazy(() => import('../Workoutdaylist').then(module => ({ default: module.WorkoutDayList })));
+import {WorkoutDayList} from '../components/card/Workoutdaylist';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from "@/components/ui/breadcrumb";
-import { DashboardHeader } from "@/components/dashboard-header";
+import { DashboardHeader } from "@/components/ui/dashboard-header";
 import { Button } from "@/components/ui/button";
-import { DashboardShell } from "@/components/dashboard-shell";
+import { DashboardShell } from "@/components/ui/dashboard-shell";
 
 
 // Error fallback component
@@ -108,7 +108,7 @@ export default function WorkoutsPage() {
             >
               <div className="flex space-x-4">
                 <Button variant="outline" asChild>
-                  <Link to={`/UpdateWorkout/${id}`}>
+                  <Link to={`/admin/workout/edit/${id}`}>
                     Edit Plan
                   </Link>
                 </Button>

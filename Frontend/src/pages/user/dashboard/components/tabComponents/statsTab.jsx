@@ -49,12 +49,12 @@ export function StatsTab() {
       dispatch(setStatus(null));
       setOperationType(null);
     }
-    else if (status?.status === "error") {
-      console.log(status.message);
-      toast.error(status.message || "An error occurred");
-      dispatch(setStatus(null));
-      setOperationType(null);
-    }
+    // else if (status?.status === "error") {
+    //   console.log(status.message);
+    //   toast.error(status.message || "An error occurred");
+    //   dispatch(setStatus(null));
+    //   setOperationType(null);
+    // }
   }, [status, dispatch, operationType]);
 
   // Define handler function to set operation type for AddMeasurementsDialog

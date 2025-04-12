@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 import STATUSES from '../src/globals/status/statuses';
 import API from '../src/http';
 import { set } from 'lodash';
+import { fetchNotifications, fetchUnreadCount } from './adminNotficationSlice';
 
 const workoutSlice = createSlice({
     name: 'workout',
@@ -64,6 +65,10 @@ export function addWorkout(data) {
                 dispatch(setWorkout1(response.data.data))
                 console.log(response.data.data)
                 dispatch(setStatus({ status: STATUSES.SUCCESS, message: response.data.message }))
+                dispatch(fetchWorkouts())
+                 // Add these lines to refresh notifications
+                 dispatch(fetchNotifications())
+                 dispatch(fetchUnreadCount())
             }
         }
         catch (error) {
@@ -100,6 +105,7 @@ export function fetchWorkouts() {
                     dispatch(setWorkout(workout));
                     console.log(workout)
                     dispatch(setStatus({ status: STATUSES.SUCCESS }))
+
                 }
             }
         }

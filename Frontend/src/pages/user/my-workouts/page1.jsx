@@ -29,8 +29,8 @@ import {
   TrendingUp,
   CheckCircle,
 } from "lucide-react"
-import { WorkoutProgressChart } from "../components/workout-progress-chart2"
-import { CalendarHeatmap } from "../components/calender-heatmap"
+import { WorkoutProgressChart } from "./components/workout-progress-chart2"
+import { CalendarHeatmap } from "./components/calender-heatmap"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 // Mock data for user's active workouts

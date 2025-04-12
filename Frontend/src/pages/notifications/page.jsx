@@ -49,6 +49,7 @@ const markNotificationAsRead = async (notificationId) => {
 
 const clearAllNotifications = async (id) => {
     try {
+        console.log(id)
         await axios.delete(`http://localhost:3001/api/notifications/user/${id}`);
         return true;
     } catch (error) {

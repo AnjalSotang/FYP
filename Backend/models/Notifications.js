@@ -18,6 +18,11 @@ module.exports = (sequelize, Sequelize) => {
         // allowNull: false,
         defaultValue: 'system'
       },
+      audience: {
+       type: Sequelize.ENUM('both', 'user', 'admin'),
+        // allowNull: false,
+        defaultValue: 'user' // 'all', 'users', 'admins' 
+      },
       read: {
         type: Sequelize.BOOLEAN,
         // allowNull: false,

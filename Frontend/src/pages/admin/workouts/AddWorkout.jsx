@@ -7,10 +7,11 @@ import { ErrorBoundary } from "react-error-boundary";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import DashboardLayout from "../../../components/layout/DashboardLayout";
-import Sidebar from "../../../components/navbar/Sidebar";
+import Sidebar from "../../../components/navbar/admin/Sidebar";
 
 // Update the import to match your actual file name
-const AddWorkoutForm = lazy(() => import("./components/form/Form"));
+import WorkoutForm from "./components/form/Form";
+
 
 const AddExercise = () => {
   const { status } = useSelector((state) => state.workout);
@@ -55,7 +56,7 @@ const AddExercise = () => {
     <ErrorBoundary FallbackComponent={ErrorFallback}>
       <Suspense fallback={<div className="spinner">Loading...</div>}>
         <DashboardLayout SidebarComponent={Sidebar}>
-          <AddWorkoutForm 
+          <WorkoutForm 
             type="add" 
             onSubmit={handleAddWorkout} 
             isSubmitting={isSubmitting}

@@ -1,7 +1,7 @@
 const { userRecords, workout, users } = require('../../models/index');
 const { Op } = require('sequelize');
 // First, import the notification controller at the top of your file
-const { createNotification } = require('../notificationController');
+const { createNotification } = require('./notificationController');
 
 const createUserRecords = async (req, res) => {
   try {
@@ -11,7 +11,7 @@ const createUserRecords = async (req, res) => {
 
 
     // Check if userId exists
-    if (!userId) {
+    if (!userId) {w
       return res.status(400).json({ message: "User ID not found in token." });
     }
 

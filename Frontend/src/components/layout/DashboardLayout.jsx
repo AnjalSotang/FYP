@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import TopNavbar from "../navbar/TopNavbar";
-import Sidebar from "../navbar/Sidebar";
+import TopNavbar from "../navbar/admin/TopNavbar";
+import Sidebar from "../navbar/admin/Sidebar";
 
 const DashboardLayout = ({ children }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);

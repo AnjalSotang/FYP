@@ -29,13 +29,13 @@ import DashboardLayout from '../../../components/layout/DashboardLayout';
 import { toast, ToastContainer } from "react-toastify"
 import { useDispatch } from "react-redux"
 import { fetchUsers, updateUser, deleteUser, setStatus } from "../../../../store/adminUsersSlice";
-import STATUSES from "../../../globals/status/statuses";
-import { Link } from "react-router-dom"
+// import STATUSES from "../../../globals/status/statuses";
+// import { Link } from "react-router-dom"
 import "react-toastify/dist/ReactToastify.css";
 import { useSelector } from "react-redux"
 
 export default function UsersPage() {
-  const { data: users, status } = useSelector((state) => state.adminUsers);
+  const { data: users } = useSelector((state) => state.adminUsers);
   const dispatch = useDispatch();
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
