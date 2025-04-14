@@ -15,18 +15,18 @@ const adminNotificationSlice = createSlice({
             state.status = action.payload // Status is a network status it could be either success or pending or failure
         },
         // Add this to your existing reducers in adminNotificationSlice.js
-addNewNotification(state, action) {
-    // Check if notification already exists to prevent duplicates
-    const exists = state.data.some(n => n.id === action.payload.id);
-    if (!exists) {
-      // Add new notification at the beginning of the array
-      state.data = [action.payload, ...state.data];
-    }
-    // Increment unread count if the notification is unread
-    if (!action.payload.read) {
-      state.unreadCount += 1;
-    }
-  },
+        addNewNotification(state, action) {
+            // Check if notification already exists to prevent duplicates
+            const exists = state.data.some(n => n.id === action.payload.id);
+            if (!exists) {
+                // Add new notification at the beginning of the array
+                state.data = [action.payload, ...state.data];
+            }
+            // Increment unread count if the notification is unread
+            if (!action.payload.read) {
+                state.unreadCount += 1;
+            }
+        },
         setNotification(state, action) {
             state.data = action.payload
         },
@@ -35,7 +35,7 @@ addNewNotification(state, action) {
         },
         updateNotificationReadStatus(state, action) {
             const { id, read } = action.payload;
-            state.data = state.data.map(notification => 
+            state.data = state.data.map(notification =>
                 notification.id === id ? { ...notification, read } : notification
             );
         },
@@ -54,15 +54,15 @@ addNewNotification(state, action) {
 });
 
 // Action creators
-export const { 
-    setStatus, 
-    setNotification, 
+export const {
+    setStatus,
+    setNotification,
     setUnreadCount,
-    updateNotificationReadStatus, 
-    markAllAsRead, 
+    updateNotificationReadStatus,
+    markAllAsRead,
     removeNotification,
     setError,
-    addNewNotification  
+    addNewNotification
 } = adminNotificationSlice.actions;
 
 export default adminNotificationSlice.reducer;
@@ -72,7 +72,14 @@ export function fetchNotifications() {
     return async function fetchNotificationsThunk(dispatch) {
         dispatch(setStatus(STATUSES.LOADING));
         try {
-            const response = await API.get('api/admin/notifications');
+            const token = localStorage.getItem('token');
+            const response = await API.get('api/admin/notifications',
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
             if (response.status === 200) {
                 const notifications = response.data?.notifications || [];
                 console.log(notifications)
@@ -100,7 +107,14 @@ export function fetchNotifications() {
 export function fetchUnreadCount() {
     return async function fetchUnreadCountThunk(dispatch) {
         try {
-            const response = await API.get('api/admin/notifications/unread-count');
+            const token = localStorage.getItem('token');
+            const response = await API.get('api/admin/notifications/unread-count',
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
             if (response.status === 200) {
                 const count = response.data?.count || 0;
                 dispatch(setUnreadCount(count));
@@ -118,7 +132,16 @@ export function fetchUnreadCount() {
 export function markNotificationAsRead(id) {
     return async function markNotificationAsReadThunk(dispatch) {
         try {
-            const response = await API.patch(`api/admin/notifications/${id}/read`);
+            console.log(id)
+            const token = localStorage.getItem('token');
+            const response = await API.patch(`api/admin/notifications/${id}/read`,
+                {},
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
             if (response.status === 200) {
                 dispatch(updateNotificationReadStatus({ id, read: true }));
                 dispatch(fetchUnreadCount()); // Update the unread count
@@ -135,13 +158,22 @@ export function markNotificationAsRead(id) {
 export function markAllNotificationsAsRead() {
     return async function markAllNotificationsAsReadThunk(dispatch, getState) {
         try {
+            // Check if there are any notifications to mark as read
             const { adminNotification } = getState();
             if (adminNotification.data.length > 0) {
+                const token = localStorage.getItem('token');
                 // Using the first notification's ID for the endpoint
                 // You could also create a separate endpoint for this operation
                 const firstId = adminNotification.data[0].id;
-                const response = await API.patch(`api/admin/notifications/read-all`);
-                
+                const response = await API.patch(`api/admin/notifications/read-all`,
+                    {},
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    }
+                );
+
                 if (response.status === 200) {
                     dispatch(markAllAsRead());
                 }
@@ -158,7 +190,14 @@ export function markAllNotificationsAsRead() {
 export function deleteNotification(id) {
     return async function deleteNotificationThunk(dispatch) {
         try {
-            const response = await API.delete(`api/admin/notifications/${id}`);
+            const token = localStorage.getItem('token');
+            const response = await API.delete(`api/admin/notifications/${id}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
             if (response.status === 200) {
                 dispatch(removeNotification(id));
                 dispatch(fetchUnreadCount()); // Update the unread count in case a unread notification was deleted

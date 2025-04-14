@@ -252,181 +252,6 @@ const getCompletedWorkouts = async (req, res) => {
   }
 };
 
-const addWorkoutPlan = async (req, res) => {
-  try {
-    const userId = req.decoded;
-    const { workoutId } = req.body;
-
-    // Check if the workout plan exists
-    const workoutPlan = await workout.findOne({
-      where: { id: workoutId },
-      include: [
-        {
-          model: workoutday, // Ensure you're including WorkoutDay to fetch it
-          as: 'days', // Use 'days' as per your association
-          order: [['day', 'ASC']]
-        }
-      ]
-    });
-
-    if (!workoutPlan) {
-      return res.status(404).json({ message: "Workout not found" });
-    }
-
-    // Check if user already has this workout active
-    const existingUserWorkout = await userWorkout.findOne({
-      where: {
-        userId: userId,
-        workoutId: workoutId,
-        isActive: true
-      }
-    });
-
-    if (existingUserWorkout) {
-      return res.status(400).json({ message: "This workout plan is already active" });
-    }
-
-    // Create user workout
-    const totalDays = workoutPlan.days.length;
-    const UserWorkout = await userWorkout.create({
-      userId: userId,
-      workoutId: workoutId,
-      progress: 0,
-      currentDay: 1,
-      totalWorkouts: totalDays,
-      nextWorkout: totalDays > 0 ? `Day 1: ${workoutPlan.days[0].dayName}` : "No workouts scheduled",
-
-    });
-
-    return res.status(201).json({
-      message: "Workout plan added successfully",
-      userWorkout: {
-        id: UserWorkout.id,
-        workoutId: workoutPlan.id,
-        title: workoutPlan.name,
-        progress: 0,
-        nextWorkout: UserWorkout.nextWorkout,
-        lastCompleted: "Not started",
-        startDate: new Date(UserWorkout.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-        image: workoutPlan.imagePath || "/placeholder.svg?height=200&width=300",
-        category: workoutPlan.goal,
-        level: workoutPlan.level,
-        completedWorkouts: 0,
-        totalWorkouts: totalDays,
-        streak: 0,
-        history: []
-      }
-    });
-  } catch (error) {
-    console.error("Error adding workout plan:", error);
-    return res.status(500).json({ message: "Failed to add workout plan" });
-  }
-};
-
-// Get user workout by ID with next day's exercises
-const getUserWorkout = async (req, res) => {
-  try {
-    // Extract user ID from the decoded token
-    let userId = req.decoded.id;
-    const id = req.params.userid;
-    console.log("Decoded User ID:", userId);
-    console.log("User ID from params:", id);
-
-    // Find the user's workout
-    const UserWorkout = await userWorkout.findOne({
-      where: {
-        userId: userId,
-        id: id,
-        isActive: true
-      },
-      include: [
-        {
-          model: workout,
-          as: "workouts",
-          attributes: ["id", "name", "description", "level", "duration", "imagePath", "goal"]
-        }
-      ]
-    });
-
-    if (!UserWorkout) {
-      return res.status(404).json({ message: "User workout not found" });
-    }
-
-    // Get all workout days to calculate total days
-    const WorkoutDays = await workoutday.findAll({
-      where: { workoutId: UserWorkout.workoutId },
-      order: [['id', 'ASC']]
-    });
-
-    if (!WorkoutDays || WorkoutDays.length === 0) {
-      return res.status(404).json({ message: "No workout days found for this workout" });
-    }
-
-    // Calculate which day in the cycle we should show based on currentDay
-    const totalDaysInCycle = WorkoutDays.length;
-    const cycleIndex = (UserWorkout.currentDay - 1) % totalDaysInCycle;
-    const currentWorkoutDay = WorkoutDays[cycleIndex];
-
-    if (!currentWorkoutDay) {
-      return res.status(404).json({ message: "Current workout day not found" });
-    }
-
-    // Get exercises for the current day
-    const Exercises = await workoutdayExcercise.findAll({
-      where: { workoutdayId: currentWorkoutDay.id },
-      include: [
-        {
-          model: excercise,
-          as: "excercises",
-          attributes: ["id", "name", "equipment", "imagePath", "instructions"]
-        }
-      ]
-    });
-
-    // Calculate which week the user is in
-    const currentWeek = Math.floor((UserWorkout.currentDay - 1) / totalDaysInCycle) + 1;
-
-    // Format the response in the requested structure
-    const formattedExercises = Exercises.map(exercise => ({
-      id: exercise.excercises.id,
-      name: exercise.excercises.name,
-      sets: exercise.sets,
-      reps: exercise.reps,
-      rest: `${exercise.rest_time} sec`,
-      equipment: exercise.excercises.equipment,
-      instructions: exercise.excercises.instructions,
-      completed: false // Default to false, could be updated based on user progress tracking
-    }));
-
-    const formattedResponse = {
-      id: UserWorkout.id,
-      title: UserWorkout.workouts.name,
-      progress: UserWorkout.progress,
-      currentDay: UserWorkout.currentDay,
-      totalDays: UserWorkout.totalWorkouts,
-      currentWeek: currentWeek,
-      cycleDay: cycleIndex + 1, // Day number within the current cycle (1-based)
-      level: UserWorkout.workouts.level,
-      category: UserWorkout.workouts.goal || "General Fitness",
-      image: UserWorkout.workouts.imagePath,
-      days: [
-        {
-          day: UserWorkout.currentDay,
-          dayName: currentWorkoutDay.dayName || `Day ${cycleIndex + 1}`,
-          focus: currentWorkoutDay.focus || currentWorkoutDay.dayName,
-          weekInfo: `Week ${currentWeek}, Day ${cycleIndex + 1}`,
-          exercises: formattedExercises
-        }
-      ]
-    };
-
-    res.status(200).json(formattedResponse);
-  } catch (error) {
-    console.error("Error fetching user workout:", error);
-    res.status(500).json({ message: "Error fetching user workout", error: error.message });
-  }
-};
-
 
 
 const deleteUserWorkout = async (req, res) => {
@@ -512,6 +337,7 @@ const deleteUserWorkout = async (req, res) => {
     });
   }
 };
+
 
 const completeWorkoutDay = async (req, res) => {
   try {
@@ -810,6 +636,186 @@ const restartWorkout = async (req, res) => {
     });
   }
 };
+
+// Get user workout by ID with next day's exercises
+const getUserWorkout = async (req, res) => {
+  try {
+    // Extract user ID from the decoded token
+    let userId = req.decoded.id;
+    const id = req.params.userid;
+    console.log("Decoded User ID:", userId);
+    console.log("User ID from params:", id);
+
+    // Find the user's workout
+    const UserWorkout = await userWorkout.findOne({
+      where: {
+        userId: userId,
+        id: id,
+        isActive: true
+      },
+      include: [
+        {
+          model: workout,
+          as: "workouts",
+          attributes: ["id", "name", "description", "level", "duration", "imagePath", "goal"]
+        }
+      ]
+    });
+
+    if (!UserWorkout) {
+      return res.status(404).json({ message: "User workout not found" });
+    }
+
+    // Get all workout days to calculate total days
+    const WorkoutDays = await workoutday.findAll({
+      where: { workoutId: UserWorkout.workoutId },
+      order: [['id', 'ASC']]
+    });
+
+    if (!WorkoutDays || WorkoutDays.length === 0) {
+      return res.status(404).json({ message: "No workout days found for this workout" });
+    }
+
+    // Calculate which day in the cycle we should show based on currentDay
+    const totalDaysInCycle = WorkoutDays.length;
+    const cycleIndex = (UserWorkout.currentDay - 1) % totalDaysInCycle;
+    const currentWorkoutDay = WorkoutDays[cycleIndex];
+
+    if (!currentWorkoutDay) {
+      return res.status(404).json({ message: "Current workout day not found" });
+    }
+
+    // Get exercises for the current day
+    const Exercises = await workoutdayExcercise.findAll({
+      where: { workoutdayId: currentWorkoutDay.id },
+      include: [
+        {
+          model: excercise,
+          as: "excercises",
+          attributes: ["id", "name", "equipment", "imagePath", "instructions"]
+        }
+      ]
+    });
+
+    // Calculate which week the user is in
+    const currentWeek = Math.floor((UserWorkout.currentDay - 1) / totalDaysInCycle) + 1;
+
+    // Format the response in the requested structure
+    const formattedExercises = Exercises.map(exercise => ({
+      id: exercise.excercises.id,
+      name: exercise.excercises.name,
+      sets: exercise.sets,
+      reps: exercise.reps,
+      rest: `${exercise.rest_time} sec`,
+      equipment: exercise.excercises.equipment,
+      instructions: exercise.excercises.instructions,
+      completed: false // Default to false, could be updated based on user progress tracking
+    }));
+
+    const formattedResponse = {
+      id: UserWorkout.id,
+      title: UserWorkout.workouts.name,
+      progress: UserWorkout.progress,
+      currentDay: UserWorkout.currentDay,
+      totalDays: UserWorkout.totalWorkouts,
+      currentWeek: currentWeek,
+      cycleDay: cycleIndex + 1, // Day number within the current cycle (1-based)
+      level: UserWorkout.workouts.level,
+      category: UserWorkout.workouts.goal || "General Fitness",
+      image: UserWorkout.workouts.imagePath,
+      days: [
+        {
+          day: UserWorkout.currentDay,
+          dayName: currentWorkoutDay.dayName || `Day ${cycleIndex + 1}`,
+          focus: currentWorkoutDay.focus || currentWorkoutDay.dayName,
+          weekInfo: `Week ${currentWeek}, Day ${cycleIndex + 1}`,
+          exercises: formattedExercises
+        }
+      ]
+    };
+
+    res.status(200).json(formattedResponse);
+  } catch (error) {
+    console.error("Error fetching user workout:", error);
+    res.status(500).json({ message: "Error fetching user workout", error: error.message });
+  }
+};
+
+const addWorkoutPlan = async (req, res) => {
+  try {
+    const userId = req.decoded;
+    const { workoutId } = req.body;
+
+    // Check if the workout plan exists
+    const workoutPlan = await workout.findOne({
+      where: { id: workoutId },
+      include: [
+        {
+          model: workoutday, // Ensure you're including WorkoutDay to fetch it
+          as: 'days', // Use 'days' as per your association
+          order: [['day', 'ASC']]
+        }
+      ]
+    });
+
+    if (!workoutPlan) {
+      return res.status(404).json({ message: "Workout not found" });
+    }
+
+    // Check if user already has this workout active
+    const existingUserWorkout = await userWorkout.findOne({
+      where: {
+        userId: userId,
+        workoutId: workoutId,
+        isActive: true
+      }
+    });
+
+    if (existingUserWorkout) {
+      return res.status(400).json({ message: "This workout plan is already active" });
+    }
+
+    // Create user workout
+    const totalDays = workoutPlan.days.length;
+    const UserWorkout = await userWorkout.create({
+      userId: userId,
+      workoutId: workoutId,
+      progress: 0,
+      currentDay: 1,
+      totalWorkouts: totalDays,
+      nextWorkout: totalDays > 0 ? `Day 1: ${workoutPlan.days[0].dayName}` : "No workouts scheduled",
+
+    });
+
+    return res.status(201).json({
+      message: "Workout plan added successfully",
+      userWorkout: {
+        id: UserWorkout.id,
+        workoutId: workoutPlan.id,
+        title: workoutPlan.name,
+        progress: 0,
+        nextWorkout: UserWorkout.nextWorkout,
+        lastCompleted: "Not started",
+        startDate: new Date(UserWorkout.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        image: workoutPlan.imagePath || "/placeholder.svg?height=200&width=300",
+        category: workoutPlan.goal,
+        level: workoutPlan.level,
+        completedWorkouts: 0,
+        totalWorkouts: totalDays,
+        streak: 0,
+        history: []
+      }
+    });
+  } catch (error) {
+    console.error("Error adding workout plan:", error);
+    return res.status(500).json({ message: "Failed to add workout plan" });
+  }
+};
+
+
+
+
+
 
 
 module.exports = {

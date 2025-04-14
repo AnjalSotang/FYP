@@ -53,7 +53,7 @@ const createWorkout = async (req, res) => {
         user.id,
         "New Workout Plan",
         `A new workout '${name}' (${level} level) has been added to the system. Check it out!`,
-        'workout_added',
+        'workout_creation',
         newWorkout.id,
         'Workout'
       );  

@@ -1,41 +1,23 @@
-import React from "react"
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Activity } from "lucide-react"
+import { fetchRecentActivities } from "../../../../../store/recentActivitiesSlice";
+
 
 export function RecentActivities() {
-  const activities = [
-    {
-      id: 1,
-      user: "Sarah Johnson",
-      action: "Completed workout",
-      plan: "Full Body Strength",
-      time: "2 hours ago",
-    },
-    {
-      id: 2,
-      user: "Mike Chen",
-      action: "Created new workout",
-      plan: "HIIT Cardio",
-      time: "4 hours ago",
-    },
-    {
-      id: 3,
-      user: "Emma Davis",
-      action: "Subscribed",
-      plan: "Premium Plan",
-      time: "6 hours ago",
-    },
-    {
-      id: 4,
-      user: "James Wilson",
-      action: "Achieved goal",
-      plan: "Weight Loss Challenge",
-      time: "12 hours ago",
-    },
-  ]
+      const { data: activities } = useSelector((state) => state.recentActivities);
+  
+        const dispatch = useDispatch();
+        console.log(activities)
+      
+        useEffect(() => {
+          dispatch(fetchRecentActivities());
+        }, [dispatch]);
+
 
   return (
     <div className="space-y-4">
-      {activities.map((activity) => (
+      {activities.slice(0,5).map((activity) => (
         <div key={activity.id} className="flex items-center gap-4">
           <div className="rounded-full bg-primary/10 p-2">
             <Activity className="h-4 w-4 text-primary" />

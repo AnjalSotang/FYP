@@ -44,7 +44,14 @@ export function fetchUsers() {
     return async function fetchUsersThunk(dispatch) {
         dispatch(setStatus(STATUSES.LOADING));
         try {
-            const response = await API.get('api/admin/Users');
+            const token = localStorage.getItem('token');
+            const response = await API.get('api/admin/Users',
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
             
             if (response.status === 200) {
                 const users = response.data?.data || [];
@@ -76,7 +83,14 @@ export function fetchUsersSevenDays() {
     return async function fetchUsersSeveDaysThunk(dispatch) {
         dispatch(setStatus(STATUSES.LOADING));
         try {
-            const response = await API.get('api/admin/users/sevenDays');
+            const token = localStorage.getItem('token');
+            const response = await API.get('api/admin/users/sevenDays',
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
             
             if (response.status === 200) {
                 const users = response.data?.data || [];
@@ -108,7 +122,14 @@ export function fetchUserMetrics() {
     return async function fetchUsersThunk(dispatch) {
         dispatch(setStatus(STATUSES.LOADING));
         try {
-            const response = await API.get('api/admin/users/metrics');
+            const token = localStorage.getItem('token');
+            const response = await API.get('api/admin/users/metrics',
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
 
             if (response.status === 200) {
                 const metrics = response.data;
@@ -142,7 +163,14 @@ export function fetchUserGrowth() {
     return async function fetchUserGrowth(dispatch) {
         dispatch(setStatus(STATUSES.LOADING));
         try {
-            const response = await API.get('api/admin/users/growth');
+            const token = localStorage.getItem('token');
+            const response = await API.get('api/admin/users/growth',
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
 
             if (response.status === 200) {
                 const metrics = response.data?.data;
@@ -172,67 +200,6 @@ export function fetchUserGrowth() {
     };
 }
 
-
-
-// Thunk action to fetch a single user by ID
-export function fetchUser(id) {
-    return async function fetchUserThunk(dispatch) {
-        dispatch(setStatus(STATUSES.LOADING));
-        try {
-            const response = await API.get(`api/getUser/${id}`);
-            
-            if (response.status === 200) {
-                dispatch(setUsers([response.data.data]));
-                dispatch(setStatus({ status: STATUSES.SUCCESS, message: "Successfully fetched user" }));
-            }
-        } catch (error) {
-            let errorMessage = "An unexpected error occurred.";
-
-            if (error.response) {
-                errorMessage = error.response.data.message || "Failed to fetch user.";
-            } else if (error.request) {
-                errorMessage = "Cannot connect to the server. Please check your internet or try again later.";
-            } else {
-                errorMessage = error.message;
-            }
-
-            dispatch(setStatus({ status: STATUSES.ERROR, message: errorMessage }));
-        }
-    }
-}
-
-// Thunk action to add a new user
-export function addUser(data) {
-    return async function addUserThunk(dispatch) {
-        dispatch(setStatus(STATUSES.LOADING));
-        try {
-            const response = await API.post('api/addUser', data, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                    // 'Authorization': localStorage.getItem(token)
-                }
-            });
-            
-            if (response.status === 201) {
-                dispatch(fetchUsers()); // Refetch all users to update the list
-                dispatch(setStatus({ status: STATUSES.SUCCESS, message: response.data.message }));
-            }
-        } catch (error) {
-            let errorMessage = "An unexpected error occurred.";
-
-            if (error.response) {
-                errorMessage = error.response.data.message || "Failed to add user.";
-            } else if (error.request) {
-                errorMessage = "Cannot connect to the server. Please check your internet or try again later.";
-            } else {
-                errorMessage = error.message;
-            }
-
-            dispatch(setStatus({ status: STATUSES.ERROR, message: errorMessage }));
-        }
-    }
-}
-
 // Thunk action to update a user
 export function updateUser(data) {
     const id = data.id;
@@ -240,7 +207,14 @@ export function updateUser(data) {
         dispatch(setStatus(STATUSES.LOADING));
         try {
             console.log(data)
-            const response = await API.patch(`api/admin/Users/${id}`, data);
+            const token = localStorage.getItem('token');
+            const response = await API.patch(`api/admin/Users/${id}`, data,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
             if (response.status === 200) {
                 dispatch(fetchUsers()); // Refetch all users to update the list
                 dispatch(setStatus({ status: STATUSES.SUCCESS, message: response.data.message }));
@@ -266,7 +240,14 @@ export function deleteUser(id) {
     return async function deleteUserThunk(dispatch, getState) {
         dispatch(setStatus(STATUSES.LOADING));
         try {
-            const response = await API.delete(`api/admin/Users/${id}`);
+            const token = localStorage.getItem('token');
+            const response = await API.delete(`api/admin/Users/${id}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
             
             if (response.status === 200) {
                 // Update local state by filtering out the deleted user
@@ -291,61 +272,3 @@ export function deleteUser(id) {
     }
 }
 
-// // Thunk action to toggle user active status
-// export function toggleUserActive(id, isActive) {
-//     return async function toggleUserActiveThunk(dispatch) {
-//         dispatch(setStatus(STATUSES.LOADING));
-//         try {
-//             const response = await API.patch(`api/updateUser/${id}`, { isActive });
-            
-//             if (response.status === 200) {
-//                 dispatch(fetchUsers()); // Refetch all users to update the list
-//                 const statusMessage = isActive ? "User activated successfully" : "User deactivated successfully";
-//                 dispatch(setStatus({ status: STATUSES.SUCCESS, message: statusMessage }));
-//             }
-//         } catch (error) {
-//             let errorMessage = "An unexpected error occurred.";
-
-//             if (error.response) {
-//                 errorMessage = error.response.data.message || "Failed to update user status.";
-//             } else if (error.request) {
-//                 errorMessage = "Cannot connect to the server. Please check your internet or try again later.";
-//             } else {
-//                 errorMessage = error.message;
-//             }
-
-//             dispatch(setStatus({ status: STATUSES.ERROR, message: errorMessage }));
-//         }
-//     }
-// }
-
-// // Thunk action to search users
-// export function searchUsers(query) {
-//     return async function searchUsersThunk(dispatch) {
-//         dispatch(setStatus(STATUSES.LOADING));
-//         try {
-//             const response = await API.get(`api/searchUsers?query=${encodeURIComponent(query)}`);
-            
-//             if (response.status === 200) {
-//                 const users = response.data?.data || [];
-//                 dispatch(setUsers(users));
-//                 dispatch(setStatus({ 
-//                     status: STATUSES.SUCCESS, 
-//                     message: users.length > 0 ? "Search successful" : "No users found matching your query" 
-//                 }));
-//             }
-//         } catch (error) {
-//             let errorMessage = "An unexpected error occurred.";
-
-//             if (error.response) {
-//                 errorMessage = error.response.data.message || "Search failed.";
-//             } else if (error.request) {
-//                 errorMessage = "Cannot connect to the server. Please check your internet or try again later.";
-//             } else {
-//                 errorMessage = error.message;
-//             }
-
-//             dispatch(setStatus({ status: STATUSES.ERROR, message: errorMessage }));
-//         }
-//     }
-// }

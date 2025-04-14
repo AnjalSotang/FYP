@@ -4,6 +4,7 @@ const Notification = db.notification;
 const User = db.users;
 const { Op } = require("sequelize");
 const socketService = require('../../services/socketService');
+const { formatDateTime } = require("../../helpers/formatDateAndTime");
 
 // Create admin notification service
 const createAdminNotification = async (title, message, type = 'admin-alert', relatedId = null, relatedType = null) => {
@@ -56,22 +57,7 @@ exports.getAdminNotifications = async (req, res) => {
     });
 
     const formattedNotifications = notifications.map(notification => {
-      const now = new Date();
-      const createdAt = new Date(notification.createdAt);
-      const diff = Math.floor((now - createdAt) / 1000); // difference in seconds
-
-      let timeAgo;
-      if (diff < 60) {
-        timeAgo = 'Just now';
-      } else if (diff < 3600) {
-        timeAgo = `${Math.floor(diff / 60)} minutes ago`;
-      } else if (diff < 86400) {
-        timeAgo = `${Math.floor(diff / 3600)} hours ago`;
-      } else if (diff < 604800) {
-        timeAgo = `${Math.floor(diff / 86400)} days ago`;
-      } else {
-        timeAgo = createdAt.toLocaleDateString();
-      }
+      const { time, date } = formatDateTime(notification.createdAt);
 
       return {
         id: notification.id,
@@ -80,7 +66,8 @@ exports.getAdminNotifications = async (req, res) => {
         type: notification.type,
         audience: notification.audience,
         read: notification.read,
-        time: timeAgo,
+        time, // e.g., "9:30 AM"
+        date, // e.g., "Today"
         relatedId: notification.relatedId,
         relatedType: notification.relatedType,
         createdAt: notification.createdAt,
@@ -89,7 +76,7 @@ exports.getAdminNotifications = async (req, res) => {
     });
 
     console.log(`Found ${formattedNotifications.length} admin notifications`);
-    // Send response with notifications
+
     res.status(200).json({
       notifications: formattedNotifications
     });
@@ -99,73 +86,17 @@ exports.getAdminNotifications = async (req, res) => {
   }
 };
 
-// Get admin notifications for a specific admin
-exports.getAdminNotificationsForAdmin = async (req, res) => {
-  try {
-    const adminId = req.params.adminId;
-
-    const notifications = await Notification.findAll({
-      where: { 
-        audience: 'admin',
-        [Op.or]: [
-          { UserId: adminId },
-          { UserId: null } // Include system-wide admin notifications
-        ]
-      },
-      order: [['createdAt', 'DESC']], // Sorting notifications by creation time in descending order
-    });
-
-    const formattedNotifications = notifications.map(notification => {
-      const now = new Date();
-      const createdAt = new Date(notification.createdAt);
-      const diff = Math.floor((now - createdAt) / 1000); // difference in seconds
-
-      let timeAgo;
-      if (diff < 60) {
-        timeAgo = 'Just now';
-      } else if (diff < 3600) {
-        timeAgo = `${Math.floor(diff / 60)} minutes ago`;
-      } else if (diff < 86400) {
-        timeAgo = `${Math.floor(diff / 3600)} hours ago`;
-      } else if (diff < 604800) {
-        timeAgo = `${Math.floor(diff / 86400)} days ago`;
-      } else {
-        timeAgo = createdAt.toLocaleDateString();
-      }
-
-      return {
-        id: notification.id,
-        title: notification.title,
-        message: notification.message,
-        type: notification.type,
-        audience: notification.audience,
-        read: notification.read,
-        time: timeAgo,
-        relatedId: notification.relatedId,
-        relatedType: notification.relatedType,
-        createdAt: notification.createdAt,
-      };
-    });
-
-    console.log(`Found ${formattedNotifications.length} notifications for admin ${adminId}`);
-    // Send response with notifications
-    res.status(200).json({
-      notifications: formattedNotifications
-    });
-  } catch (error) {
-    console.error("Error fetching admin notifications:", error);
-    res.status(500).json({ message: "Failed to fetch notifications", error: error.message });
-  }
-};
-
 // Mark admin notification as read
 exports.markAsRead = async (req, res) => {
   try {
-    const notificationId = req.params.id;
+    const {id} = req.params;
+    console.log(id)
+    console.log('Marking admin notification as read:', id);
 
     await Notification.update({ read: true }, {
       where: { 
-        id: notificationId,
+        id,
+        UserId: null,
         audience: 'admin'
       }
     });

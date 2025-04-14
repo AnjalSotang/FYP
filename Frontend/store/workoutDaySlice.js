@@ -27,7 +27,14 @@ export function createWorkoutDay(id, dayName) {
         try {
             console.log(id)
             console.log(dayName)
-            const response = await API.post(`api/createWorkoutDay/${id}`, {dayName});
+            const token = localStorage.getItem('token');
+            const response = await API.post(`api/createWorkoutDay/${id}`, {dayName},
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
             if (response.status === 201) {
                 dispatch(setWorkoutDays(response.data));
                 dispatch(setStatus(STATUSES.SUCCESS));
@@ -44,7 +51,14 @@ export function updateWorkoutDay({id, dayName}) {
         try {
             console.log(id)
             console.log(dayName)
-            const response = await API.patch(`api/updateWorkoutDay/${id}`, {dayName});
+            const token = localStorage.getItem('token');
+            const response = await API.patch(`api/updateWorkoutDay/${id}`, {dayName},
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
             if (response.status === 200) {
                 dispatch(setWorkoutDays(response.data));
                 dispatch(setStatus(STATUSES.SUCCESS));
@@ -60,8 +74,16 @@ export function deleteWorkoutDay(dayId) {
         dispatch(setStatus(STATUSES.LOADING));
         try {
             console.log(dayId)
+
             console.log(`Request URL: http://localhost:3001/api/deleteWorkoutDay/${dayId}`);
-            const response = await API.delete(`api/deleteWorkoutDay/${dayId}`);
+            const token = localStorage.getItem('token');
+            const response = await API.delete(`api/deleteWorkoutDay/${dayId}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
             if (response.status === 200) {  
                 dispatch(setWorkoutDays(response.data));
                 dispatch(setStatus(STATUSES.SUCCESS));
@@ -77,6 +99,7 @@ export function addExcerciseToWorkoutDay(excerciseData) {
         dispatch(setStatus(STATUSES.LOADING));
         console.log(excerciseData)
         try {
+            
             // Send the exercise data along with the dayId in the request
             const response = await API.post(
                 `api/addExcerciseToWorkoutDay/${excerciseData.dayId}`, 

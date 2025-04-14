@@ -1,5 +1,5 @@
 const express = require("express");
-const {getScheduledWorkouts, getWorkoutsForDate, getUpcomingWorkouts, getAllWorkoutPlans, scheduleWorkout, deleteScheduledWorkout} = require("../../controller.js/user/workoutScheduleController");
+const {getScheduledWorkouts, getWorkoutsForDate, getUpcomingWorkouts, getAllWorkoutPlans, scheduleWorkout, deleteScheduledWorkout} = require("../../controller/user/workoutScheduleController");
 const { checkTokenAndRole } = require("../../middleware/checkTokenAndRole");
 const router = express.Router()
 

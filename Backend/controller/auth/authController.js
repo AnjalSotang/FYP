@@ -1,15 +1,31 @@
-const { users, Sequelize } = require("../models")
+const { users, Settings, Sequelize } = require("../../models")
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const validator = require("validator");
 const nodemailer = require('nodemailer');
-const adminNotificationController = require('../controller.js/admin/adminNotificationController');
+const adminNotificationController = require('../../controller/admin/adminNotificationController');
+
+
+const getDefaultUserRole = async () => {
+  const settings = await Settings.findOne();
+  return settings?.defaultUserRole || 'user'; // Default to 'user' if no settings
+};
 
 
 const register = async (req, res) => {
   try {
     const { email, password, confirmPassword, userName, age, weight, heightFeet, heightInches, experienceLevel, gender } = req.body;
     // const userData = req.body;
+     // First check if registrations are allowed
+     const settings = await Settings.findOne();
+    //  if (settings && settings.allowRegistrations === false) {
+    //    return res.status(403).json({ 
+    //      message: 'User registrations are currently disabled by the administrator' 
+    //    });
+    //  }
+ 
+     // Get the default role from settings
+     const defaultRole = await getDefaultUserRole();
 
     // Input Validation
     if (!email || !password || !confirmPassword || !userName || !gender || !age || !weight || !heightFeet || !heightInches || !experienceLevel) {
@@ -36,7 +52,7 @@ const register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 8);
 
     // Create the new user
-    const newUser = await users.create({ email: email, password: hashedPassword, username: userName, age: age, weight: weight, heightFeet: heightFeet, heightInches: heightInches, fitness_level: experienceLevel });
+    const newUser = await users.create({ email: email, password: hashedPassword, username: userName, age: age, weight: weight, heightFeet: heightFeet, heightInches: heightInches, fitness_level: experienceLevel, role: defaultRole });
 
         // Send admin notification about new user registration
         try {
@@ -285,6 +301,8 @@ const getAdminProfile = async (req,
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
+
 // Update user profile
 const updateUserProfile = async (req, res) => {
   try {

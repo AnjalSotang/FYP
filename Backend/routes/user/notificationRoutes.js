@@ -1,21 +1,21 @@
 const express = require("express");
 const router = express.Router();
-const notificationController = require("../../controller.js/user/notificationController");
-// const { checkTokenAndRole } = require("../middleware/checkTokenAndRole");
+const notificationController = require("../../controller/user/notificationController");
+const { checkTokenAndRole } = require("../../middleware/checkTokenAndRole");
 
 // Get all notifications for a user
-router.get("/notifications/user/:userId", notificationController.getUserNotifications);
+router.get("/user/:userId/Notifications", checkTokenAndRole('user'), notificationController.getUserNotifications);
 
 // Mark notification as read
-router.patch("/notifications/:id/read", notificationController.markAsRead);
+router.patch(`/user/:userId/Notifications/:id/read`, checkTokenAndRole('user'), notificationController.markAsRead);
 
 // Mark all notifications as read
-router.patch("/notifications/user/:userId/read-all", notificationController.markAllAsRead);
+router.patch("/user/:userId/Notifications/read-all", checkTokenAndRole('user'), notificationController.markAllAsRead);
 
 // Delete notification
-router.delete("/notifications/user/:id", notificationController.deleteNotification);
+router.delete("/user/:userId/Notification/:id", checkTokenAndRole('user'), notificationController.deleteNotification);
 
 // Get unread notification count
-router.get("/:userId/user/unread-count", notificationController.getUnreadCount);
+router.get("/user/:userId/unread-count", checkTokenAndRole('user'), notificationController.getUnreadCount);
 
 module.exports = router;

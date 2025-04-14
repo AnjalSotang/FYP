@@ -1,10 +1,10 @@
 import { useState, useEffect, memo, useRef } from "react";
-import { Bell, ChevronDown, Settings, HelpCircle, User, LogOut } from "lucide-react";
+import { Bell, ChevronDown, Settings, HelpCircle, User, LogOut, Dumbbell } from "lucide-react";
 import { throttle } from "lodash";
 import { Link, useNavigate } from "react-router-dom";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchAdminProfile } from "../../../../store/authSlice";
+import { fetchAdminProfile, handleLogout } from "../../../../store/authSlice";
 import {
   fetchNotifications,
   markNotificationAsRead,
@@ -30,6 +30,8 @@ const TopNavbar = () => {
   const notificationRef = useRef(null);
 
   const profileImageUrl = profile?.profileImage ? profile.profileImage.replace(/\\/g, "/") : "";
+
+  console.log("profileImageUrl:", profileImageUrl);
 
   // Global click handler for closing dropdowns when clicking outside
   useEffect(() => {
@@ -149,6 +151,12 @@ const TopNavbar = () => {
       setShowProfileMenu(false);
     }
   };
+  const onLogout = () => {
+    dispatch(handleLogout());
+    navigate('/login');
+  };
+
+
 
   return (
     <nav
@@ -156,29 +164,18 @@ const TopNavbar = () => {
         }`}
     >
       {/* Logo */}
-      <Link to="/" className="flex items-center space-x-2">
-        <span className="text-[#b4e61d] text-3xl font-bold cursor-pointer">
-          FitTrack
-        </span>
-      </Link>
+      <div className="flex items-center">
+          <Link to="/admin" className="flex items-center gap-2">
+            <Dumbbell className="h-6 w-6 text-primary" />
+            <h1 className="text-primary text-xl font-extrabold tracking-wide hover:text-primary/90 transition-all duration-300">
+              FitTrack
+            </h1>
+          </Link>
+        </div>
 
       {/* Right section: Actions and profile */}
       <div className="flex items-center space-x-3">
-        {/* Help button */}
-        <button
-          aria-label="Help"
-          className="p-1.5 rounded-md hover:bg-navy-800 focus:bg-navy-700 focus:outline-none hidden sm:block transition-colors"
-        >
-          <HelpCircle size={20} className="text-gray-400" />
-        </button>
 
-        {/* Settings button */}
-        <button
-          aria-label="Settings"
-          className="p-1.5 rounded-md hover:bg-navy-800 focus:bg-navy-700 focus:outline-none hidden sm:block transition-colors"
-        >
-          <Settings size={20} className="text-gray-400" />
-        </button>
 
         {/* Theme Toggle */}
         <ThemeToggle />
@@ -218,7 +215,7 @@ const TopNavbar = () => {
               </div>
               <div className="max-h-96 overflow-y-auto">
                 {notifications && notifications.length > 0 ? (
-                  notifications.map((notification) => {
+                  notifications.slice(0, 5).map((notification) => {
                     // Determine icon style based on notification type
                     let iconClass = "bg-lime-300 text-navy-900";
                     let iconLetter = "N";
@@ -333,15 +330,15 @@ const TopNavbar = () => {
                   className="w-full h-full rounded-full object-cover"
                 />
               ) : (
-                <span className="font-medium text-gray-400">AD</span>
+                <span className="font-medium text-primary">AD</span>
               )}
             </div>
             <div className="hidden sm:block">
-              <span className="text-gray-400">{profile?.username || "Admin User"}</span>
-              <div className="flex items-center text-xs text-gray-400">
+              <span className="text-primary">Admin</span>
+              {/* <div className="flex items-center text-xs text-gray-400">
                 <span>{profile?.role || "Admin"}</span>
                 <ChevronDown size={14} className="ml-1" />
-              </div>
+              </div> */}
             </div>
           </button>
 
@@ -351,16 +348,7 @@ const TopNavbar = () => {
               className="absolute right-0 mt-2 w-48 bg-white dark:bg-navy-800 rounded-md shadow-lg py-1 text-gray-800 dark:text-gray-200 z-50 border border-gray-200 dark:border-navy-700"
               role="menu"
             >
-              <Link
-                to="/admin/profile"
-                className="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-navy-700 transition-colors focus:bg-gray-50 dark:focus:bg-navy-700 focus:outline-none"
-                role="menuitem"
-              >
-                <div className="flex items-center">
-                  <User size={16} className="mr-2" />
-                  <span>My Profile</span>
-                </div>
-              </Link>
+           
               <Link
                 to="/admin/settings"
                 className="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-navy-700 transition-colors focus:bg-gray-50 dark:focus:bg-navy-700 focus:outline-none"
@@ -368,15 +356,13 @@ const TopNavbar = () => {
               >
                 <div className="flex items-center">
                   <Settings size={16} className="mr-2" />
-                  <span>Account Settings</span>
+                  <span>Settings</span>
                 </div>
               </Link>
               <div className="border-t border-gray-100 dark:border-navy-700 my-1"></div>
               <button
-                onClick={() => {
-                  // Add logout logic here
-                  navigate("/login");
-                }}
+                type="button"
+                onClick={onLogout}
                 className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-navy-700 transition-colors focus:bg-gray-50 dark:focus:bg-navy-700 focus:outline-none text-red-500"
                 role="menuitem"
               >
@@ -385,6 +371,7 @@ const TopNavbar = () => {
                   <span>Logout</span>
                 </div>
               </button>
+
             </div>
           )}
         </div>

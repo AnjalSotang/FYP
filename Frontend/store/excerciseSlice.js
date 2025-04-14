@@ -35,10 +35,12 @@ export function addExcercise(data) {
     return async function addExcerciseThunk(dispatch) {
         dispatch(setStatus(STATUSES.LOADING))
         try {
-            const response = await API.post('api/addExercise', data, {
+            const token = localStorage.getItem('token');
+
+            const response = await API.post('api/admin/excercise', data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
-                    // 'Authorization': localStorage.getItem(token)
+                   'Authorization': `Bearer ${token}`
                 }
             })
             if (response.status === 201) {
@@ -106,7 +108,14 @@ export function fetchExcerciseMetrics() {
     return async function fetchExcerciseMetricsThunk(dispatch) {
         dispatch(setStatus(STATUSES.LOADING));
         try {
-            const response = await API.get('api/admin/excercises/metrics');
+            const token = localStorage.getItem('token');
+            const response = await API.get('api/admin/excercises/metrics',
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
 
             if (response.status === 200) {
                 const metrics = response.data;
@@ -207,10 +216,11 @@ export function fetchExcercise(id) {
         return async function updateExcerciseThunk(dispatch){
             dispatch(setStatus(STATUSES.LOADING))
            try{
-            const response = await API.patch('api/updateExcercise',data,{
+            const token = localStorage.getItem('token');
+            const response = await API.patch('api/admin/excercise',data,{
                 headers: {
                     'Content-Type': 'multipart/form-data',
-                    // 'Authorization': localStorage.getItem(token)
+                   Authorization: `Bearer ${token}`,
                 }
             })
 
@@ -243,7 +253,14 @@ export function fetchExcercise(id) {
         return async function deleteExcerciseThunk(dispatch, getState) {
             dispatch(setStatus(STATUSES.LOADING))
             try {
-                const response = await API.delete(`api/deleteExcercise/${id}`);
+                const token = localStorage.getItem('token');
+                const response = await API.delete(`api/admin/excercise/${id}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
                 if (response.status === 200) {
                     const currentData = getState().excercise.data;
                     const newData = currentData.filter(ex => ex.id !== id);~

@@ -1,5 +1,5 @@
 const express = require("express");
-const {findAll, getActiveWorkouts, findAllHistory} = require("../../controller.js/user/userWorkoutHistoryController")
+const {findAll, getActiveWorkouts, findAllHistory} = require("../../controller/user/userWorkoutHistoryController")
 const { checkTokenAndRole } = require("../../middleware/checkTokenAndRole");
 const router = express.Router()
 

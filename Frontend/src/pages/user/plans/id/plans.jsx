@@ -22,7 +22,7 @@ export default function WorkoutPlanPage({ }) {
   console.log(id) // Assuming you're using a dynamic route with an ID parameter
   const planId = Number(id)
   console.log(planId);    // Convert to number
-  const { status, data1: workoutPlan } = useSelector((state) => state.workout);
+  const { status, currentWorkout: workoutPlan } = useSelector((state) => state.workout);
   const { status: status1 } = useSelector((state) => state.userWorkout);
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
@@ -34,8 +34,6 @@ export default function WorkoutPlanPage({ }) {
     // If the workoutPlans are empty or not present, trigger the fetch
     dispatch(fetchWorkout(planId));
   }, [dispatch, planId]);
-
-
 
 
   // Function to set the plan ID and trigger dispatch manually

@@ -1,5 +1,5 @@
 const express = require("express");
-const {createUserMeasuremetRecords, updateUserMeasurementRecord, getAllUserMeasurementRecords, deleteUserMeasurementRecord} = require("../../controller.js/user/userMeasurementsController.js");
+const {createUserMeasuremetRecords, updateUserMeasurementRecord, getAllUserMeasurementRecords, deleteUserMeasurementRecord} = require("../../controller/user/userMeasurementsController.js");
 const { checkTokenAndRole } = require("../../middleware/checkTokenAndRole.js");
 const router = express.Router()
 

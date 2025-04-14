@@ -1,44 +1,64 @@
 import { createSlice } from '@reduxjs/toolkit';
 import STATUSES from '../src/globals/status/statuses';
 import API from '../src/http';
-import { set } from 'lodash';
 import { fetchNotifications, fetchUnreadCount } from './adminNotficationSlice';
 
+// Initial state
+const initialState = {
+    data: [], // List of all workouts
+    popularData: [], // Popular workouts
+    workoutMetrics: null, // Metrics for reporting
+    selectedDate: new Date().toISOString(),
+    currentWorkout: null, // Single workout (renamed from data1 for clarity)
+    token: null,
+    status: null // Network status (loading, success, error)
+};
+
+// Helper functions
+const handleApiError = (error) => {
+    let errorMessage = "An unexpected error occurred.";
+
+    if (error.response) {
+        // Server responded with an error status
+        errorMessage = error.response.data.message || "Operation failed";
+    } else if (error.request) {
+        // Request made but no response received
+        errorMessage = "Cannot connect to the server. Please check your internet connection.";
+    } else {
+        // Other errors
+        errorMessage = error.message;
+    }
+
+    return { status: STATUSES.ERROR, message: errorMessage };
+};
+
+// Create slice
 const workoutSlice = createSlice({
     name: 'workout',
-    initialState: {
-        data: [], //It holds object alright
-        popularData: [],
-        workoutMetrics: null,
-        selectedDate: new Date().toISOString(),
-        data1: null,
-        token: null,
-        status: null //We will see about this
-    },
+    initialState,
     reducers: {
         setStatus(state, action) {
-            state.status = action.payload //Status is a network status it could be either success or pending or faliure
+            state.status = action.payload;
         },
-        setWorkout(state, action) {
-            state.data = action.payload
+        setWorkouts(state, action) {
+            state.data = action.payload;
         },
-        setPopularWorkout(state, action) {
-            state.popularData = action.payload
+        setPopularWorkouts(state, action) {
+            state.popularData = action.payload;
         },
-        setWorkout1(state, action) {
-            state.data1 = action.payload
+        setCurrentWorkout(state, action) {
+            state.currentWorkout = action.payload;
         },
         setWorkoutMetrics(state, action) {
-            state.workoutMetrics = action.payload
+            state.workoutMetrics = action.payload;
         },
         setToken(state, action) {
-            state.token = action.payload
+            state.token = action.payload;
         },
-         // ✅ New Reducer: Instantly updates a workout day in Redux store
-         updateWorkoutDayInState(state, action) {
+        updateWorkoutDayInState(state, action) {
             const updatedDay = action.payload;
-            if (state.data1?.days) {
-                state.data1.days = state.data1.days.map(day =>
+            if (state.currentWorkout?.days) {
+                state.currentWorkout.days = state.currentWorkout.days.map(day =>
                     day.id === updatedDay.id ? { ...day, ...updatedDay } : day
                 );
             }
@@ -46,313 +66,229 @@ const workoutSlice = createSlice({
     }
 });
 
-//Step 2: Now Action
-export const { setStatus, setWorkout, setPopularWorkout, setWorkoutMetrics, setWorkout1, setToken, updateWorkoutDayInState } = workoutSlice.actions;
-export default workoutSlice.reducer
+// Export actions
+export const {
+    setStatus,
+    setWorkouts,
+    setPopularWorkouts,
+    setWorkoutMetrics,
+    setCurrentWorkout,
+    setToken,
+    updateWorkoutDayInState
+} = workoutSlice.actions;
 
+export default workoutSlice.reducer;
 
+// Thunk actions
 export function addWorkout(data) {
     return async function addWorkoutThunk(dispatch) {
-        dispatch(setStatus(STATUSES.LOADING))
+        dispatch(setStatus(STATUSES.LOADING));
+
         try {
-            const response = await API.post('api/createWorkout', data, {
+            const token = localStorage.getItem('token');
+
+            const response = await API.post('api/admin/workout', data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
-                    // 'Authorization': localStorage.getItem(token)
+                    'Authorization': `Bearer ${token}`
                 }
-            })
+            });
+
             if (response.status === 201) {
-                dispatch(setWorkout1(response.data.data))
-                console.log(response.data.data)
-                dispatch(setStatus({ status: STATUSES.SUCCESS, message: response.data.message }))
-                dispatch(fetchWorkouts())
-                 // Add these lines to refresh notifications
-                 dispatch(fetchNotifications())
-                 dispatch(fetchUnreadCount())
+                dispatch(setCurrentWorkout(response.data.data));
+                dispatch(setStatus({ status: STATUSES.SUCCESS, message: response.data.message }));
+                dispatch(fetchWorkouts());
+
+                // Refresh notifications
+                dispatch(fetchNotifications());
+                dispatch(fetchUnreadCount());
             }
+        } catch (error) {
+            dispatch(setStatus(handleApiError(error)));
         }
-        catch (error) {
-            let errorMessage = "An unexpected error occurred.";
-
-
-            if (error.response) {
-                // Server responded with an error status (e.g., 400, 409)
-                errorMessage = error.response.data.message || "Workout Creaion Failed";
-            } else if (error.request) {
-                // Request was made but no response (backend is down or network issue)
-                errorMessage = "Cannot connect to the server. Please check your internet or try again later.";
-            } else {
-                // Other unexpected errors (e.g., something wrong with frontend code)
-                errorMessage = error.message;
-            }
-
-            dispatch(setStatus({ status: STATUSES.ERROR, message: errorMessage }));
-        }
-    }
+    };
 }
-
 
 export function fetchWorkouts() {
     return async function fetchWorkoutsThunk(dispatch) {
-        dispatch(setStatus(STATUSES.LOADING))
+        dispatch(setStatus(STATUSES.LOADING));
+
         try {
-            const response = await API.get('api/getAllWorkout')
+
+
+            const response = await API.get('api/getAllWorkout');
+
             if (response.status === 200) {
-                const workout= response.data?.data || [];
+                const workouts = response.data?.data || [];
 
-
-                if (workout.length > 0) {
-                    dispatch(setWorkout(workout));
-                    console.log(workout)
-                    dispatch(setStatus({ status: STATUSES.SUCCESS }))
-
-                }
+                dispatch(setWorkouts(workouts));
+                dispatch(setStatus({ status: STATUSES.SUCCESS }));
             }
+        } catch (error) {
+            dispatch(setStatus(handleApiError(error)));
         }
-        catch (error) {
-            let errorMessage = "An unexpected error occurred.";
-
-
-            if (error.response) {
-                // Server responded with an error status (e.g., 400, 409)
-                errorMessage = error.response.data.message || "Registration failed.";
-            } else if (error.request) {
-                // Request was made but no response (backend is down or network issue)
-                errorMessage = "Cannot connect to the server. Please check your internet or try again later.";
-            } else {
-                // Other unexpected errors (e.g., something wrong with frontend code)
-                errorMessage = error.message;
-            }
-
-            dispatch(setStatus({ status: STATUSES.ERROR, message: errorMessage }));
-        }
-    }
+    };
 }
 
 export function fetchPopularWorkouts() {
-    return async function fetchWorkoutsThunk(dispatch) {
-        dispatch(setStatus(STATUSES.LOADING))
+    return async function fetchPopularWorkoutsThunk(dispatch) {
+        dispatch(setStatus(STATUSES.LOADING));
+
         try {
-            const response = await API.get('api/admin/workout/popular')
-            if (response.status === 200) {
-                const workout= response.data?.data || [];
-
-
-                if (workout.length > 0) {
-                    dispatch(setPopularWorkout(workout));
-                    console.log(workout)
-                    dispatch(setStatus({ status: STATUSES.SUCCESS }))
+            const token = localStorage.getItem('token');
+            const response = await API.get('api/admin/workout/popular',
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
                 }
+            );
+
+            if (response.status === 200) {
+                const workouts = response.data?.data || [];
+
+                dispatch(setPopularWorkouts(workouts));
+                dispatch(setStatus({ status: STATUSES.SUCCESS }));
             }
+        } catch (error) {
+            dispatch(setStatus(handleApiError(error)));
         }
-        catch (error) {
-            let errorMessage = "An unexpected error occurred.";
-
-
-            if (error.response) {
-                // Server responded with an error status (e.g., 400, 409)
-                errorMessage = error.response.data.message || "Registration failed.";
-            } else if (error.request) {
-                // Request was made but no response (backend is down or network issue)
-                errorMessage = "Cannot connect to the server. Please check your internet or try again later.";
-            } else {
-                // Other unexpected errors (e.g., something wrong with frontend code)
-                errorMessage = error.message;
-            }
-
-            dispatch(setStatus({ status: STATUSES.ERROR, message: errorMessage }));
-        }
-    }
+    };
 }
 
 export function fetchWorkoutMetrics() {
     return async function fetchWorkoutMetricsThunk(dispatch) {
         dispatch(setStatus(STATUSES.LOADING));
+
         try {
-            const response = await API.get('api/admin/workout/metrics');
+            const token = localStorage.getItem('token');
+            const response = await API.get('api/admin/workout/metrics',
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
 
             if (response.status === 200) {
                 const metrics = response.data;
-                console.log(metrics)
 
-                if (metrics) {
-                    dispatch(setWorkoutMetrics(metrics));
-                    dispatch(setStatus({ status: STATUSES.SUCCESS }));
-                } else {
-                    dispatch(setUserMetrics(null)); // or {} if your reducer expects an object
-                    dispatch(setStatus({ status: STATUSES.SUCCESS, message: "No user metrics found" }));
-                }
+                dispatch(setWorkoutMetrics(metrics));
+                dispatch(setStatus({ status: STATUSES.SUCCESS }));
             }
         } catch (error) {
-            let errorMessage = "An unexpected error occurred.";
-
-            if (error.response) {
-                errorMessage = error.response.data.message || "Failed to fetch user metrics.";
-            } else if (error.request) {
-                errorMessage = "Cannot connect to the server. Please check your internet or try again later.";
-            } else {
-                errorMessage = error.message;
-            }
-
-            dispatch(setStatus({ status: STATUSES.ERROR, message: errorMessage }));
+            dispatch(setStatus(handleApiError(error)));
         }
     };
 }
-
-
 
 export function searchWorkouts(query, level) {
     return async function searchWorkoutsThunk(dispatch) {
         dispatch(setStatus(STATUSES.LOADING));
+
         try {
-            const response = await API.get(`api/getAllWorkouts/search?query=${encodeURIComponent(query)}&level=${encodeURIComponent(level)}`);
-            
-            if (response.status === 200 && response.data?.data?.length > 0) {
-                dispatch(setWorkout(response.data.data));
-                // dispatch(setStatus({ status: STATUSES.SUCCESS, message: "Successfull" }))
-            } else {
-                dispatch(setWorkout([])); // Clear previous data if no results found
-                dispatch(setStatus(STATUSES.ERROR));
+            const response = await API.get(
+                `api/getAllWorkouts/search?query=${encodeURIComponent(query)}&level=${encodeURIComponent(level)}`
+            );
+
+            if (response.status === 200) {
+                const workouts = response.data?.data || [];
+                dispatch(setWorkouts(workouts));
+                dispatch(setStatus({ status: STATUSES.SUCCESS }));
             }
         } catch (error) {
-            let errorMessage = "An unexpected error occurred.";
-
-
-            if (error.response) {
-                // Server responded with an error status (e.g., 400, 409)
-                errorMessage = error.response.data.message || "Registration failed.";
-            } else if (error.request) {
-                // Request was made but no response (backend is down or network issue)
-                errorMessage = "Cannot connect to the server. Please check your internet or try again later.";
-            } else {
-                // Other unexpected errors (e.g., something wrong with frontend code)
-                errorMessage = error.message;
-            }
-
-            dispatch(setStatus({ status: STATUSES.ERROR, message: errorMessage }));
+            dispatch(setWorkouts([])); // Clear data on error
+            dispatch(setStatus(handleApiError(error)));
         }
     };
 }
 
-
-
 export function fetchWorkout(id) {
     return async function fetchWorkoutThunk(dispatch) {
-        dispatch(setStatus(STATUSES.LOADING))
+        dispatch(setStatus(STATUSES.LOADING));
+
         try {
-            const response = await API.get(`api/getWorkout/${id}`)
-            console.log(response);
+            const response = await API.get(`api/getWorkout/${id}`);
+
             if (response.status === 200) {
-                dispatch(setWorkout1(response.data.data))
-                // Log to check the structure
-                console.log("Workout data:", response.data.data); 
-                dispatch(setStatus({ status: STATUSES.SUCCESS}))
-            } 
-        }
-        catch (error) {
-            let errorMessage = "An unexpected error occurred.";
-
-
-            if (error.response) {
-                // Server responded with an error status (e.g., 400, 409)
-                errorMessage = error.response.data.message || "Registration failed.";
-            } else if (error.request) {
-                // Request was made but no response (backend is down or network issue)
-                errorMessage = "Cannot connect to the server. Please check your internet or try again later.";
-            } else {
-                // Other unexpected errors (e.g., something wrong with frontend code)
-                errorMessage = error.message;
+                dispatch(setCurrentWorkout(response.data.data));
+                dispatch(setStatus({ status: STATUSES.SUCCESS }));
             }
-
-            dispatch(setStatus({ status: STATUSES.ERROR, message: errorMessage }));
+        } catch (error) {
+            dispatch(setStatus(handleApiError(error)));
         }
-    }
-    }
+    };
+}
 
+export function updateWorkout(data) {
+    return async function updateWorkoutThunk(dispatch) {
+        dispatch(setStatus(STATUSES.LOADING));
 
-    export function updateWorkout(data) {
-        return async function updateWorkoutThunk(dispatch) {
-            dispatch(setStatus(STATUSES.LOADING));
-            
-            console.log(data)
-            
-    
-            try {
-                const response = await API.patch('api/updateWorkout', data, {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await API.patch('api/admin/workout', data, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+                'Authorization': `Bearer ${token}`
+            });
+
+            if (response.status === 200) {
+                dispatch(setStatus({
+                    status: STATUSES.SUCCESS,
+                    message: response.data.message || "Workout updated successfully"
+                }));
+                // Optionally refresh the workout list
+                dispatch(fetchWorkouts());
+            }
+        } catch (error) {
+            dispatch(setStatus(handleApiError(error)));
+        }
+    };
+}
+
+export function deleteWorkout(id) {
+    return async function deleteWorkoutThunk(dispatch) {
+        dispatch(setStatus(STATUSES.LOADING));
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await API.delete(`api/admin/workout/${id}`,
+                {
                     headers: {
-                        'Content-Type': 'multipart/form-data',
-                        // 'Authorization': localStorage.getItem(token) // If needed, uncomment
+                        'Authorization': `Bearer ${token}`
                     }
-                });
-    
-                if (response.status === 200) {
-                    dispatch(setStatus({
-                        status: STATUSES.SUCCESS,
-                        message: response.data.message || "Workout updated successfully"
-                    }));
                 }
-            } catch (error) {
-                let errorMessage = "An unexpected error occurred.";
-                if (error.response) {
-                    errorMessage = error.response.data.message || "Exercise update failed.";
-                } else if (error.request) {
-                    errorMessage = "Cannot connect to the server. Please check your internet or try again later.";
-                } else {
-                    errorMessage = error.message;
-                }
-                dispatch(setStatus({ status: STATUSES.ERROR, message: errorMessage }));
-            }
-        }
-    }
-    
+            );
 
-    export function deleteWorkout(id) {
-        return async function deleteWorkoutThunk(dispatch, getState) {
-            dispatch(setStatus(STATUSES.LOADING))
-            try {
-                const response = await API.delete(`api/deleteWorkout/${id}`);
-                if (response.status === 200) {
-                    const currentData = getState().excercise.data;
-                    const newData = currentData.filter(ex => ex.id !== id);
-                    dispatch(setWorkout(newData));
-                    dispatch(setStatus({ status: STATUSES.SUCCESS, message: "Successfully deleted" }));
-                    dispatch(fetchWorkouts())
-                }
-            } catch (error) {
-                dispatch(setStatus({ status: STATUSES.ERROR, message: "Deletion failed" }));
+            if (response.status === 200) {
+                dispatch(setStatus({
+                    status: STATUSES.SUCCESS,
+                    message: response.data.message || "Workout deleted successfully"
+                }));
+                dispatch(fetchWorkouts());
             }
+        } catch (error) {
+            dispatch(setStatus(handleApiError(error)));
         }
-    }
-    
+    };
+}
 
-    export function updateWorkoutDay({id, dayName}) {
-        return async function updateWorkoutDayThunk(dispatch) {
-            dispatch(setStatus(STATUSES.LOADING));
-            try {
-                console.log(id)
-                console.log(dayName)
-                const response = await API.patch(`api/updateWorkoutDay/${id}`, {dayName});
-                if (response.status === 200) {
-                     // Assuming response.data.data contains the updated workout day
+export function updateWorkoutDay({ id, dayName }) {
+    return async function updateWorkoutDayThunk(dispatch) {
+        dispatch(setStatus(STATUSES.LOADING));
+
+        try {
+            const response = await API.patch(`api/updateWorkoutDay/${id}`, { dayName });
+
+            if (response.status === 200) {
                 const updatedDay = response.data.data;
-                
-                    dispatch(updateWorkoutDayInState(updatedDay)); // ✅ Instantly updates Redux
-                    dispatch(setStatus({
-                        status: STATUSES.SUCCESS,
-                        message: response.data.message || "Workout updated successfully"
-                    }));
-                }
-            } catch (error) {
-                dispatch(setStatus({ status: STATUSES.ERROR, message: "Failed to create workout day" }));
+                dispatch(updateWorkoutDayInState(updatedDay));
+                dispatch(setStatus({
+                    status: STATUSES.SUCCESS,
+                    message: response.data.message || "Workout day updated successfully"
+                }));
             }
-        };
-    }
-
-    
-    
-
-    
-    
-
-
-
+        } catch (error) {
+            dispatch(setStatus(handleApiError(error)));
+        }
+    };
+}

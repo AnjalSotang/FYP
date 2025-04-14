@@ -1,4 +1,3 @@
-// Corrected authSlice.js
 import { createSlice } from '@reduxjs/toolkit';
 import STATUSES from '../src/globals/status/statuses'
 import API from '../src/http';
@@ -16,60 +15,73 @@ const authSlice = createSlice({
             weight: '',
             heightFeet: '',
             heightInches: '',
-            selectedOptions: [], // 🔥 Multiple selection (Step 3)
+            selectedOptions: [],
             experienceLevel: '',
         },
         data: null,
-        token: null,
+        token: localStorage.getItem('token') || null, // Initialize token from localStorage
         status: null
     },
     reducers: {
         setStep(state, action) {
-            state.step = action.payload;  // Update step number
+            state.step = action.payload;
         },
         setUser(state, action) {
             state.user = { ...state.user, ...action.payload };
         },
         setStatus(state, action) {
-            state.status = action.payload; // Fixed: updating status instead of user
+            state.status = action.payload;
         },
         setToken(state, action) {
-            state.token = action.payload
+            state.token = action.payload;
+            // Persist token to localStorage when it changes
+            if (action.payload) {
+                localStorage.setItem('token', action.payload);
+            } else {
+                localStorage.removeItem('token');
+            }
         },
         setData(state, action) {
             state.data = action.payload;
         },
+        resetAuth(state) {
+            state.data = null;
+            state.token = null;
+            localStorage.removeItem('token');
+        }
     }
-})
+});
 
-export const { setStep, setUser, setStatus, setToken, setData } = authSlice.actions;
+export const { setStep, setUser, setStatus, setToken, setData, resetAuth } = authSlice.actions;
 
-export default authSlice.reducer
+export default authSlice.reducer;
+
+// Helper function to check and get token
+const getAuthToken = () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        throw new Error("No token found in localStorage.");
+    }
+    return token;
+};
 
 export function register(data) {
-
     return async function registerThunk(dispatch) {
-
-        dispatch(setStatus(STATUSES.LOADING))
+        dispatch(setStatus(STATUSES.LOADING));
         try {
-            const response = await API.post('auth/register', data)
+            const response = await API.post('auth/register', data);
             if (response.status === 201) {
-                dispatch(setUser(data))
-                dispatch(setStatus({ status: STATUSES.SUCCESS, message: response.data.message }))
+                dispatch(setUser(data));
+                dispatch(setStatus({ status: STATUSES.SUCCESS, message: response.data.message }));
             }
-        }
-        catch (error) {
+        } catch (error) {
             let errorMessage = "An unexpected error occurred.";
 
-
             if (error.response) {
-                // Server responded with an error status (e.g., 400, 409)
                 errorMessage = error.response.data.message || "Registration failed.";
             } else if (error.request) {
-                // Request was made but no response (backend is down or network issue)
                 errorMessage = "Cannot connect to the server. Please check your internet or try again later.";
             } else {
-                // Other unexpected errors (e.g., something wrong with frontend code)
                 errorMessage = error.message;
             }
 
@@ -80,37 +92,30 @@ export function register(data) {
 
 export function login(data) {
     return async function loginThunk(dispatch) {
-        dispatch(setStatus(STATUSES.LOADING))
+        dispatch(setStatus(STATUSES.LOADING));
         try {
-            const response = await API.post('auth/login', data)
+            const response = await API.post('auth/login', data);
             if (response.status === 200 && response.data.token) {
-                dispatch(setStatus({ status: STATUSES.SUCCESS, message: response.data.message }))
-                dispatch(setUser(response.data.user))
-                dispatch(setToken(response.data.token))
-                console.log(response.data.token);  // Check if the token exists and is valid
-                localStorage.setItem('token', response.data.token)
-                console.log(response.data.token);
-                const token = localStorage.getItem('token');
-                console.log(token);
+                // Set token first so subsequent API calls can use it
+                dispatch(setToken(response.data.token));
+                dispatch(setUser(response.data.user));
+                dispatch(setStatus({ status: STATUSES.SUCCESS, message: response.data.message }));
+                
+                // Immediately fetch profile to ensure we have full user data
+                dispatch(fetchProfile());
             }
-            
         } catch (error) {
             let errorMessage = "An unexpected error occurred.";
 
-
             if (error.response) {
-                // Server responded with an error status (e.g., 400, 409)
                 errorMessage = error.response.data.message || "Login failed.";
             } else if (error.request) {
-                // Request was made but no response (backend is down or network issue)
                 errorMessage = "Cannot connect to the server. Please check your internet or try again later.";
             } else {
-                // Other unexpected errors (e.g., something wrong with frontend code)
                 errorMessage = error.message;
             }
 
             dispatch(setStatus({ status: STATUSES.ERROR, message: errorMessage }));
-            // dispatch(setStatus(STATUSES.ERROR))
         }
     }
 }
@@ -143,6 +148,8 @@ export function forget(data) {
     }
 }
 
+
+
 export function reset(data) {
     return async function resetThunk(dispatch) {
         dispatch(setStatus(STATUSES.LOADING))
@@ -169,36 +176,36 @@ export function reset(data) {
     }
 }
 
-
-
 export function fetchProfile() {
-    return async function fetchProfileThunk(dispatch) {
-        dispatch(setStatus(STATUSES.LOADING))
+    return async function fetchProfileThunk(dispatch, getState) {
         try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                throw new Error("No token found in localStorage.");
+            // Only show loading status if we don't already have profile data
+            const { data } = getState().auth;
+            if (!data) {
+                dispatch(setStatus(STATUSES.LOADING));
             }
-
-            console.log("Token before request:", token);
-
+            
+            const token = getAuthToken();
+            
             const response = await API.get('auth/profile', {
                 headers: {
-                    'Authorization': `Bearer ${token}` // Fixed: Using token correctly
+                    'Authorization': `Bearer ${token}`
                 }
             });
 
-            console.log(response.data.data)
-
-            if (response.status === 200) {
-                dispatch(setData(response.data?.data));
-                dispatch(setStatus({ status: STATUSES.SUCCESS}))
+            if (response.status === 200 && response.data?.data) {
+                dispatch(setData(response.data.data));
+                dispatch(setStatus({ status: STATUSES.SUCCESS }));
+                return response.data.data;
             }
-        }
-        catch (error) {
+        } catch (error) {
             let errorMessage = "An unexpected error occurred.";
 
             if (error.response) {
+                // If token is invalid/expired (401), clear auth state
+                if (error.response.status === 401) {
+                    dispatch(resetAuth());
+                }
                 errorMessage = error.response.data.message || "Failed to fetch profile.";
             } else if (error.request) {
                 errorMessage = "Cannot connect to the server. Please check your internet or try again later.";
@@ -207,6 +214,7 @@ export function fetchProfile() {
             }
 
             dispatch(setStatus({ status: STATUSES.ERROR, message: errorMessage }));
+            return null;
         }
     }
 }
@@ -250,6 +258,9 @@ export function fetchAdminProfile() {
         }
     }
 }
+
+
+
 
 
 
@@ -341,12 +352,8 @@ export function updateProfile(updatedData = {}, imageFile = null) {
         dispatch(setStatus(STATUSES.LOADING));
         
         try {
+            
             const token = localStorage.getItem('token');
-            if (!token) {
-                throw new Error("No token found in localStorage.");
-            }
-
-            console.log("Token before request:", token);
 
             // Create FormData object for the PATCH request
             const formData = new FormData();
@@ -376,8 +383,8 @@ export function updateProfile(updatedData = {}, imageFile = null) {
             // Make the PATCH request to your endpoint
                 const response = await API.patch('auth/profile', formData, {
                     headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'multipart/form-data'
+                        'Content-Type': 'multipart/form-data',
+                        'Authorization': `Bearer ${token}`
                         // Content-Type is automatically set by the browser with the correct boundary when using FormData
                     }
                 });
@@ -414,3 +421,14 @@ export function updateProfile(updatedData = {}, imageFile = null) {
         }
     }
 }
+
+export function handleLogout() {
+    return function logoutThunk(dispatch) {
+        // Clear token from localStorage
+        localStorage.removeItem('token');
+        // Reset auth state
+        dispatch(resetAuth());
+        dispatch(setStatus({ status: STATUSES.SUCCESS, message: "Logged out successfully" }));
+    }
+}
+

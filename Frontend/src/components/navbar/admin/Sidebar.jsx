@@ -9,8 +9,15 @@ import {
   Bell,
   Menu
 } from "lucide-react";
+import {handleLogout } from "../../../../store/authSlice";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+
 
 const Sidebar = ({ onToggle }) => {
+  
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const location = useLocation(); // Get current path for active link
 
@@ -21,7 +28,7 @@ const Sidebar = ({ onToggle }) => {
     { to: "/admin/workout", label: "Workout", icon: Dumbbell },
     { to: "/admin/users", label: "Users", icon: Users },
     // { to: "", label: "Analytics", icon: BarChart2 },
-    { to: "", label: "Notification", icon: Bell },
+    { to: "/admin/notifications", label: "Notification", icon: Bell },
     { to: "/admin/settings", label: "Settings", icon: Settings },
   ];
 
@@ -30,6 +37,11 @@ const Sidebar = ({ onToggle }) => {
     setIsCollapsed(!isCollapsed);
     onToggle(!isCollapsed); // Notify parent component
   };
+  const onLogout = () => {
+    dispatch(handleLogout());
+    navigate('/login');
+  };
+
 
   return (
     <aside
@@ -62,11 +74,10 @@ const Sidebar = ({ onToggle }) => {
       {/* Bottom Links */}
       <div className="space-y-2 pt-4 border-t border-[#1a2c50]">
         <SidebarLink
-          to="/Logout"
           label="Logout"
           Icon={LogOut}
           isCollapsed={isCollapsed}
-          isActive={location.pathname === "/settings"}
+          onClick={onLogout}
         />
       </div>
     </aside>
@@ -74,9 +85,10 @@ const Sidebar = ({ onToggle }) => {
 };
 
 // Reusable Sidebar Link Component
-const SidebarLink = ({ to, label, Icon, isCollapsed, isActive }) => (
+const SidebarLink = ({ to, label, Icon, isCollapsed, isActive, onClick }) => (
   <Link
-    to={to}
+    to={to || '#'}
+    onClick={onClick}
     className={`flex items-center px-3 py-2 text-white rounded-md transition-all duration-300 ${
       isActive ? "bg-[#4a90e2] text-lime-300" : "hover:bg-[#1a2c50]"
     }`}

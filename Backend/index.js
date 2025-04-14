@@ -16,19 +16,30 @@ const io = require("socket.io")(server, {
 const socketService = require('./services/socketService');
 
 // Import routes
-const userRoutes = require("./routes/userRoutes");
+const authRoutes = require("./routes/auth/authRoutes");
+
+const excerciseRoutes = require("./routes/admin/excerciseRoutes");
+
+
 const addRoutes = require("./routes/addRoutes");
-const excerciseRoutes = require("./routes/excerciseRoutes");
-const workoutRoutes = require("./routes/workoutRoutes");
-const workoutDayRoutes = require("./routes/workoutdayRoutes");
+
+
+const adminNotificationsRoutes = require("./routes/admin/notificationRoutes");
+// const adminUserRoutes = require("./routes/admin/authRoutes");
+const adminUserRoutes = require("./routes/admin/userRoutes");
+const adminActivityRoutes = require("./routes/admin/adminActitivityRoutes");
+const workoutRoutes = require("./routes/admin/workoutRoutes");
+const workoutDayRoutes = require("./routes/admin/workoutdayRoutes");
+const settingsRoutes = require("./routes/admin/generalSettingRoutes");
+
 const userWorkoutRoutes = require("./routes/user/userWorkoutRoutes");
 const workoutScheduleRoutes = require("./routes/user/workoutScheduleRoutes");
 const workoutHistoryRoutes = require("./routes/user/userWorkoutHistoryRoutes");
 const userRecordsRoutes = require("./routes/user/userRecordsRoutes");
 const userMeasurementsRoutes = require("./routes/user/userMeasurementsRoutes");
 const notificationRoutes = require("./routes/user/notificationRoutes");
-const adminNotificationsRoutes = require("./routes/admin/notificationRoutes");
-const adminUserRoutes = require("./routes/admin/userRoutes");
+
+
 
 // Initialize the notification scheduler
 const setupNotificationScheduler = require('./services/notificationSchedulers');
@@ -40,7 +51,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes
-app.use('/auth', userRoutes);
+app.use('/auth', authRoutes);
 app.use('/api', 
   addRoutes, 
   excerciseRoutes, 
@@ -53,11 +64,13 @@ app.use('/api',
   userMeasurementsRoutes,
   notificationRoutes,
   adminUserRoutes,
-  adminNotificationsRoutes
+  adminNotificationsRoutes,
+  adminActivityRoutes,
+  settingsRoutes
 );
 
 // Synchronize database
-sequelize.sync({ force: false })
+sequelize.sync({ force: 0 })
   .then(() => {
     console.log('Database synced successfully');
   })

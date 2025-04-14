@@ -5,6 +5,7 @@ const WorkoutSchedule = db.workoutSchedule;
 const UserWorkout = db.userWorkout;
 const { Op } = require("sequelize");
 const socketService = require('../../services/socketService');
+const { formatDateTime } = require("../../helpers/formatDateAndTime");
 
 // Create user notification service
 const createUserNotification = async (userId, title, message, type = 'system', relatedId = null, relatedType = null) => {
@@ -62,22 +63,7 @@ exports.getUserNotifications = async (req, res) => {
     });
 
     const formattedNotifications = notifications.map(notification => {
-      const now = new Date();
-      const createdAt = new Date(notification.createdAt);
-      const diff = Math.floor((now - createdAt) / 1000); // difference in seconds
-
-      let timeAgo;
-      if (diff < 60) {
-        timeAgo = 'Just now';
-      } else if (diff < 3600) {
-        timeAgo = `${Math.floor(diff / 60)} minutes ago`;
-      } else if (diff < 86400) {
-        timeAgo = `${Math.floor(diff / 3600)} hours ago`;
-      } else if (diff < 604800) {
-        timeAgo = `${Math.floor(diff / 86400)} days ago`;
-      } else {
-        timeAgo = createdAt.toLocaleDateString();
-      }
+      const { time, date } = formatDateTime(notification.createdAt);
 
       return {
         id: notification.id,
@@ -86,12 +72,17 @@ exports.getUserNotifications = async (req, res) => {
         type: notification.type,
         audience: notification.audience,
         read: notification.read,
-        time: timeAgo,
+        time, // e.g., "9:30 AM"
+        date, // e.g., "Today"
         relatedId: notification.relatedId,
         relatedType: notification.relatedType,
         createdAt: notification.createdAt,
+        userId: notification.UserId
       };
     });
+
+    console.log(`Found ${formattedNotifications.length} admin notifications`);
+
 
     console.log(`Found ${formattedNotifications.length} notifications for user ${userId}`);
     // Send response with notifications
@@ -146,11 +137,14 @@ exports.markAllAsRead = async (req, res) => {
 // Delete notification
 exports.deleteNotification = async (req, res) => {
   try {
-    const userId = req.params.id;
+    const {userId, id} = req.params;
+
+    console.log(userId, id);
 
 
     await Notification.destroy({
       where: { 
+        id,
         UserId: userId,
         audience: 'user'
       }
@@ -164,22 +158,22 @@ exports.deleteNotification = async (req, res) => {
 };
 
 // Delete all notifications for a user
-exports.deleteAllNotifications = async (req, res) => {
-  try {
-    const userId = req.params.userId;
+// exports.deleteAllNotifications = async (req, res) => {
+//   try {
+//     const userId = req.params.userId;
 
-    await Notification.destroy({
-      where: { 
-        UserId: userId,
-        audience: 'user'
-      }
-    });
+//     await Notification.destroy({
+//       where: { 
+//         UserId: userId,
+//         audience: 'user'
+//       }
+//     });
 
-    res.json({ message: "All notifications deleted" });
-  } catch (error) {
-    res.status(500).json({ message: "Failed to delete notifications", error: error.message });
-  }
-};
+//     res.json({ message: "All notifications deleted" });
+//   } catch (error) {
+//     res.status(500).json({ message: "Failed to delete notifications", error: error.message });
+//   }
+// };
 
 // Check upcoming workouts and send notifications
 exports.checkUpcomingWorkouts = async () => {

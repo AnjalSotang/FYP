@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
@@ -11,124 +11,77 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Bell, Calendar, Dumbbell, Home, LineChart, Menu, Plus, User } from "lucide-react";
+import { Bell, Dumbbell, Menu, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { io } from "socket.io-client";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchProfile } from "../../../../store/authSlice";
-import axios from "axios";
+import { fetchProfile, handleLogout} from "../../../../store/authSlice";
+import { 
+  fetchNotifications, 
+  markNotificationAsRead, 
+  markAllNotificationsAsRead,
+  fetchUnreadCount, 
+  addNewNotification 
+} from "../../../../store/userNotificationSlice";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-
-// const fetchNotifications = async (userId, page = 1, limit = 10) => {
-const fetchNotifications = async (userId) => {
-  try {
-    const response = await axios.get(`http://localhost:3001/api/notifications/user/${userId}`);
-
-    console.log(response.data);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching notifications:", error);
-    return { notifications: [], pagination: { currentPage: 1, totalPages: 1, totalNotifications: 0 } };
-  }
-};
-
-const markAllNotificationsAsRead = async (userId) => {
-  try {
-    await axios.patch(`http://localhost:3001/api/notifications/user/${userId}/read-all`);
-    return true;
-  } catch (error) {
-    console.error("Error marking notifications as read:", error);
-    return false;
-  }
-};
-
-const markNotificationAsRead = async (notificationId) => {
-  try {
-    await axios.patch(`http://localhost:3001/api/notifications/${notificationId}/read`);
-    return true;
-  } catch (error) {
-    console.error("Error marking notification as read:", error);
-    return false;
-  }
-};
+import { cn } from "@/lib/utils";
 
 export function Navbar() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   const { data: profile } = useSelector((state) => state.auth);
-  const [notifications, setNotifications] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [socket, setSocket] = useState(null);
-
-
+  
+  // Get notification data from Redux store
+  const { 
+    data: notifications, 
+    unreadCount, 
+    status: notificationStatus 
+  } = useSelector((state) => state.userNotification);
+  
+  const loading = notificationStatus === 'LOADING';
   const profileImageUrl = profile?.profileImage ? profile.profileImage.replace(/\\/g, "/") : "";
+
+  // Check if link is active
+  const isActive = (path) => {
+    return location.pathname === path;
+  };
 
   // Fetch profile
   useEffect(() => {
     dispatch(fetchProfile());
   }, [dispatch]);
 
-
-  const handleLogout = () => {
-    localStorage.removeItem('token')
-    // setIsLoggedIn(false)
-    navigate('/login')
-  }
-
-
-
   // Setup socket and fetch notifications
   useEffect(() => {
-    const getNotifications = async () => {
-      if (profile && profile.id) {
-        setLoading(true);
-        const notificationsData = await fetchNotifications(profile.id);
-        setNotifications(notificationsData.notifications);
-        setUnreadCount(notificationsData.notifications.filter(n => !n.read).length);
-        setLoading(false);
-      }
-    };
-
     if (profile && profile.id) {
-      getNotifications();
+      // Fetch notifications using the Redux thunk
+      dispatch(fetchNotifications(profile.id));
+      dispatch(fetchUnreadCount(profile.id));
 
       // Setup socket connection
-      const newSocket = io("http://localhost:3001");
-      setSocket(newSocket);
+      const socket = io("http://localhost:3001");
 
       // Authenticate with socket
-      newSocket.emit('authenticate', profile.id);
+      socket.emit('authenticate', profile.id);
 
       // Setup event listener for new notifications
-      newSocket.on('new-notification', (newNotification) => {
+      socket.on('new-notification', (newNotification) => {
         console.log("New notification received:", newNotification);
-
-        // Use functional updates to ensure we're working with the latest state
-        setNotifications(prevNotifications => {
-          // Check if notification already exists to prevent duplicates
-          const exists = prevNotifications.some(n => n.id === newNotification.id);
-          if (exists) return prevNotifications;
-
-          // Add new notification at the beginning of the array
-          return [newNotification, ...prevNotifications];
-        });
-
-        // Update unread count
-        if (!newNotification.read) {
-          setUnreadCount(prevCount => prevCount + 1);
-        }
+        dispatch(addNewNotification(newNotification));
       });
 
       // Cleanup on unmount
       return () => {
-        if (newSocket) {
-          newSocket.off('new-notification');
-          newSocket.disconnect();
-        }
+        socket.off('new-notification');
+        socket.disconnect();
       };
     }
-  }, [profile]);
+  }, [profile, dispatch]);
+
+  const onLogout = () => {
+    dispatch(handleLogout());
+  };
 
   // Get user initials for avatar fallback
   const getInitials = () => {
@@ -142,139 +95,121 @@ export function Navbar() {
     return profile.name.substring(0, 2).toUpperCase();
   };
 
-  const handleNotificationClick = async (notification) => {
+  const handleNotificationClick = (notification) => {
     if (!notification.read) {
-      const success = await markNotificationAsRead(notification.id);
-      if (success) {
-        // Update the notification to mark as read
-        setNotifications(prev =>
-          prev.map(n => n.id === notification.id ? { ...n, read: true } : n)
-        );
-        setUnreadCount(prev => prev - 1);
-      }
+      dispatch(markNotificationAsRead(notification.id));
     }
 
     // Navigate to related content if applicable
     if (notification.relatedType === 'WorkoutSchedule') {
-      // Navigation logic can be added here
-      // navigate(`/workouts/${notification.relatedId}`);
+      navigate(`/workouts/${notification.relatedId}`);
     }
   };
 
-  const markAllAsRead = async () => {
-    if (profile && profile.id) {
-      const success = await markAllNotificationsAsRead(profile.id);
-      if (success) {
-        // Mark all notifications as read
-        setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-        setUnreadCount(0);
-      }
-    }
+  const handleMarkAllAsRead = () => {
+    dispatch(markAllNotificationsAsRead());
   };
+
+  // Mobile nav links
+  const NavLinks = ({ className, onClick }) => (
+    <>
+      <Link
+        to="/user"
+        className={cn(
+          "text-sm font-medium transition-colors hover:text-foreground",
+          isActive("/user") ? "text-foreground font-semibold" : "text-muted-foreground",
+          className
+        )}
+        onClick={onClick}
+      >
+        Dashboard
+      </Link>
+      <Link
+        to="/plans"
+        className={cn(
+          "text-sm font-medium transition-colors hover:text-foreground",
+          isActive("/plans") ? "text-foreground font-semibold" : "text-muted-foreground",
+          className
+        )}
+        onClick={onClick}
+      >
+        Workout Plans
+      </Link>
+      <Link
+        to="/schedule"
+        className={cn(
+          "text-sm font-medium transition-colors hover:text-foreground",
+          isActive("/schedule") ? "text-foreground font-semibold" : "text-muted-foreground",
+          className
+        )}
+        onClick={onClick}
+      >
+        Schedule
+      </Link>
+    </>
+  );
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-20 items-center px-10">
+      <div className="container flex h-16 items-center justify-between px-4 md:px-6 lg:px-8">
+        {/* Logo and brand */}
+        <div className="flex items-center">
+          <Link to="/user" className="flex items-center gap-2">
+            <Dumbbell className="h-6 w-6 text-primary" />
+            <h1 className="text-primary text-xl font-extrabold tracking-wide hover:text-primary/90 transition-all duration-300">
+              FitTrack
+            </h1>
+          </Link>
+        </div>
+
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center space-x-8">
+          <NavLinks />
+        </nav>
+
+        {/* Mobile Navigation */}
         <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="outline" size="icon" className="md:hidden mr-4">
-              <Menu className="h-7 w-7" />
+          <SheetTrigger asChild className="md:hidden">
+            <Button variant="ghost" size="icon" className="h-9 w-9">
+              <Menu className="h-5 w-5" />
               <span className="sr-only">Toggle menu</span>
             </Button>
           </SheetTrigger>
-
-
-          <SheetContent side="left">
-            <div className="px-4 py-8">
-              <Link to="/user" className="flex items-center gap-4 mb-10">
-                <Dumbbell className="h-6 w-6" />
-                <span className="font-bold text-4xl">FitTrack</span>
+          <SheetContent side="left" className="w-72">
+            <Link to="/user" className="flex items-center gap-2 mb-8 mt-4">
+              <Dumbbell className="h-6 w-6 text-primary" />
+              <h1 className="text-primary text-xl font-extrabold tracking-wide">
+                FitTrack
+              </h1>
+            </Link>
+            <nav className="flex flex-col space-y-6 mt-8">
+              <NavLinks className="text-base px-2 py-1" onClick={() => document.querySelector('[data-state="open"]')?.click()} />
+              <Link 
+                to="/generate" 
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => document.querySelector('[data-state="open"]')?.click()}
+              >
+                New Workout
               </Link>
-              <nav className="flex flex-col gap-5">
-                <Link
-                  to="/user"
-                  className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <Home className="h-5 w-5" />
-                  <span>Home</span>
-                </Link>
-                <Link
-                  to="/user"
-                  className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <LineChart className="h-5 w-5" />
-                  <span>Dashboard</span>
-                </Link>
-                <Link
-                  to="/plans"
-                  className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <Dumbbell className="h-5 w-5" />
-                  <span>Workout Plans</span>
-                </Link>
-                <Link
-                  to="/schedule"
-                  className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <Calendar className="h-5 w-5" />
-                  <span>Schedule</span>
-                </Link>
-                <Link
-                  to="/profile"
-                  className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <User className="h-5 w-5" />
-                  <span>Profile</span>
-                </Link>
-              </nav>
-            </div>
+            </nav>
           </SheetContent>
         </Sheet>
 
-        <Link to="/user" className="flex items-center gap-2 mr-12">
-          <Dumbbell className="h-6 w-6" />
-          <span className="font-bold text-xl hidden sm:inline-block">FitTrack</span>
-        </Link>
-
-        <nav className="hidden md:flex items-center gap-6 flex-1">
-          <Link to="/plans" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            Home
-          </Link>
-          <Link
-            to="/user"
-            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Dashboard
-          </Link>
-          <Link
-            to="/plans"
-            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Workout Plans
-          </Link>
-          <Link
-            to="/schedule"
-            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Schedule
-          </Link>
-        </nav>
-
-        <div className="flex items-center gap-2">
+        {/* Right side actions */}
+        <div className="flex items-center gap-3">
           <Link to="/generate" className="hidden sm:flex">
-            <Button size="sm" className="gap-1">
+            <Button size="sm" className="gap-1 h-9">
               <Plus className="h-4 w-4" />
               <span>New Workout</span>
             </Button>
           </Link>
-          {/* Add ThemeToggle here */}
+          
           <ThemeToggle />
 
-
-
+          {/* Notifications dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="relative">
+              <Button variant="outline" size="icon" className="relative h-9 w-9">
                 <Bell className="h-5 w-5" />
                 {unreadCount > 0 && (
                   <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
@@ -287,7 +222,7 @@ export function Navbar() {
               <DropdownMenuLabel className="flex items-center justify-between">
                 <span>Notifications</span>
                 {unreadCount > 0 && (
-                  <Button variant="ghost" size="sm" onClick={markAllAsRead} className="h-auto text-xs">
+                  <Button variant="ghost" size="sm" onClick={handleMarkAllAsRead} className="h-auto text-xs">
                     Mark all as read
                   </Button>
                 )}
@@ -301,13 +236,13 @@ export function Navbar() {
                   {notifications.slice(0, 5).map((notification) => (
                     <DropdownMenuItem
                       key={notification.id}
-                      className="flex flex-col items-start p-4 cursor-pointer"
+                      className="flex flex-col items-start p-4 cursor-pointer hover:bg-accent"
                       onClick={() => handleNotificationClick(notification)}
                     >
                       <div className="flex items-start justify-between w-full">
                         <div className="font-medium flex items-center gap-2">
                           {notification.title}
-                          {!notification.read && <Badge className="h-1.5 w-1.5 rounded-full p-0" />}
+                          {!notification.read && <Badge variant="primary" className="h-1.5 w-1.5 rounded-full p-0" />}
                         </div>
                         <div className="text-xs text-muted-foreground">{notification.time}</div>
                       </div>
@@ -325,41 +260,42 @@ export function Navbar() {
             </DropdownMenuContent>
           </DropdownMenu>
 
+          {/* Profile dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full p-1">
-                <Avatar className="h-10 w-10 rounded-full overflow-hidden">
+              <Button variant="ghost" size="icon" className="rounded-full overflow-hidden p-0 h-9 w-9">
+                <Avatar className="h-9 w-9">
                   <AvatarImage
                     src={profileImageUrl ? `http://localhost:3001/${profileImageUrl}` : undefined}
                     alt="User Avatar"
-                    className="w-full h-full object-cover"
+                    className="object-cover"
                   />
-                  <AvatarFallback className="flex items-center justify-center w-full h-full bg-gray-200 text-lg font-medium">
+                  <AvatarFallback className="text-sm font-medium bg-primary/10">
                     {getInitials() || "U"}
                   </AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <Link to="/profile" className="flex w-full">
+              <DropdownMenuItem asChild>
+                <Link to="/profile" className="flex w-full cursor-pointer">
                   Profile
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Link to="/settings" className="flex w-full">
+              <DropdownMenuItem asChild>
+                <Link to="/settings" className="flex w-full cursor-pointer">
                   Settings
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Link to="/MyWorkouts" className="flex w-full">
+              <DropdownMenuItem asChild>
+                <Link to="/MyWorkouts" className="flex w-full cursor-pointer">
                   My Workouts
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout}>
+              <DropdownMenuItem onClick={onLogout} className="cursor-pointer">
                 Log out
               </DropdownMenuItem>
             </DropdownMenuContent>

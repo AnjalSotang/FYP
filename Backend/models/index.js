@@ -49,6 +49,7 @@ db.userRecords = require("./UserRecords")(sequelize, Sequelize);
 db.userMeasurements = require("./UserMeasurements")(sequelize, Sequelize);
 db.userWorkoutHistory = require("./UserWorkoutHistory")(sequelize, Sequelize);
 db.notification = require("./Notifications")(sequelize, Sequelize);
+db.Settings = require("./GeneralSetting")(sequelize, Sequelize);
 
 
 db.workout.hasMany(db.workoutday, { as: 'days' });
