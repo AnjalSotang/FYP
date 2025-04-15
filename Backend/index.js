@@ -14,9 +14,11 @@ const io = require("socket.io")(server, {
   },
 });
 const socketService = require('./services/socketService');
+require("dotenv").config();
 
 // Import routes
 const authRoutes = require("./routes/auth/authRoutes");
+
 
 const excerciseRoutes = require("./routes/admin/excerciseRoutes");
 
@@ -38,6 +40,8 @@ const workoutHistoryRoutes = require("./routes/user/userWorkoutHistoryRoutes");
 const userRecordsRoutes = require("./routes/user/userRecordsRoutes");
 const userMeasurementsRoutes = require("./routes/user/userMeasurementsRoutes");
 const notificationRoutes = require("./routes/user/notificationRoutes");
+
+const generateWorkoutRoute = require("./routes/generateWorkout");
 
 
 
@@ -66,8 +70,10 @@ app.use('/api',
   adminUserRoutes,
   adminNotificationsRoutes,
   adminActivityRoutes,
-  settingsRoutes
+  settingsRoutes,
+  generateWorkoutRoute
 );
+// app.use('/api/generate-workout', generateWorkoutRoute); // Register the route with the /api/generate-workout path
 
 // Synchronize database
 sequelize.sync({ force: 0 })

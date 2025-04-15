@@ -36,6 +36,7 @@ const createWorkout = async (req, res) => {
       name,
       description,
       level,
+      role: 'admin',
       duration,
       goal,
       calories,
@@ -92,6 +93,9 @@ const createWorkout = async (req, res) => {
 const getAllWorkout = async (req, res) => {
   try {
     const workoutPlans = await workout.findAll({
+      where: {
+        role: 'admin'
+      },
       include: [
         {
           model: workoutday,
@@ -101,6 +105,7 @@ const getAllWorkout = async (req, res) => {
       ],
       order: [['name', 'ASC']]
     });
+    
     
     // Add exercise count to each workout plan
     const workoutPlansWithCounts = await Promise.all(workoutPlans.map(async (plan) => {

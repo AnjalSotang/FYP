@@ -284,11 +284,11 @@ export function Navbar() {
                   Profile
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
+              {/* <DropdownMenuItem asChild>
                 <Link to="/settings" className="flex w-full cursor-pointer">
                   Settings
                 </Link>
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
               <DropdownMenuItem asChild>
                 <Link to="/MyWorkouts" className="flex w-full cursor-pointer">
                   My Workouts

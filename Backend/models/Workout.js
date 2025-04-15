@@ -19,6 +19,9 @@ module.exports = (sequelize, Sequelize) => {
       goal: {
           type: Sequelize.STRING
       },
+      role: {
+          type: Sequelize.STRING
+      },
       equipment: {
           type: Sequelize.TEXT
       },

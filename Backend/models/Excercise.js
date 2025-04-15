@@ -14,11 +14,11 @@ module.exports = (sequelize, Sequelize) => {
         },
         difficulty_level: {
             type: Sequelize.ENUM("Beginner", "Intermediate", "Advanced"),
-            allowNull: false
+            // allowNull: false
         },
         instructions: {
             type: Sequelize.TEXT,
-            allowNull: false
+            // allowNull: false
         },
         equipment: {
             type: Sequelize.TEXT, // Storing multiple equipment types in JSON format

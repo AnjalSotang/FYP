@@ -37,7 +37,7 @@ export function addUserWorkout(planId) {
             const token = localStorage.getItem('token');
             if (!token) {
                 throw new Error("No token found in localStorage.");
-            }
+            }   
 
             console.log("Token before request:", token);
             setToken(token);

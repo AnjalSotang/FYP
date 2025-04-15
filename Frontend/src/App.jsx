@@ -12,6 +12,7 @@ import { ThemeProvider } from "./components/ui/theme-provider";
 import AppInitializer from './components/AppInitializer.js';
 
 
+
 // Lazy Loading Components
 const Login = lazy(() => import("./pages/auth/Login"));
 const Register = lazy(() => import("./pages/auth/Register"));
@@ -24,6 +25,7 @@ const UpdateExcercise = lazy(() => import("./pages/admin/excercises/UpdateExcerc
 const AddWorkout = lazy(() => import("./pages/admin/workouts/AddWorkout.jsx"));
 // const AddExcercise2 = lazy(() => import("./pages/admin/excercises/AddExcercise.jsx"));
 const Workouts = lazy(() => import("./pages/admin/workouts/Page.jsx"));
+const GenerateWorkoutPage = lazy(() => import("./pages/user/generate/page.jsx"));
 
 const UpdateWorkout = lazy(() => import("./pages/admin/workouts/UpdateWorkout.jsx"));
 const Workout = lazy(() => import("./pages/admin/workouts/id/workout.jsx"));
@@ -83,6 +85,7 @@ function App() {
                 <Route path="/admin" element={<Protected><Dashboard /></Protected>} />
                 <Route path="/admin/settings" element={<Protected><Settings /></Protected>} />
                 <Route path="/admin/notifications" element={<Protected><AdminNotifications /></Protected>} />
+                
 
 
 
@@ -95,6 +98,7 @@ function App() {
                 <Route path="/MyWorkoutsID/:id" element={<Protected><MyWorkoutsID /></Protected>} />
                 <Route path="/History" element={<Protected><History /></Protected>} />
                 <Route path="/notifications" element={<Protected><Notifications /></Protected>} />
+                <Route path="/generate" element={<Protected><GenerateWorkoutPage /></Protected>} />
 
               </Routes>
             </Suspense>
