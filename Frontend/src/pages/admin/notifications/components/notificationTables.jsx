@@ -22,7 +22,8 @@ import {
   Wrench,
 
   TrophyIcon,
-  Brain
+  Brain,
+  MessageSquare
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -75,9 +76,11 @@ export default function NotificationsTable() {
         return <User className="h-4 w-4 text-blue-500" />;
       case "maintenance_update":
         return <Wrench className="h-4 w-4 text-yellow-600" />; // Wrench symbolizes system/maintenance.
-        case "AI":
-          return <Brain className="h-4 w-4 text-purple-600" />;
-        default:
+      case "AI":
+        return <Brain className="h-4 w-4 text-purple-600" />;
+      case "contact_submission":
+        return <MessageSquare className="h-4 w-4 text-blue-500" />; // MessageSquare icon is more appropriate for contact submissions
+      default:
         return <Bell className="h-4 w-4 text-gray-500" />;
     }
   };
@@ -94,12 +97,14 @@ export default function NotificationsTable() {
         return "Workout Completed";
       case "workout_removed":
         return "Workout Removed";
-        case "registration_status":
-          return "Registration Status";
+      case "registration_status":
+        return "Registration Status";
       case "maintenance_update":
         return "Maintenance Update";
       case "AI":
         return "AI Workout Generatar";
+      case "contact_submission":
+        return "User Message";
       default:
         return type;
     }

@@ -145,7 +145,7 @@ export default function ProfilePage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <Card className="lg:col-span-1 bg-navy-800 border-navy-700 shadow-md">
+        <Card className="lg:col-span-1-">
           <CardContent className="p-6">
             <div className="flex flex-col items-center text-center mb-6">
               <div className="relative mb-4">
@@ -224,7 +224,7 @@ export default function ProfilePage() {
         </Card>
 
         <div className="lg:col-span-3 space-y-8">
-          <Card id="personal-info" className="bg-navy-800 border-navy-700 shadow-md">
+          <Card id="personal-info">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-white">
                 <User className="h-5 w-5 text-lime-400" />
@@ -272,10 +272,10 @@ export default function ProfilePage() {
                     Gender
                   </Label>
                   <Select value={userData.gender} onValueChange={(value) => setUserData({ ...userData, gender: value })}>
-                    <SelectTrigger id="gender" className="bg-navy-700 border-navy-700 text-white">
+                    <SelectTrigger id="gender" >
                       <SelectValue placeholder="Select gender" />
                     </SelectTrigger>
-                    <SelectContent className="bg-navy-700 border-navy-700 text-white">
+                    <SelectContent>
                       <SelectItem value="male">Male</SelectItem>
                       <SelectItem value="female">Female</SelectItem>
                       <SelectItem value="other">Other</SelectItem>
@@ -300,7 +300,7 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
 
-          <Card id="fitness-profile" className="bg-navy-800 border-navy-700 shadow-md">
+          <Card id="fitness-profile">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-white">
                 <Dumbbell className="h-5 w-5 text-lime-400" />
@@ -353,10 +353,10 @@ export default function ProfilePage() {
                   Fitness Level
                 </Label>
                 <Select value={userData.fitnessLevel} onValueChange={(value) => setUserData({ ...userData, fitnessLevel: value })}>
-                  <SelectTrigger id="fitness-level" className="bg-navy-700 border-navy-700 text-white">
+                  <SelectTrigger id="fitness-level">
                     <SelectValue placeholder="Select fitness level" />
                   </SelectTrigger>
-                  <SelectContent className="bg-navy-700 border-navy-600 text-white">
+                  <SelectContent>
                     {fitnessLevelOptions.map(level => (
                       <SelectItem
                         key={level}
@@ -399,13 +399,13 @@ export default function ProfilePage() {
 
           <Notifications/>
 
-          <Card id="privacy" className="bg-navy-800 border-navy-700 shadow-md">
+          <Card id="privacy">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
+              <CardTitle className="flex items-center gap-2 ">
                 <Lock className="h-5 w-5 text-lime-400" />
                 Privacy Settings
               </CardTitle>
-              <CardDescription className="text-gray-300">Control your privacy preferences</CardDescription>
+              <CardDescription>Control your privacy preferences</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -416,10 +416,10 @@ export default function ProfilePage() {
                   value={userData.profileVisibility}
                   onValueChange={(value) => setUserData({ ...userData, profileVisibility: value })}
                 >
-                  <SelectTrigger id="profile-visibility" className="bg-navy-700 border-navy-700 text-white">
+                  <SelectTrigger id="profile-visibility">
                     <SelectValue placeholder="Select visibility" />
                   </SelectTrigger>
-                  <SelectContent className="bg-navy-700 border-navy-700 text-white">
+                  <SelectContent>
                     <SelectItem value="public">
                       <div className="flex items-center gap-2">
                         <Globe className="h-4 w-4 text-lime-400" />
@@ -442,7 +442,7 @@ export default function ProfilePage() {
                 </Select>
               </div>
 
-              <Alert className="bg-navy-700 border-navy-700 text-gray-300">
+              <Alert>
                 <AlertCircle className="h-4 w-4 text-lime-400" />
                 <AlertTitle className="text-white">Privacy Notice</AlertTitle>
                 <AlertDescription>

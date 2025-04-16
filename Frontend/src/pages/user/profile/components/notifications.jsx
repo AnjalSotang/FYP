@@ -17,13 +17,13 @@ const notifications = () => {
         pushNotifications: true,
       })
     return(
-        <Card id="notifications" className="bg-navy-800 border-navy-700 shadow-md">
+        <Card id="notifications" >
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-white">
+          <CardTitle className="flex items-center gap-2 mb-2">
             <Bell className="h-5 w-5 text-lime-400" />
             Notification Preferences
           </CardTitle>
-          <CardDescription className="text-gray-300">Manage how you receive notifications</CardDescription>
+          <CardDescription>Manage how you receive notifications</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-4">
@@ -38,11 +38,11 @@ const notifications = () => {
                 id="workout-reminders"
                 checked={notifications.workoutReminders}
                 onCheckedChange={(checked) => setNotifications({ ...notifications, workoutReminders: checked })}
-                className="data-[state=checked]:bg-lime-400 data-[state=checked]:text-navy-900"
+             
               />
             </div>
 
-            <Separator className="bg-navy-700" />
+            <Separator/>
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
@@ -55,11 +55,11 @@ const notifications = () => {
                 id="achievement-alerts"
                 checked={notifications.achievementAlerts}
                 onCheckedChange={(checked) => setNotifications({ ...notifications, achievementAlerts: checked })}
-                className="data-[state=checked]:bg-lime-400 data-[state=checked]:text-navy-900"
+               
               />
             </div>
 
-            <Separator className="bg-navy-700" />
+            <Separator />
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
@@ -72,11 +72,11 @@ const notifications = () => {
                 id="new-features"
                 checked={notifications.newFeaturesUpdates}
                 onCheckedChange={(checked) => setNotifications({ ...notifications, newFeaturesUpdates: checked })}
-                className="data-[state=checked]:bg-lime-400 data-[state=checked]:text-navy-900"
+               
               />
             </div>
 
-            <Separator className="bg-navy-700" />
+            <Separator/>
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
@@ -89,11 +89,10 @@ const notifications = () => {
                 id="email-digest"
                 checked={notifications.emailDigest}
                 onCheckedChange={(checked) => setNotifications({ ...notifications, emailDigest: checked })}
-                className="data-[state=checked]:bg-lime-400 data-[state=checked]:text-navy-900"
               />
             </div>
 
-            <Separator className="bg-navy-700" />
+            <Separator/>
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
@@ -106,7 +105,7 @@ const notifications = () => {
                 id="push-notifications"
                 checked={notifications.pushNotifications}
                 onCheckedChange={(checked) => setNotifications({ ...notifications, pushNotifications: checked })}
-                className="data-[state=checked]:bg-lime-400 data-[state=checked]:text-navy-900"
+          
               />
             </div>
           </div>

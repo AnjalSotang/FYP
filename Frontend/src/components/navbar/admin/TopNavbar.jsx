@@ -247,7 +247,11 @@ const TopNavbar = () => {
                     }else if (notification.type === 'AI'){
                       iconClass = "bg-blue-200 text-yellow-700";
                       iconLetter = "AI";
+                    }else if (notification.type === 'contact_submission'){
+                      iconClass = "bg-blue-200 text-yellow-700";
+                      iconLetter = "M";
                     }
+                   
 
 
                     return (

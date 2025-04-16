@@ -5,7 +5,8 @@ import store from "../store/store.js";
 import "./App.css";
 import { ErrorBoundary } from "react-error-boundary";
 import "@fontsource/inter"; // Defaults to weight 400.
-import Protected from './Protected.jsx'
+import { ProtectedAdmin, ProtectedUser } from './Protected.jsx';
+
 import { ThemeProvider } from "./components/ui/theme-provider";
 
 // In your App.js or main component file
@@ -42,7 +43,7 @@ const MyWorkoutsID = lazy(() => import("./pages/user/my-workouts/id/page.jsx"));
 const History = lazy(() => import("./pages/user/history/page.jsx"));
 const Notifications = lazy(() => import("./pages/user/notifications/page.jsx"));
 const AdminNotifications = lazy(() => import("./pages/admin/notifications/page.jsx"));
-const Home = lazy(()=>import("./pages/user/home/page.jsx"))
+// const Home = lazy(()=>import("./pages/user/home/page.jsx"))
 
 const Settings = lazy(() => import("./pages/admin/settings/page.jsx"));
 
@@ -74,33 +75,33 @@ function App() {
                 <Route path="/Reset" element={<Resetword />} />
                 <Route path="/WelcomePage" element={<WelcomePage />} />
 
-                <Route path="/admin/dashboard" element={<Protected><Dashboard /></Protected>} />
-                <Route path="/admin/excercise/add" element={<Protected><AddExcercise /></Protected>} />
-                <Route path="/admin/excercise" element={<Protected><Excercise /></Protected>} />
-                <Route path="/admin/excercise/:id" element={<Protected><UpdateExcercise /></Protected>} />
-                <Route path="/admin/workout" element={<Protected><Workouts /></Protected>} />
-                <Route path="/admin/workout/add" element={<Protected><AddWorkout /></Protected>} />
-                <Route path="/admin/workout/edit/:id" element={<Protected><UpdateWorkout /></Protected>} />
-                <Route path="/admin/workout/:id" element={<Protected><Workout /></Protected>} />
-                <Route path="/admin/users" element={<Protected><UserManagement /></Protected>} />
-                <Route path="/admin" element={<Protected><Dashboard /></Protected>} />
-                <Route path="/admin/settings" element={<Protected><Settings /></Protected>} />
-                <Route path="/admin/notifications" element={<Protected><AdminNotifications /></Protected>} />
+                <Route path="/admin/dashboard" element={<ProtectedAdmin><Dashboard /></ProtectedAdmin>} />
+                <Route path="/admin/excercise/add" element={<ProtectedAdmin><AddExcercise /></ProtectedAdmin>} />
+                <Route path="/admin/excercise" element={<ProtectedAdmin><Excercise /></ProtectedAdmin>} />
+                <Route path="/admin/excercise/:id" element={<ProtectedAdmin><UpdateExcercise /></ProtectedAdmin>} />
+                <Route path="/admin/workout" element={<ProtectedAdmin><Workouts /></ProtectedAdmin>} />
+                <Route path="/admin/workout/add" element={<ProtectedAdmin><AddWorkout /></ProtectedAdmin>} />
+                <Route path="/admin/workout/edit/:id" element={<ProtectedAdmin><UpdateWorkout /></ProtectedAdmin>} />
+                <Route path="/admin/workout/:id" element={<ProtectedAdmin><Workout /></ProtectedAdmin>} />
+                <Route path="/admin/users" element={<ProtectedAdmin><UserManagement /></ProtectedAdmin>} />
+                <Route path="/admin" element={<ProtectedAdmin><Dashboard /></ProtectedAdmin>} />
+                <Route path="/admin/settings" element={<ProtectedAdmin><Settings /></ProtectedAdmin>} />
+                <Route path="/admin/notifications" element={<ProtectedAdmin><AdminNotifications /></ProtectedAdmin>} />
                 
 
 
 
-                <Route path="/plans" element={<Protected><Plans /></Protected>} />
-                <Route path="/plan/:id" element={<Protected><Plans1 /></Protected>} />
-                <Route path="/user" element={<Protected><UserDashboard /></Protected>} />
-                <Route path="/schedule" element={<Protected><Schedule /></Protected>} />
-                <Route path="/profile" element={<Protected><Profile /></Protected>} />
-                <Route path="/MyWorkouts" element={<Protected><MyWorkoutsPage /></Protected>} />
-                <Route path="/MyWorkoutsID/:id" element={<Protected><MyWorkoutsID /></Protected>} />
-                <Route path="/History" element={<Protected><History /></Protected>} />
-                <Route path="/notifications" element={<Protected><Notifications /></Protected>} />
-                <Route path="/generate" element={<Protected><GenerateWorkoutPage /></Protected>} />
-                <Route path="/home" element={<Protected><Home /></Protected>} />
+                <Route path="/plans" element={<ProtectedUser><Plans /></ProtectedUser>} />
+                <Route path="/plan/:id" element={<ProtectedUser><Plans1 /></ProtectedUser>} />
+                <Route path="/user" element={<ProtectedUser><UserDashboard /></ProtectedUser>} />
+                <Route path="/schedule" element={<ProtectedUser><Schedule /></ProtectedUser>} />
+                <Route path="/profile" element={<ProtectedUser><Profile /></ProtectedUser>} />
+                <Route path="/MyWorkouts" element={<ProtectedUser><MyWorkoutsPage /></ProtectedUser>} />
+                <Route path="/MyWorkoutsID/:id" element={<ProtectedUser><MyWorkoutsID /></ProtectedUser>} />
+                <Route path="/History" element={<ProtectedUser><History /></ProtectedUser>} />
+                <Route path="/notifications" element={<ProtectedUser><Notifications /></ProtectedUser>} />
+                <Route path="/generate" element={<ProtectedUser><GenerateWorkoutPage /></ProtectedUser>} />
+                {/* <Route path="/home" element={<Protected><Home /></Protected>} /> */}
 
               </Routes>
             </Suspense>

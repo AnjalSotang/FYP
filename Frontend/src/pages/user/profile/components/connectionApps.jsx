@@ -13,13 +13,13 @@ const ConnectedApps = () => {
   ]
 
 return(
-    <Card id="connected-apps" className="bg-navy-800 border-navy-700 shadow-md">
+    <Card id="connected-apps">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-white">
                 <Smartphone className="h-5 w-5 text-lime-400" />
                 Connected Apps
               </CardTitle>
-              <CardDescription className="text-gray-300">
+              <CardDescription>
                 Manage connections with other fitness apps and devices
               </CardDescription>
             </CardHeader>
@@ -37,11 +37,7 @@ return(
                     <Button
                       variant={app.connected ? "outline" : "default"}
                       size="sm"
-                      className={
-                        app.connected
-                          ? "border-navy-700 text-lime-400 hover:bg-navy-700"
-                          : "bg-lime-400 hover:bg-lime-500 text-navy-900"
-                      }
+                     
                     >
                       {app.connected ? "Disconnect" : "Connect"}
                     </Button>

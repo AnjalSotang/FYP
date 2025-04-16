@@ -1,15 +1,24 @@
 import React, { useEffect, useRef, useState } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ContactUsSection = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    subject: "",
+    message: ""
+  });
   const formRef = useRef(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setIsVisible(entry.isIntersecting); // Update visibility based on intersection
+        setIsVisible(entry.isIntersecting);
       },
-      { threshold: 0.1 } // Trigger when 10% of the form is visible
+      { threshold: 0.1 }
     );
 
     if (formRef.current) {
@@ -23,8 +32,80 @@ const ContactUsSection = () => {
     };
   }, []);
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Basic validation
+    if (!formData.name || !formData.email || !formData.message) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      
+      const response = await fetch('http://localhost:3001/api/addContact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Message sent successfully!");
+        // Reset form
+        setFormData({
+          name: "",
+          email: "",
+          subject: "",
+          message: ""
+        });
+      } else {
+        toast.error(data.message || "Failed to send message. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      toast.error("An error occurred. Please try again later.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#112240] to-[#1a2c50] text-white px-8 md:px-16 flex items-center justify-center relative overflow-hidden">
+      {/* Toast Container */}
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
+
       {/* Background Glow */}
       <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-[1000px] h-[1000px] bg-[#4a90e2]/20 rounded-full blur-[200px] -z-10"></div>
 
@@ -42,33 +123,56 @@ const ContactUsSection = () => {
           and our team will get back to you as soon as possible.
         </p>
 
-        <form className="space-y-6 animate-fadeIn delay-2">
+        <form className="space-y-6 animate-fadeIn delay-2" onSubmit={handleSubmit}>
           <div>
             <input
               type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
               placeholder="Your Name"
               className="w-full p-4 rounded-lg bg-[#0b1129] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4a90e2] transition"
+              required
             />
           </div>
           <div>
             <input
               type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
               placeholder="Your Email"
+              className="w-full p-4 rounded-lg bg-[#0b1129] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4a90e2] transition"
+              required
+            />
+          </div>
+          <div>
+            <input
+              type="text"
+              name="subject"
+              value={formData.subject}
+              onChange={handleChange}
+              placeholder="Subject"
               className="w-full p-4 rounded-lg bg-[#0b1129] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4a90e2] transition"
             />
           </div>
           <div>
             <textarea
+              name="message"
+              value={formData.message}
+              onChange={handleChange}
               placeholder="Your Message"
               className="w-full p-4 rounded-lg bg-[#0b1129] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4a90e2] transition"
               rows="5"
+              required
             ></textarea>
           </div>
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-[#4a90e2] to-[#b4e61d] text-[#112240] font-bold py-3 rounded-lg hover:scale-105 hover:shadow-md transition"
+            disabled={isSubmitting}
+            className="w-full bg-gradient-to-r from-[#4a90e2] to-[#b4e61d] text-[#112240] font-bold py-3 rounded-lg hover:scale-105 hover:shadow-md transition disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            Send Message
+            {isSubmitting ? "Sending..." : "Send Message"}
           </button>
         </form>
       </div>

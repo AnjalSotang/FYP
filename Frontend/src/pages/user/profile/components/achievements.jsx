@@ -23,33 +23,34 @@ const achievement = () => {
     
 
     return(
-        <Card id="achievements" className="bg-navy-800 border-navy-700 shadow-md">
+        <Card id="achievements" >
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
+              <CardTitle className="flex items-center gap-2">
                 <Trophy className="h-5 w-5 text-lime-400" />
                 Achievements
               </CardTitle>
-              <CardDescription className="text-gray-300">View your fitness achievements</CardDescription>
+              <CardDescription >View your fitness achievements</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {achievements.map((achievement) => (
-                  <div
-                    key={achievement.id}
-                    className="border border-navy-700 bg-navy-700 rounded-lg p-4 flex flex-col items-center text-center"
-                  >
-                    <div className="text-3xl mb-2">{achievement.icon}</div>
-                    <h3 className="font-medium text-white">{achievement.title}</h3>
-                    <p className="text-sm text-gray-300 mb-2">{achievement.description}</p>
-                    <Badge variant="outline" className="bg-navy-800 text-lime-400 border-navy-800">
-                      {achievement.date}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    {achievements.map((achievement) => (
+      <div
+        key={achievement.id}
+        className="border border-navy-600 bg-navy-800 rounded-lg p-4 flex flex-col items-center text-center shadow-sm"
+      >
+        <div className="text-3xl mb-2 text-lime-400">{achievement.icon}</div>
+        <h3 className="font-medium text-white">{achievement.title}</h3>
+        <p className="text-sm text-navy-300 mb-2">{achievement.description}</p>
+        <Badge variant="outline" className="bg-navy-700 text-lime-400 border-navy-700">
+          {achievement.date}
+        </Badge>
+      </div>
+    ))}
+  </div>
+</CardContent>
+
             <CardFooter>
-              <Button variant="outline" className="w-full border-navy-700 text-lime-400 hover:bg-navy-700">
+              <Button variant="default" className="w-full">
                 View All Achievements
               </Button>
             </CardFooter>

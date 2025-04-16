@@ -116,13 +116,13 @@ const ChangePassword = () => {
   }
 
   return ( 
-    <Card id="account" className="bg-navy-800 border-navy-700 shadow-md">
+    <Card id="account" >
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-white">
+        <CardTitle className="flex items-center gap-2 ">
           <Cog className="h-5 w-5 text-lime-400" />
           Account Settings
         </CardTitle>
-        <CardDescription className="text-gray-300">Manage your account settings and preferences</CardDescription>
+        <CardDescription>Manage your account settings and preferences</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
@@ -141,8 +141,9 @@ const ChangePassword = () => {
               <AlertDescription>{errorMessage || "Failed to update password"}</AlertDescription>
             </Alert>
           )}
-          
-          <div className="grid grid-cols-1 gap-4">
+            <div className="space-y-2">
+          <div className="grid grid-cols-1 gap-4 mb-2">
+
             <div>
               <Input
                 id="current-password"
@@ -185,9 +186,10 @@ const ChangePassword = () => {
               )}
             </div>
           </div>
-          
+          </div>
+       
           <Button 
-            className="mt-2 bg-lime-400 hover:bg-lime-500 text-navy-900" 
+            className="mt-10 bg-lime-400 hover:bg-lime-500 text-navy-900" 
             onClick={handleUpdatePassword}
             disabled={isLoading}
           >
@@ -195,7 +197,7 @@ const ChangePassword = () => {
           </Button>
         </div>
 
-        <Separator className="bg-navy-700" />
+        <Separator className="bg-navy-700 mr-8"/>
 
         <div>
           <h3 className="text-lg font-medium mb-2 text-white">Danger Zone</h3>
