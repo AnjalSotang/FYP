@@ -325,6 +325,32 @@ exports.notifyUserAccountDeletion = async (userInfo) => {
   }
 };
 
+// Notify admin about new contact form submission
+exports.notifyNewContactSubmission = async (contactData) => {
+  try {
+    if (!contactData || !contactData.id || !contactData.email) {
+      console.error("Invalid contact data for notification");
+      return null;
+    }
+
+    // Create admin notification about new contact submission
+    const message = `${contactData.message}`;
+    
+    await createAdminNotification(
+      contactData.subject,
+      message,
+      'contact_submission',
+      contactData.id,
+      'Contact'
+    );
+
+    return { message: "Admin notification created for contact submission" };
+  } catch (error) {
+    console.error("Error creating contact submission notification:", error);
+    throw error;
+  }
+};
+
 // Notify admin about workout completion
 exports.notifyWorkoutCompletion = async (completionData) => {
   try {
