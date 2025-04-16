@@ -13,12 +13,12 @@ export function AddWorkoutCard() {
         <p className="text-sm text-muted-foreground">Generate a custom plan or choose from our library</p>
       </div>
       <div className="flex gap-3">
-        <Link href="/generate">
+        <Link to="/generate">
           <Button variant="outline" size="sm">
             Generate Plan
           </Button>
         </Link>
-        <Link to="/">
+        <Link to="/plans">
           <Button size="sm">Browse Plans</Button>
         </Link>
       </div>

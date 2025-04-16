@@ -13,11 +13,14 @@ import { useDispatch, useSelector } from "react-redux";
 import STATUSES from "../../../../globals/status/statuses";
 import "react-toastify/dist/ReactToastify.css";
 import classNames from "classnames"
+import RootLayout from "../../../../components/layout/UserLayout";
+
 
 
 export function GeneratedWorkout({ formData, workoutData, onReset }) {
   const dispatch = useDispatch();
   const { status: status1 } = useSelector((state) => state.userWorkout);
+
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState(null); // <-- Add this
   
@@ -167,9 +170,10 @@ export function GeneratedWorkout({ formData, workoutData, onReset }) {
   
 
   return (
-    <div className="container mx-auto py-10 px-4">
+    <RootLayout>
+ <div className="container mx-auto py-10 px-12">
       <ToastContainer />
-      <Link to="/" className="flex items-center text-muted-foreground hover:text-foreground mb-6">
+      <Link to="/user" className="flex items-center text-muted-foreground hover:text-foreground mb-6">
         <ChevronLeft className="mr-1 h-4 w-4" />
         Back to home
       </Link>
@@ -194,9 +198,26 @@ export function GeneratedWorkout({ formData, workoutData, onReset }) {
               <Share className="h-4 w-4" />
               Share
             </Button>
-            <Button size="sm" className="gap-1" onClick={handleSaveWorkout}>
-              <Save className="h-4 w-4" />
-              Save
+            <Button
+              className={classNames(
+                "w-full sm:w-auto gap-3",
+                isLoading ? "opacity-70 cursor-not-allowed" : ""
+              )}
+              size="sm"
+              onClick={() => handleSaveWorkout(planId)}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Saving...
+                </span>
+              ) : (
+                <>
+                  <Save className="h-4 w-4" />
+                  Save 
+                </>
+              )}
             </Button>
           </div>
         </div>
@@ -306,7 +327,7 @@ export function GeneratedWorkout({ formData, workoutData, onReset }) {
               )}
             </Button>
 
-            <Link to="/dashboard" className="w-full sm:w-auto">
+            <Link to="/user" className="w-full sm:w-auto">
               <Button variant="outline" className="w-full" size="lg">
                 View in Dashboard
               </Button>
@@ -315,6 +336,9 @@ export function GeneratedWorkout({ formData, workoutData, onReset }) {
         </Card>
       </div>
     </div>
+
+    </RootLayout>
+   
   )
 }
 

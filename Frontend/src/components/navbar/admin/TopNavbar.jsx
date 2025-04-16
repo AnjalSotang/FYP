@@ -244,6 +244,9 @@ const TopNavbar = () => {
                     } else if (notification.type === 'workout_removed') {
                       iconClass = "bg-yellow-200 text-yellow-700";
                       iconLetter = "R";
+                    }else if (notification.type === 'AI'){
+                      iconClass = "bg-blue-200 text-yellow-700";
+                      iconLetter = "AI";
                     }
 
 

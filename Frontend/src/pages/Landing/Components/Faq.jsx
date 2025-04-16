@@ -16,17 +16,16 @@ const FAQSection = () => {
     {
       question: "How does FitTrack work?",
       answer:
-        "FitTrack uses advanced AI technology to create personalized workout plans, track progress, and provide insights tailored to your fitness goals.",
+     "FitTrack offers predefined plans and uses advanced AI technology to create personalized workout routines, track your progress, and provide insights tailored to your fitness goals"
     },
     {
       question: "Is there a free trial available?",
-      answer:
-        "Yes, we offer a 14-day free trial for new users to explore all premium features before subscribing.",
+      answer: "Yes, it's currently free to use.",
     },
-    {
+{    
       question: "Can I customize my workout plans?",
       answer:
-        "Absolutely! FitTrack allows you to customize workout plans based on your fitness level, goals, and schedule.",
+      "Absolutely! FitTrack lets you customize workout plans based on your fitness level and goals using AI, and also helps you schedule your workouts."
     },
     {
       question: "What support options are available?",

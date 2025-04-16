@@ -268,15 +268,15 @@ export function OverviewTab() {
           <CardContent className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <Clock className="h-4 w-4 text-muted-foreground mr-2" />
-                <span className="text-sm">Total Time</span>
+              <Clock className="h-4 w-4 text-blue-500 mr-2" />
+                              <span className="text-sm">Total Time</span>
               </div>
               <div className="font-medium">{totalWeeklyMinutes} min</div>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <Flame className="h-4 w-4 text-muted-foreground mr-2" />
-                <span className="text-sm">Calories Burned</span>
+              <Flame className="h-4 w-4 text-orange-500 mr-2" />
+              <span className="text-sm">Calories Burned</span>
               </div>
               <div className="font-medium">{totalWeeklyCalories}</div>
             </div>

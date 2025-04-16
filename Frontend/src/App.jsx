@@ -42,6 +42,7 @@ const MyWorkoutsID = lazy(() => import("./pages/user/my-workouts/id/page.jsx"));
 const History = lazy(() => import("./pages/user/history/page.jsx"));
 const Notifications = lazy(() => import("./pages/user/notifications/page.jsx"));
 const AdminNotifications = lazy(() => import("./pages/admin/notifications/page.jsx"));
+const Home = lazy(()=>import("./pages/user/home/page.jsx"))
 
 const Settings = lazy(() => import("./pages/admin/settings/page.jsx"));
 
@@ -99,6 +100,7 @@ function App() {
                 <Route path="/History" element={<Protected><History /></Protected>} />
                 <Route path="/notifications" element={<Protected><Notifications /></Protected>} />
                 <Route path="/generate" element={<Protected><GenerateWorkoutPage /></Protected>} />
+                <Route path="/home" element={<Protected><Home /></Protected>} />
 
               </Routes>
             </Suspense>

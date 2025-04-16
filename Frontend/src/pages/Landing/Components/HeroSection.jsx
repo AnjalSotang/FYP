@@ -1,6 +1,7 @@
 import React from "react";
 import HeroImage from "../../../assets/images/h.png";
 import { useInView } from "react-intersection-observer";
+import { Link } from "react-router-dom"
 
 const HeroSection = () => {
   const { ref, inView } = useInView({
@@ -26,31 +27,32 @@ const HeroSection = () => {
       <div className="relative z-10 h-full flex flex-col justify-center items-center">
         <div className="container mx-auto px-6 text-center">
           <h1
-            className={`text-5xl md:text-7xl font-extrabold mb-6 ${
-              inView ? "animate-fadeIn" : "opacity-0"
-            }`}
+            className={`text-5xl md:text-7xl font-extrabold mb-6 ${inView ? "animate-fadeIn" : "opacity-0"
+              }`}
           >
             Train Smarter. Achieve More.
           </h1>
           <p
-            className={`text-lg md:text-2xl text-gray-300 mb-8 ${
-              inView ? "animate-fadeIn delay-1" : "opacity-0"
-            }`}
+            className={`text-lg md:text-2xl text-gray-300 mb-8 ${inView ? "animate-fadeIn delay-1" : "opacity-0"
+              }`}
           >
             Get personalized workout plans, track your progress, and achieve
             your fitness goals with FitTrack.
           </p>
           <div
-            className={`flex justify-center space-x-4 ${
-              inView ? "animate-fadeIn delay-2" : "opacity-0"
-            }`}
+            className={`flex justify-center space-x-4 ${inView ? "animate-fadeIn delay-2" : "opacity-0"
+              }`}
           >
-            <button className="bg-gradient-to-r from-[#4a90e2] to-[#3b7ac9] text-white px-8 py-4 rounded-full hover:shadow-md hover:scale-105 transition duration-300 font-semibold">
-              Get Started
-            </button>
-            <button className="bg-gradient-to-r from-[#b4e61d] to-[#a4d519] text-white px-8 py-4 rounded-full hover:shadow-md hover:scale-105 transition duration-300 font-semibold">
-              Learn More
-            </button>
+            <Link to="/login">
+              <button className="bg-gradient-to-r from-[#4a90e2] to-[#3b7ac9] text-white px-8 py-4 rounded-full hover:shadow-md hover:scale-105 transition duration-300 font-semibold">
+                Generate Workout
+              </button>
+            </Link>
+            <Link to="/login">
+              <button className="bg-gradient-to-r from-[#b4e61d] to-[#a4d519] text-white px-8 py-4 rounded-full hover:shadow-md hover:scale-105 transition duration-300 font-semibold">
+                Browse Plans
+              </button>
+            </Link>
           </div>
         </div>
       </div>

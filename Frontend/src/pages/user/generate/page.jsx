@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ChevronLeft, Loader2 } from "lucide-react"
 import { GeneratedWorkout } from "./components/generate-workout"
+import RootLayout from "../../../components/layout/UserLayout";
 
 export default function GenerateWorkoutPage() {
   const [step, setStep] = useState(1)
@@ -127,9 +128,10 @@ export default function GenerateWorkoutPage() {
   }
 
   return (
-    <div className="container mx-auto py-10 px-4">
+    <RootLayout>
+  <div className="container mx-auto py-9 px-12">
       <ToastContainer />
-      <Link to="/" className="flex items-center text-muted-foreground hover:text-foreground mb-6">
+      <Link to="/user" className="flex items-center text-muted-foreground hover:text-foreground mb-6">
         <ChevronLeft className="mr-1 h-4 w-4" />
         Back to home
       </Link>
@@ -308,5 +310,7 @@ export default function GenerateWorkoutPage() {
         </Card>
       </div>
     </div>
+    </RootLayout>
+  
   )
 }

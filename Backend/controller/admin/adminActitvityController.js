@@ -26,7 +26,7 @@ exports.getSimplifiedActivities = async (req, res) => {
           {
             model: workout,
             as: 'workouts',
-            attributes: ['id', 'name', 'goal', 'level']
+            attributes: ['id', 'name', 'goal', 'level', 'role']
           }
         ],
         where: {
@@ -40,7 +40,7 @@ exports.getSimplifiedActivities = async (req, res) => {
         // 2. WORKOUT CREATIONS - When admins create new workouts
       const workoutCreations = await workout.findAll({
         attributes: [
-          'id', 'name', 'level', 'goal', 'createdAt', 'duration'
+          'id', 'name', 'level', 'goal', 'createdAt', 'duration', 'role'
         ],
         where: {
           createdAt: { [Op.gte]: startDate }
@@ -103,7 +103,7 @@ exports.getSimplifiedActivities = async (req, res) => {
           {
             model: workout,
             as: 'workouts',
-            attributes: ['id', 'name', 'goal', 'level']
+            attributes: ['id', 'name', 'goal', 'level', 'role']
           }
         ],
         where: {
@@ -140,7 +140,7 @@ exports.getSimplifiedActivities = async (req, res) => {
          const transformWorkoutCreation = (record) => {
             return {
               id: record.id,
-              user: "Admin", // Since workouts are created by admin
+              user: record.role,
               action: "Created new workout plan",
               plan: record.name || "Unknown Workout",
               time: getTimeAgo(record.createdAt)

@@ -21,7 +21,8 @@ import {
   Bell,
   Wrench,
 
-  TrophyIcon
+  TrophyIcon,
+  Brain
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -74,6 +75,8 @@ export default function NotificationsTable() {
         return <User className="h-4 w-4 text-blue-500" />;
       case "maintenance_update":
         return <Wrench className="h-4 w-4 text-yellow-600" />; // Wrench symbolizes system/maintenance.
+        case "AI":
+          return <Brain className="h-4 w-4 text-purple-600" />;
         default:
         return <Bell className="h-4 w-4 text-gray-500" />;
     }
@@ -95,6 +98,8 @@ export default function NotificationsTable() {
           return "Registration Status";
       case "maintenance_update":
         return "Maintenance Update";
+      case "AI":
+        return "AI Workout Generatar";
       default:
         return type;
     }

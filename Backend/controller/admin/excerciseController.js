@@ -76,10 +76,13 @@ const addExcercise = async (req, res) => {
 const getAllExcercises = async (req, res) => {
     try {
         const response = await excercise.findAll({
-            where: { is_active: true },
-            order: [['createdAt', 'DESC']], //
-        })
-
+            where: {
+                role: 'admin',
+                is_active: true
+            },
+            order: [['createdAt', 'DESC']],
+        });
+        
         if (!response.length) {
             return res.status(404).json({ message: "No exercises found" });
         }

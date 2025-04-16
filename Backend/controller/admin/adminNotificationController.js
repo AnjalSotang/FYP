@@ -274,6 +274,31 @@ exports.notifyNewWorkoutCreation = async (workoutData) => {
   }
 };
 
+exports.notifyUserNewWorkoutCreation = async (workoutData) => {
+  try {
+    if (!workoutData || !workoutData.id || !workoutData.name) {
+      console.error("Invalid workout data for notification");
+      return null;
+    }
+
+    // Create admin notification about new workout creation
+    const message = `New workout plan created Using AI: "${workoutData.name}" (${workoutData.level} level, ${workoutData.duration})`;
+    
+    await createAdminNotification(
+      "New Workout Plan Created",
+      message,
+      'AI',
+      workoutData.id,
+      'Workout'
+    );
+
+    return { message: "Admin notification created for new workout creation" };
+  } catch (error) {
+    console.error("Error creating new workout notification:", error);
+    throw error;
+  }
+};
+
 // Notify admin about user account deletion
 exports.notifyUserAccountDeletion = async (userInfo) => {
   try {

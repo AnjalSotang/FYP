@@ -1,9 +1,16 @@
 import React from "react";
 import { useInView } from "react-intersection-observer";
-import PersonalizedIcon from "../../../assets/images/Goal.jpg";
-import ProgressIcon from "../../../assets/images/Progress.jpg";
-import GoalSettingIcon from "../../../assets/images/Planning.jpg";
-import CalendarIcon from "../../../assets/images/call.jpg";
+// import PersonalizedIcon from "../../../assets/images/Goal.jpg";
+// import ProgressIcon from "../../../assets/images/Progress.jpg";
+// import GoalSettingIcon from "../../../assets/images/Planning.jpg";
+// import CalendarIcon from "../../../assets/images/call.jpg";
+
+import { 
+  Target, 
+  LineChart, 
+  ClipboardList, 
+  Calendar
+} from "lucide-react";
 
 const FeaturesSection = () => {
   const { ref: headerRef, inView: isHeaderInView } = useInView();
@@ -37,25 +44,25 @@ const FeaturesSection = () => {
         >
           {/* Feature 1 */}
           <FeatureCard
-            icon={PersonalizedIcon}
+            Icon={Target}
             title="Personalized Plans"
-            description="Get workout plans tailored to your goals, fitness level, and preferences."
+            description="Get workout plans tailored to your goals, fitness level, and preferences through AI."
           />
           {/* Feature 2 */}
           <FeatureCard
-            icon={ProgressIcon}
+            Icon={LineChart}
             title="Progress Tracking"
             description="Monitor your improvements with detailed analytics and visual progress indicators."
           />
           {/* Feature 3 */}
           <FeatureCard
-            icon={GoalSettingIcon}
+            Icon={ClipboardList}
             title="Goal Setting"
             description="Set and achieve your fitness goals with smart reminders to keep you on track."
           />
           {/* Feature 4 */}
           <FeatureCard
-            icon={CalendarIcon}
+            Icon={Calendar}
             title="Workout Planning"
             description="Plan and schedule your workouts with ease using our intuitive calendar."
           />
@@ -65,7 +72,7 @@ const FeaturesSection = () => {
   );
 };
 
-const FeatureCard = ({ icon, title, description }) => {
+const FeatureCard = ({ Icon, title, description }) => {
   const { ref, inView } = useInView();
 
   return (
@@ -77,7 +84,7 @@ const FeatureCard = ({ icon, title, description }) => {
     >
       {/* Floating Icon */}
       <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 w-20 h-20 rounded-full bg-gradient-to-br from-[#4a90e2] to-[#b4e61d] flex items-center justify-center shadow-lg group-hover:scale-110 transition">
-        <img src={icon} alt={title} className="w-14 h-14 rounded-full" />
+        {Icon && <Icon className="w-10 h-10 text-white" strokeWidth={2} />}
       </div>
 
       {/* Content */}
@@ -89,7 +96,7 @@ const FeatureCard = ({ icon, title, description }) => {
   );
 };
 
-<style jsx="true">{`
+const styles = `
   @keyframes fadeIn {
     from {
       opacity: 0;
@@ -104,6 +111,6 @@ const FeatureCard = ({ icon, title, description }) => {
     animation: fadeIn 1s ease-out forwards;
     opacity: 0;
   }
-`}</style>;
+`;
 
 export default FeaturesSection;

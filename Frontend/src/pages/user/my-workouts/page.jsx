@@ -111,13 +111,13 @@ export default function MyWorkoutsPage() {
           </div>
 
           <div className="flex gap-3">
-            <Link to="/">
+            <Link to="/plans">
               <Button variant="outline" className="gap-2">
                 <Plus className="h-4 w-4" />
                 Add Workout Plan
               </Button>
             </Link>
-            <Link to="/user/schedule">
+            <Link to="/schedule">
               <Button className="gap-2">
                 <Calendar className="h-4 w-4" />
                 Schedule Workout
@@ -138,7 +138,7 @@ export default function MyWorkoutsPage() {
                 <Dumbbell className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
                 <h3 className="text-lg font-medium mb-2">No Active Workout Plans</h3>
                 <p className="text-muted-foreground mb-6">You don't have any active workout plans yet.</p>
-                <Link to="/">
+                <Link to="/plans">
                   <Button>Browse Workout Plans</Button>
                 </Link>
               </div>     // return(

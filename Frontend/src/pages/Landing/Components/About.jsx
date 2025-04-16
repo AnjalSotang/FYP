@@ -44,9 +44,9 @@ const AboutUsSection = () => {
             solutions that adapt to your unique needs and lifestyle. Whether you're a beginner or a
             seasoned athlete, FitTrack is here to guide you every step of the way.
           </p>
-          <button className="bg-[#4a90e2] text-white px-8 py-3 rounded-full hover:bg-[#3b7ac9] font-semibold transition hover:glow">
+          {/* <button className="bg-[#4a90e2] text-white px-8 py-3 rounded-full hover:bg-[#3b7ac9] font-semibold transition hover:glow">
             Learn More
-          </button>
+          </button> */}
         </div>
       </div>
       {/* CSS for Animations */}

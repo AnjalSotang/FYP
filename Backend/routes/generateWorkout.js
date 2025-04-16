@@ -170,19 +170,19 @@ async function createWorkoutInDB(workoutData, userId) {
 
 
 // Helper function to create user notifications
-const createUserNotification = async (
-  userId, 
-  title, 
-  message, 
-  type, 
-  referenceId, 
-  referenceType
-) => {
-  // This function implementation would be defined elsewhere
-  // or imported from a notification service
-  console.log(`Creating notification for user ${userId}: ${title}`);
-  // Placeholder implementation - replace with actual notification logic
-};
+// const createUserNotification = async (
+//   userId, 
+//   title, 
+//   message, 
+//   type, 
+//   referenceId, 
+//   referenceType
+// ) => {
+//   // This function implementation would be defined elsewhere
+//   // or imported from a notification service
+//   console.log(`Creating notification for user ${userId}: ${title}`);
+//   // Placeholder implementation - replace with actual notification logic
+// };
 
 router.post("/generate-workout", async (req, res) => {
   const { goal, experience, days, duration, equipment, focus, additionalInfo, userId } = req.body;
@@ -359,20 +359,20 @@ router.post("/generate-workout", async (req, res) => {
       const savedWorkout = await createWorkoutInDB(finalWorkout, userId);
       
       // Create notification for the user
-      if (userId) {
-        await createUserNotification(
-          userId,
-          "Custom Workout Plan Created",
-          `Your custom workout plan '${finalWorkout.title}' has been created successfully!`,
-          'workout_creation',
-          savedWorkout.id,
-          'Workout'
-        );
-      }
+      // if (userId) {
+      //   await createUserNotification(
+      //     userId,
+      //     "Custom Workout Plan Created",
+      //     `Your custom workout plan '${finalWorkout.title}' has been created successfully!`,
+      //     'workout_creation',
+      //     savedWorkout.id,
+      //     'Workout'
+      //   );
+      // }
 
       // Create admin notification about the new workout
       try {
-        await adminNotificationController.notifyNewWorkoutCreation({
+        await adminNotificationController.notifyUserNewWorkoutCreation({
           id: savedWorkout.id,
           name: savedWorkout.name,
           level: savedWorkout.level,
