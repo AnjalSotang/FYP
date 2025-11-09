@@ -87,9 +87,7 @@ export function addUserWorkout(planId) {
 }
 
 
-
-
-export function getUserWorkout() {
+export function getUserWorkout(id){
 
     return async function addWorkoutThunk(dispatch) {
         dispatch(setStatus(STATUSES.LOADING))
@@ -105,8 +103,8 @@ export function getUserWorkout() {
             console.log("Authorization Header:", `Bearer ${token}`); // Log the token being sent
 
             const response = await API.get(
-                'getUserWorkouts',
-                {},  // Empty body if not needed
+                `api/getUserWorkout/${id}`,
+                // {},  // Empty body if not needed
                 {
                     headers: {
                         'Authorization': `Bearer ${token}`

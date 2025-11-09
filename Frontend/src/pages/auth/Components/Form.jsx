@@ -96,7 +96,7 @@ const Form = ({ type, onSubmit }) => {
                     {/* Email Input */}
                     <div className="relative">
                         <input
-                            type="email"
+                            // type="email"
                             name="email"
                             placeholder="Enter your email"
                             className="w-full p-4 pl-12 rounded-lg bg-[#1a2c50] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4a90e2] transition"

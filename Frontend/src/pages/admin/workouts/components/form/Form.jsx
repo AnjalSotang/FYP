@@ -16,12 +16,16 @@ import {
     Flame
 } from "lucide-react"
 import { Link } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import STATUSES from "../../../../../globals/status/statuses";
 import { setStatus } from "../../../../../../store/workoutSlice";
 
+import { useParams, useNavigate } from "react-router-dom";
+
 const WorkoutForm = ({ id, onSubmit, type, initialData }) => {
     const { status } = useSelector((state) => state.workout);
+      const dispatch = useDispatch()
+      const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false)
     const [image, setImage] = useState(null)
     const [imagePreview, setImagePreview] = useState(null);
@@ -209,16 +213,21 @@ const WorkoutForm = ({ id, onSubmit, type, initialData }) => {
         }
     }
 
-      // 🔥 Handle Status Updates
+
+  // // 🔥 Handle Status Updates
   useEffect(() => {
     if (status?.status === STATUSES.SUCCESS) {
-      // Only navigate if this was an add operation
-      // navigate("/Workout");
+      // navigate("/admin/Workout");
       toast.success(status.message);
-    //   dispatch(setStatus(null));
+      dispatch(setStatus(null));
     //   setIsSubmitting(false);
-    } 
-  }, [status]);
+    } else if (status?.status === STATUSES.ERROR) {
+      toast.error(status.message);
+      dispatch(setStatus(null));
+    //   setIsSubmitting(false);
+    }
+  }, [status, dispatch, navigate]);
+
 
 
     return (
@@ -226,7 +235,7 @@ const WorkoutForm = ({ id, onSubmit, type, initialData }) => {
             <div className="w-full max-w-xl mx-auto my-auto">
                 <ToastContainer position="top-center" autoClose={3000} />
 
-                <Link to={`/admin/workout/${id}`} className="w-full sm:w-auto">
+                <Link to={`/admin/workout`} className="w-full sm:w-auto">
                     <button
 
                         className="mb-7 flex items-center gap-2 px-3 py-2 border border-[#A3E635] text-[#A3E635] rounded-md hover:bg-[#A3E635] hover:text-[#111827] transition-colors"

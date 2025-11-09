@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { Cog } from "lucide-react"
+import { Cog, Eye, EyeOff } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 import { useState, useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
@@ -32,6 +32,13 @@ const ChangePassword = () => {
   })
 
   const [showSuccess, setShowSuccess] = useState(false)
+  
+  // State to control password visibility
+  const [passwordVisibility, setPasswordVisibility] = useState({
+    currentPassword: false,
+    newPassword: false,
+    confirmPassword: false
+  })
 
   // Show success message when status changes to success
   useEffect(() => {
@@ -54,13 +61,31 @@ const ChangePassword = () => {
 
   const handleChange = (e) => {
     const { id, value } = e.target
-    const fieldName = id.replace('-', '')
+    
+    // Map the input IDs directly to state properties
+    const fieldMapping = {
+      'current-password': 'currentPassword',
+      'new-password': 'newPassword',
+      'confirm-password': 'confirmPassword'
+    }
+    
+    // Use the mapping to get the correct field name
+    const fieldName = fieldMapping[id] || id
+    
     setFormData({ ...formData, [fieldName]: value })
     
     // Clear errors when user types
     if (formErrors[fieldName]) {
       setFormErrors({ ...formErrors, [fieldName]: "" })
     }
+  }
+  
+  // Toggle password visibility
+  const togglePasswordVisibility = (field) => {
+    setPasswordVisibility({
+      ...passwordVisibility,
+      [field]: !passwordVisibility[field]
+    })
   }
 
   const validateForm = () => {
@@ -141,51 +166,86 @@ const ChangePassword = () => {
               <AlertDescription>{errorMessage || "Failed to update password"}</AlertDescription>
             </Alert>
           )}
-            <div className="space-y-2">
-          <div className="grid grid-cols-1 gap-4 mb-2">
-
-            <div>
-              <Input
-                id="current-password"
-                type="password"
-                placeholder="Current password"
-                value={formData.currentPassword}
-                onChange={handleChange}
-                disabled={isLoading}
-              />
-              {formErrors.currentPassword && (
-                <p className="text-red-500 text-sm mt-1">{formErrors.currentPassword}</p>
-              )}
+          <div className="space-y-2">
+            <div className="grid grid-cols-1 gap-4 mb-2">
+              {/* Current Password Field with Toggle */}
+              <div className="relative">
+                <Input
+                  id="current-password"
+                  type={passwordVisibility.currentPassword ? "text" : "password"}
+                  placeholder="Current password"
+                  value={formData.currentPassword}
+                  onChange={handleChange}
+                  disabled={isLoading}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-gray-600"
+                  onClick={() => togglePasswordVisibility('currentPassword')}
+                >
+                  {passwordVisibility.currentPassword ? 
+                    <EyeOff className="h-5 w-5" /> : 
+                    <Eye className="h-5 w-5" />
+                  }
+                </button>
+                {formErrors.currentPassword && (
+                  <p className="text-red-500 text-sm mt-1">{formErrors.currentPassword}</p>
+                )}
+              </div>
+              
+              {/* New Password Field with Toggle */}
+              <div className="relative">
+                <Input
+                  id="new-password"
+                  type={passwordVisibility.newPassword ? "text" : "password"}
+                  placeholder="New password"
+                  value={formData.newPassword}
+                  onChange={handleChange}
+                  disabled={isLoading}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-gray-600"
+                  onClick={() => togglePasswordVisibility('newPassword')}
+                >
+                  {passwordVisibility.newPassword ? 
+                    <EyeOff className="h-5 w-5" /> : 
+                    <Eye className="h-5 w-5" />
+                  }
+                </button>
+                {formErrors.newPassword && (
+                  <p className="text-red-500 text-sm mt-1">{formErrors.newPassword}</p>
+                )}
+              </div>
+              
+              {/* Confirm Password Field with Toggle */}
+              <div className="relative">
+                <Input
+                  id="confirm-password"
+                  type={passwordVisibility.confirmPassword ? "text" : "password"}
+                  placeholder="Confirm new password"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  disabled={isLoading}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-gray-600"
+                  onClick={() => togglePasswordVisibility('confirmPassword')}
+                >
+                  {passwordVisibility.confirmPassword ? 
+                    <EyeOff className="h-5 w-5" /> : 
+                    <Eye className="h-5 w-5" />
+                  }
+                </button>
+                {formErrors.confirmPassword && (
+                  <p className="text-red-500 text-sm mt-1">{formErrors.confirmPassword}</p>
+                )}
+              </div>
             </div>
-            
-            <div>
-              <Input
-                id="new-password"
-                type="password"
-                placeholder="New password"
-                value={formData.newPassword}
-                onChange={handleChange}
-                disabled={isLoading}
-              />
-              {formErrors.newPassword && (
-                <p className="text-red-500 text-sm mt-1">{formErrors.newPassword}</p>
-              )}
-            </div>
-            
-            <div>
-              <Input
-                id="confirm-password"
-                type="password"
-                placeholder="Confirm new password"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                disabled={isLoading}
-              />
-              {formErrors.confirmPassword && (
-                <p className="text-red-500 text-sm mt-1">{formErrors.confirmPassword}</p>
-              )}
-            </div>
-          </div>
           </div>
        
           <Button 

@@ -15,15 +15,9 @@ const getDefaultUserRole = async () => {
 const register = async (req, res) => {
   try {
     const { email, password, confirmPassword, userName, age, weight, heightFeet, heightInches, experienceLevel, gender } = req.body;
-    // const userData = req.body;
-     // First check if registrations are allowed
-     const settings = await Settings.findOne();
-    //  if (settings && settings.allowRegistrations === false) {
-    //    return res.status(403).json({ 
-    //      message: 'User registrations are currently disabled by the administrator' 
-    //    });
-    //  }
  
+     const settings = await Settings.findOne();
+
      // Get the default role from settings
      const defaultRole = await getDefaultUserRole();
 
@@ -134,27 +128,30 @@ const login = async (req, res) => {
 
 
 const user_forgotPassword = async (req, res) => {
-  let { email } = req.body;
+  // Get email directly from req.body or from req.body.email
+  let email = req.body.email || req.body;
+  
+  console.log(email); 
 
   try {
     const existingEmail = await users.findOne({ where: { email: email } });
 
     if (!existingEmail) {
       return res.status(400).json({
-        message: "Email doesnot found"
+        message: "Email not found"
       });
     }
 
     const otp = Math.floor(1000 + Math.random() * 9000);
     const otpExpire = new Date();
-    otpExpire.setMinutes(otpExpire.getMinutes() + 1);
+    otpExpire.setMinutes(otpExpire.getMinutes() + 5); // Extended to 5 minutes for better user experience
 
     const [updated] = await users.update(
       { otp: otp, otpExpire: otpExpire },
       { where: { email: email } }
     );
 
-    console.log(existingEmail)
+    console.log(existingEmail);
 
     if (updated === 0) {
       return res.status(500).json({
@@ -173,21 +170,135 @@ const user_forgotPassword = async (req, res) => {
       },
     });
 
+    // Create professional HTML email template
+    const htmlEmail = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Password Reset OTP</title>
+      <style>
+        body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          margin: 0;
+          padding: 0;
+          background-color: #f9f9f9;
+        }
+        .email-container {
+          max-width: 600px;
+          margin: 0 auto;
+          background-color: #ffffff;
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .email-header {
+          background: linear-gradient(135deg, #0b1129 0%, #1a2c50 100%);
+          padding: 30px 0;
+          text-align: center;
+        }
+        .logo {
+          font-size: 28px;
+          font-weight: bold;
+          color: #b4e61d;
+          letter-spacing: 1px;
+        }
+        .email-body {
+          padding: 30px;
+        }
+        .email-footer {
+          background-color: #f5f5f5;
+          padding: 20px 30px;
+          text-align: center;
+          font-size: 14px;
+          color: #666;
+        }
+        h1 {
+          color: #1a2c50;
+          margin-top: 0;
+          margin-bottom: 20px;
+          font-size: 24px;
+        }
+        p {
+          margin-bottom: 20px;
+        }
+        .otp-container {
+          background-color: #f0f7ff;
+          border-left: 4px solid #4a90e2;
+          padding: 20px;
+          margin: 24px 0;
+          text-align: center;
+          border-radius: 4px;
+        }
+        .otp-code {
+          font-size: 36px;
+          font-weight: bold;
+          color: #1a2c50;
+          letter-spacing: 5px;
+        }
+        .expiry-text {
+          color: #d64045;
+          font-weight: 600;
+          margin-top: 10px;
+          font-size: 14px;
+        }
+        .help-text {
+          font-size: 14px;
+          color: #666;
+          margin-top: 25px;
+          border-top: 1px solid #eee;
+          padding-top: 20px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="email-container">
+        <div class="email-header">
+          <div class="logo">FitTrack</div>
+        </div>
+        <div class="email-body">
+          <h1>Password Reset Request</h1>
+          <p>Hello,</p>
+          <p>We received a request to reset your password for your FitTrack account. Please use the following One Time Password (OTP) to complete the reset process:</p>
+          
+          <div class="otp-container">
+            <div class="otp-code">${otp}</div>
+            <div class="expiry-text">This OTP will expire in 5 minutes</div>
+          </div>
+          
+          <p>If you didn't request this password reset, please ignore this email or contact our support team if you have concerns about your account security.</p>
+          
+          <div class="help-text">
+            <p>Need help? Contact our support team at support@fittrack.com</p>
+          </div>
+        </div>
+        <div class="email-footer">
+          &copy; ${new Date().getFullYear()} FitTrack. All rights reserved.
+        </div>
+      </div>
+    </body>
+    </html>
+    `;
+
     const mailOptions = {
-      from: "anjalsotang26@gmail.com",
+      from: '"FitTrack Support" <anjalsotang26@gmail.com>',
       to: email,
-      subject: "Please reset OTP",
-      text: `Your OTP (It expires after 1 min) : ${otp}`
+      subject: "FitTrack Password Reset Code",
+      text: `Your FitTrack password reset OTP is: ${otp} (expires in 5 minutes)`,
+      html: htmlEmail
     };
 
-    transporter.sendMail(mailOptions, (erroror, info) => {
-      if (erroror) {
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
         return res.status(500).json({
-          message: `Something went wrong: ${erroror}`
+          message: `Something went wrong: ${error}`
         });
       } else {
         return res.status(200).json({
-          message: `OTP has been send to ${email}`
+          message: `OTP has been sent to ${email}`
         });
       }
     });
@@ -203,7 +314,7 @@ const resetPassword = async (req, res) => {
 
   if (!password || !confirmPassword || !otp) {
     return res.status(400).json({
-      erroror: "Form data not found"
+      message: "Form data not found"
     });
   }
 
@@ -252,8 +363,7 @@ const resetPassword = async (req, res) => {
   } catch (error) {
     console.log(error)
     return res.status(500).json({
-      message: "Something went wrong",
-      error: error
+      message: error.message
     });
   }
 };

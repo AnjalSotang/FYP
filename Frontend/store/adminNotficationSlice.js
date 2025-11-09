@@ -9,7 +9,7 @@ const adminNotificationSlice = createSlice({
         unreadCount: 0,
         status: null, // Network status (success, pending, failure)
         error: null
-    },
+    },    
     reducers: {
         setStatus(state, action) {
             state.status = action.payload // Status is a network status it could be either success or pending or failure

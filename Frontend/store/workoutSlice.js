@@ -95,9 +95,11 @@ export function addWorkout(data) {
             });
 
             if (response.status === 201) {
+                console.log(response.data.data);
                 dispatch(setCurrentWorkout(response.data.data));
-                dispatch(setStatus({ status: STATUSES.SUCCESS, message: response.data.message }));
-                dispatch(fetchWorkouts());
+
+                dispatch(setStatus({ status: STATUSES.SUCCESS, message: "Workout added successfully" }));
+             
 
                 // Refresh notifications
                 dispatch(fetchNotifications());
@@ -120,6 +122,7 @@ export function fetchWorkouts() {
 
             if (response.status === 200) {
                 const workouts = response.data?.data || [];
+                console.log(workouts);
 
                 dispatch(setWorkouts(workouts));
                 dispatch(setStatus({ status: STATUSES.SUCCESS }));
@@ -223,21 +226,28 @@ export function fetchWorkout(id) {
 export function updateWorkout(data) {
     return async function updateWorkoutThunk(dispatch) {
         dispatch(setStatus(STATUSES.LOADING));
+        console.log(data)
 
         try {
             const token = localStorage.getItem('token');
+
             const response = await API.patch('api/admin/workout', data, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-                'Authorization': `Bearer ${token}`
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${token}`
+                }
             });
 
             if (response.status === 200) {
+                console.log(response.data.message);
+                // In updateWorkout
                 dispatch(setStatus({
                     status: STATUSES.SUCCESS,
-                    message: response.data.message || "Workout updated successfully"
+                    message: response.data.message,
+                    source: "updateWorkout" // Add this to track where the status came from
                 }));
                 // Optionally refresh the workout list
-                dispatch(fetchWorkouts());
+                // dispatch(fetchWorkouts());
             }
         } catch (error) {
             dispatch(setStatus(handleApiError(error)));
@@ -248,7 +258,6 @@ export function updateWorkout(data) {
 export function deleteWorkout(id) {
     return async function deleteWorkoutThunk(dispatch) {
         dispatch(setStatus(STATUSES.LOADING));
-
         try {
             const token = localStorage.getItem('token');
             const response = await API.delete(`api/admin/workout/${id}`,
@@ -276,8 +285,17 @@ export function updateWorkoutDay({ id, dayName }) {
     return async function updateWorkoutDayThunk(dispatch) {
         dispatch(setStatus(STATUSES.LOADING));
 
+        console.log(dayName)
+
         try {
-            const response = await API.patch(`api/updateWorkoutDay/${id}`, { dayName });
+            const token = localStorage.getItem('token');
+            const response = await API.patch(`api/updateWorkoutDay/${id}`, { dayName },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
 
             if (response.status === 200) {
                 const updatedDay = response.data.data;

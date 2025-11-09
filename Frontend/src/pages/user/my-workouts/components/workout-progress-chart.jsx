@@ -7,12 +7,17 @@ const WorkoutProgressChart = ({ history = [] }) => {
     setIsMounted(true);
   }, []);
 
-  console.log(history)
-  // Find the maximum duration for scaling
-  const maxDuration = Math.max(...history.map((day) => day.duration || 0), 30);
+  // Convert seconds to minutes for each entry
+  const processedHistory = history.map(day => ({
+    ...day,
+    durationMinutes: day.duration ? Math.round(day.duration / 60) : 0
+  }));
+
+  // Find the maximum duration in minutes for scaling
+  const maxDurationMinutes = Math.max(...processedHistory.map((day) => day.durationMinutes || 0), 30);
 
   // Prepare data, limit to last 30 entries if there are more
-  const chartData = history.length > 30 ? history.slice(-30) : history;
+  const chartData = processedHistory.length > 30 ? processedHistory.slice(-30) : processedHistory;
   
   // If no history data is available
   if (history.length === 0) {
@@ -34,14 +39,14 @@ const WorkoutProgressChart = ({ history = [] }) => {
           <div key={index} className="flex flex-col items-center">
             <div
               className={`w-full rounded-t-sm ${
-                day.completed && day.duration !== 0 ? "bg-primary/80" : "bg-muted"
+                day.completed && day.durationMinutes !== 0 ? "bg-primary/80" : "bg-muted"
               }`}
               style={{
-                height: `${day.completed ? Math.max((day.duration / maxDuration) * 100, 10) : 5}%`,
+                height: `${day.completed ? Math.max((day.durationMinutes / maxDurationMinutes) * 100, 10) : 5}%`,
                 minHeight: day.completed ? "8px" : "4px",
                 transition: "height 0.3s ease-in-out",
               }}
-              title={`${day.date}: ${day.duration || 0} minutes`}
+              title={`${day.date}: ${day.durationMinutes || 0} minutes`}
             ></div>
             <div className="text-xs text-muted-foreground mt-1 truncate max-w-full" style={{ fontSize: "0.65rem" }}>
               {day.date ? new Date(day.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : ''}
@@ -51,7 +56,7 @@ const WorkoutProgressChart = ({ history = [] }) => {
       </div>
       <div className="flex justify-between text-xs text-muted-foreground mt-4">
         <div>Workout Duration (minutes)</div>
-        <div>{maxDuration} min max</div>
+        <div>{maxDurationMinutes} min max</div>
       </div>
     </div>
   );

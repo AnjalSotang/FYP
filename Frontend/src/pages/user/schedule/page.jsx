@@ -76,6 +76,14 @@ export default function SchedulePage() {
   const isDialogOpen = useSelector(selectIsDialogOpen)
   const status = useSelector(selectStatus)
   const datesWithWorkouts = useSelector(selectDatesWithWorkouts)
+  
+  // First, add a state to track which workout is being deleted and dialog visibility
+  const [workoutToDelete, setWorkoutToDelete] = useState(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  
+  // Add a state to track the min date and min time for scheduling
+  const [minDate, setMinDate] = useState(new Date());
+  const [minTime, setMinTime] = useState("");
 
   // Convert loading/error states from Redux status
   const isLoading = status === "LOADING"
@@ -95,24 +103,55 @@ export default function SchedulePage() {
     dispatch(fetchWorkoutsForDate(selectedDate))
   }, [dispatch])
 
-  // // Initial data loading
-  // useEffect(() => {
-  //   // Fetch all required data on initial load
-  //   dispatch(fetchWorkouts())
-  //   dispatch(fetchScheduledWorkouts())
-  //   dispatch(fetchUpcomingWorkouts())
-  //   dispatch(fetchWorkoutsForDate(selectedDate))
-  // }, [dispatch, selectedDate])
-
-
-
+  // Update minimum time whenever dialog opens or selectedDate changes
+  useEffect(() => {
+    if (isDialogOpen) {
+      // Always get fresh current date/time when dialog opens
+      const now = new Date();
+      
+      // Set min date to today
+      setMinDate(now);
+      
+      // If selected date is today, set min time to current time
+      if (selectedDate && new Date(selectedDate).toDateString() === now.toDateString()) {
+        const hours = now.getHours().toString().padStart(2, '0');
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        setMinTime(`${hours}:${minutes}`);
+        
+        // If current time is after the selected time, reset the time
+        if (formData.selectedTime && formData.selectedTime < `${hours}:${minutes}`) {
+          dispatch(setFormTime(`${hours}:${minutes}`));
+        }
+      } else {
+        // For future dates, allow any time
+        setMinTime("00:00");
+      }
+    }
+  }, [isDialogOpen, selectedDate, formData.selectedTime, dispatch]);
+  
   // Handle date selection - wrapped in useCallback
   const handleDateChange = useCallback((date) => {
     if (date) {
       dispatch(setSelectedDate(date.toISOString()));
       dispatch(fetchWorkoutsForDate(date));
+      
+      // If selecting today in dialog, update min time
+      const now = new Date();
+      if (date.toDateString() === now.toDateString() && isDialogOpen) {
+        const hours = now.getHours().toString().padStart(2, '0');
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        setMinTime(`${hours}:${minutes}`);
+        
+        // Reset time field if it's now invalid
+        if (formData.selectedTime && formData.selectedTime < `${hours}:${minutes}`) {
+          dispatch(setFormTime(`${hours}:${minutes}`));
+        }
+      } else {
+        // For future dates, allow any time
+        setMinTime("00:00");
+      }
     }
-  }, [dispatch]);
+  }, [dispatch, isDialogOpen, formData.selectedTime]);
 
   // Navigate to previous month
   const handlePrevMonth = () => {
@@ -127,8 +166,6 @@ export default function SchedulePage() {
     nextMonth.setMonth(nextMonth.getMonth() + 1);
     dispatch(setSelectedDate(nextMonth.toISOString()));
   };
-
-
 
   // Handle workout plan selection - wrapped in useCallback
   const handleWorkoutPlanChange = useCallback((value) => {
@@ -155,15 +192,40 @@ export default function SchedulePage() {
     dispatch(setDialogOpen(open));
     if (!open) {
       dispatch(resetForm());
+    } else {
+      // When dialog opens, set the selected date to today if it's in the past
+      const now = new Date();
+      const currentSelectedDate = selectedDate ? new Date(selectedDate) : null;
+      
+      if (!currentSelectedDate || currentSelectedDate < now) {
+        dispatch(setSelectedDate(now.toISOString()));
+      }
     }
-  }, [dispatch]);
+  }, [dispatch, selectedDate]);
 
-
+  // Function to check if selected date is today
+  const isToday = (date) => {
+    const today = new Date();
+    return date.toDateString() === today.toDateString();
+  };
 
   // Handle scheduling a new workout
   const handleScheduleWorkout = () => {
     if (!selectedDate || !formData.selectedWorkoutPlanId || !formData.selectedDayId || !formData.selectedTime) {
       toast.error("Please fill out all required fields.");
+      return;
+    }
+
+    // Validate date and time are not in the past
+    const now = new Date();
+    const selectedDateTime = new Date(selectedDate);
+    selectedDateTime.setHours(
+      parseInt(formData.selectedTime.split(':')[0]),
+      parseInt(formData.selectedTime.split(':')[1])
+    );
+
+    if (selectedDateTime < now) {
+      toast.error("Cannot schedule workouts in the past. Please select a future date and time.");
       return;
     }
 
@@ -181,15 +243,20 @@ export default function SchedulePage() {
     dispatch(setDialogOpen(false));
   }
 
-
-
-
   // Handle deleting a scheduled workout
   const handleDeleteWorkout = (id) => {
-    dispatch(deleteScheduledWorkout(id));
+    setWorkoutToDelete(id);
+    setDeleteDialogOpen(true);
   }
 
-
+  // Add a new function to confirm deletion
+  const confirmDeleteWorkout = () => {
+    if (workoutToDelete) {
+      dispatch(deleteScheduledWorkout(workoutToDelete));
+      setDeleteDialogOpen(false);
+      setWorkoutToDelete(null);
+    }
+  }
 
   // Loading state
   if (isLoading) {
@@ -211,13 +278,12 @@ export default function SchedulePage() {
     )
   }
 
- // 🔥 Handle Status Updates
- useEffect(() => {
- if (status?.status === STATUSES.ERROR) {
-    toast.error(status.message);
-  }
-}, [status]);
-
+  // 🔥 Handle Status Updates
+  useEffect(() => {
+    if (status?.status === STATUSES.ERROR) {
+      toast.error(status.message);
+    }
+  }, [status]);
 
   return (
     <RootLayout>
@@ -244,7 +310,7 @@ export default function SchedulePage() {
                 Plan your next workout session. Set the date, time, and enable reminders.
               </DialogDescription>
             </DialogHeader>
-
+            
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
                 <Label htmlFor="workout-plan">Workout Plan</Label>
@@ -295,7 +361,16 @@ export default function SchedulePage() {
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
-                    <Calendar mode="single" selected={selectedDate} onSelect={handleDateChange} initialFocus />
+                    <Calendar 
+                      mode="single" 
+                      selected={selectedDate} 
+                      onSelect={handleDateChange} 
+                      initialFocus
+                      disabled={(date) => {
+                        // Disable dates before today
+                        return date < new Date().setHours(0, 0, 0, 0);
+                      }}
+                    />
                   </PopoverContent>
                 </Popover>
               </div>
@@ -307,7 +382,13 @@ export default function SchedulePage() {
                   type="time"
                   value={formData.selectedTime}
                   onChange={handleTimeChange}
+                  min={minTime}
                 />
+                {isToday(selectedDate ? new Date(selectedDate) : new Date()) && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    You can only schedule times after the current time ({minTime})
+                  </p>
+                )}
               </div>
 
               <div className="flex items-center space-x-2">
@@ -335,13 +416,9 @@ export default function SchedulePage() {
         </Dialog>
       </div>
 
-
-
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
         {/* Workout Calendar */}
-
         <Card className="lg:col-span-1">
           <CardHeader>
             <CardTitle>Calendar</CardTitle>
@@ -352,8 +429,6 @@ export default function SchedulePage() {
               mode="single"
               selected={selectedDate}
               onSelect={handleDateChange}
-  
-  
               className="rounded-md border border-[#1E3A6D] p-3"
               modifiers={{
                 workout: (date) => datesWithWorkouts.includes(new Date(date).toDateString()),
@@ -367,9 +442,7 @@ export default function SchedulePage() {
                 },
               }}
             />
-
           </CardContent>
-
 
           <CardFooter className="flex justify-between">
             <Button
@@ -380,7 +453,6 @@ export default function SchedulePage() {
               <ChevronLeft className="h-4 w-4 mr-1" />
               Previous
             </Button>
-
 
             <Button
               variant="outline"
@@ -393,25 +465,16 @@ export default function SchedulePage() {
           </CardFooter>
         </Card>
 
-
-
-
-
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>{selectedDate ? format(selectedDate, "MMMM d, yyyy") : "Select a date"}</CardTitle>
-
 
             <CardDescription>
               {workoutsForSelectedDate.length === 0
                 ? "No workouts scheduled for this date"
                 : `${workoutsForSelectedDate.length} workout${workoutsForSelectedDate.length > 1 ? "s" : ""} scheduled`}
             </CardDescription>
-
-
           </CardHeader>
-
-
 
           <CardContent>
             {workoutsForSelectedDate.length === 0 ? (
@@ -423,8 +486,6 @@ export default function SchedulePage() {
                 </Button>
               </div>
             ) : (
-
-
               <div className="space-y-4">
                 {workoutsForSelectedDate.map((workout) => (
                   <Card key={workout.id}>
@@ -437,7 +498,6 @@ export default function SchedulePage() {
                           <div>
                             <h3 className="font-medium">{workout.workoutPlan}</h3>
                             <p className="text-sm text-muted-md">{workout.day}</p>
-
 
                             <div className="flex items-center mt-2 text-sm">
                               <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
@@ -453,7 +513,6 @@ export default function SchedulePage() {
                                   Reminder On
                                 </span>
                               )}
-
 
                               {workout.status && workout.status !== 'scheduled' && (
                                 <span className={`ml-3 text-xs ${workout.status === 'completed'
@@ -480,9 +539,6 @@ export default function SchedulePage() {
                   </Card>
                 ))}
               </div>
-
-
-
             )}
           </CardContent>
           <CardFooter>
@@ -490,8 +546,6 @@ export default function SchedulePage() {
           </CardFooter>
         </Card>
       </div>
-
-
 
       <div className="mt-8">
         <h2 className="text-2xl font-bold mb-6">Upcoming Workouts</h2>
@@ -543,6 +597,26 @@ export default function SchedulePage() {
         </div>
       </div>
       <ToastContainer />
+      
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Delete Workout</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this scheduled workout? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmDeleteWorkout}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
     </RootLayout>
   )

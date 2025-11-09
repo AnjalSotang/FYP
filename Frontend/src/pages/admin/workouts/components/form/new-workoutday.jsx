@@ -45,7 +45,7 @@ export function NewWorkoutDayDialog({ id }) {
       console.error("Error creating workout day:", error);
     } finally {
       setIsSubmitting(false);
-      window.location.reload();
+      // window.location.reload();
     }
   };
 

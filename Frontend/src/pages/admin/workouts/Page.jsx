@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { ArrowRightCircle, ArrowUpDown, Calendar, ListTodo, MoreHorizontal, Plus, Search, Star, Trash2, Upload } from "lucide-react"
+import { ArrowRightCircle, ArrowUpDown, Calendar, Edit, ListTodo, MoreHorizontal, Plus, Search, Star, Trash2, Upload } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -20,12 +20,14 @@ import { deleteWorkout, fetchWorkouts, setStatus } from "../../../../store/worko
 import STATUSES from "../../../globals/status/statuses";
 import "react-toastify/dist/ReactToastify.css";
 import DashboardLayout from '../../../components/layout/DashboardLayout';
+import { toast, ToastContainer } from "react-toastify"
 
 export default function WorkoutPlansPage() {
   const dispatch = useDispatch();
 
   // Fix: More robust state access with additional safety checks
   const { data: workoutPlans = [], status } = useSelector((state) => state.workout || {});
+  console.log(status)
   const [deletingId, setDeletingId] = useState(null);
 
   const [searchTerm, setSearchTerm] = useState("")
@@ -72,12 +74,15 @@ export default function WorkoutPlansPage() {
   // Handle status updates
   useEffect(() => {
     if (status?.status === STATUSES.SUCCESS) {
+      console.log(status.message)
+      toast.success(status.message);
       dispatch(setStatus(null));
     }
   }, [status, dispatch]);
 
   return (
     <DashboardLayout>
+          <ToastContainer position="top-center" autoClose={3000} />
 
       <div className="flex flex-col gap-6 m-form-padding">
         <div>
@@ -210,7 +215,7 @@ export default function WorkoutPlansPage() {
                       <TableCell>
                         <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <span>{plan.duration}</span>
+                          <span>{plan.duration} days</span>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -233,6 +238,16 @@ export default function WorkoutPlansPage() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-40 bg-navy-900 rounded-md shadow-lg border border-navy-600">
                             <DropdownMenuItem asChild>
+                            <Link
+                                to={`/admin/workout/edit/${id}`}
+                                className="flex items-center px-4 py-3 text-gray-300 hover:bg-navy-700 hover:text-lime-300 transition-colors"
+                              >
+                                <Edit className="w-4 h-4 mr-3" />
+                                Edit
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                            
                               <Link
                                 to={`/admin/workout/${id}`}
                                 className="flex items-center px-4 py-3 text-gray-300 hover:bg-navy-700 hover:text-lime-300 transition-colors"

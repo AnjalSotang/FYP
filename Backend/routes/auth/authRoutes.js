@@ -6,7 +6,7 @@ const settingController = require("../../controller/admin/generalSettingControll
 const router = express.Router()
 
 router.post('/register', settingController.checkRegistrationAllowed, register )
-router.post('/login', login )
+        router.post('/login', login )
 router.post('/forget', user_forgotPassword)
 router.post('/reset', resetPassword )
 
@@ -15,7 +15,7 @@ router.get('/profile',checkTokenAndRole("user"), getUserProfile);
 
 router.get('/admin/profile', checkTokenAndRole("admin"), getAdminProfile);
 
-router.patch('/profile/password', changePassword);
+router.patch('/profile/password', checkTokenAndRole("user"), changePassword);
 router.delete('/profile',checkTokenAndRole("user"), deleteAccount);
 
 module.exports = router;

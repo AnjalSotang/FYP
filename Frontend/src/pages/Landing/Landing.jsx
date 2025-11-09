@@ -10,7 +10,7 @@ import Layout from "../../components/layout/Layout";
 const Landing = () => {
   return (
       <Layout>
-      <HeroSection/>
+      <HeroSection/>  
       <FeaturesSection/>
       <AboutUsSection/>
       <CTASection/>

@@ -5,46 +5,43 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { ChevronLeft, Printer, Save, Share, Dumbbell, Clock, RotateCcw } from "lucide-react"
+import { ChevronLeft, Printer, Save, Share, Dumbbell, Clock, RotateCcw, Loader2 } from "lucide-react"
 import { WorkoutDay } from "./workout-day"
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { addUserWorkout, setStatus } from "../../../../../store/userWorkoutSlice";
 import { useDispatch, useSelector } from "react-redux";
 import STATUSES from "../../../../globals/status/statuses";
 import "react-toastify/dist/ReactToastify.css";
 import classNames from "classnames"
 import RootLayout from "../../../../components/layout/UserLayout";
-
-
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 export function GeneratedWorkout({ formData, workoutData, onReset }) {
   const dispatch = useDispatch();
   const { status: status1 } = useSelector((state) => state.userWorkout);
 
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedPlanId, setSelectedPlanId] = useState(null); // <-- Add this
+  const [selectedPlanId, setSelectedPlanId] = useState(null);
+  const [activeTab, setActiveTab] = useState("1"); // Track active tab for PDF generation
+  const workoutContentRef = useRef(null); // Ref for the workout content to capture for PDF
   
-
   // Use the AI-generated workout if available, otherwise fall back to the mock data
   console.log("Received workout data:", workoutData)
   const workout = (workoutData && Object.keys(workoutData).length > 0)
     ? workoutData.workout
     : generateMockWorkout(formData)
 
-
   const planId = workout.id;
-
 
   // useEffect to dispatch when selectedPlanId changes
   useEffect(() => {
-    if (selectedPlanId !== null) { // Prevent initial empty state from dispatching
+    if (selectedPlanId !== null) {
       console.log("Dispatching workout for plan:", selectedPlanId);
       dispatch(addUserWorkout(selectedPlanId));
-      setSelectedPlanId(null); // Reset state to prevent infinite loop
+      setSelectedPlanId(null);
     }
-  }, [selectedPlanId, dispatch]); // Runs when selectedPlanId changes
-
-
+  }, [selectedPlanId, dispatch]);
 
   // Make sure the workout days exist to prevent errors
   const workoutDays = workout?.days || []
@@ -67,8 +64,8 @@ export function GeneratedWorkout({ formData, workoutData, onReset }) {
   const handleSaveWorkout = async (planId) => {
     if (planId && planId !== selectedPlanId) {
       try {
-        setIsLoading(true); // 🔹 Start loading
-        setSelectedPlanId(planId); // This triggers the useEffect
+        setIsLoading(true);
+        setSelectedPlanId(planId);
         toast.success("Your workout plan has been saved to your profile.", {
           position: "top-right",
           autoClose: 3000,
@@ -81,14 +78,12 @@ export function GeneratedWorkout({ formData, workoutData, onReset }) {
         console.error("Error saving workout:", error);
         toast.error("Something went wrong while saving the workout.");
       } finally {
-        setIsLoading(false); // 🔹 Stop loading after save
+        setIsLoading(false);
       }
     }
   };
-  
 
   const handleShareWorkout = () => {
-    // In a real app, this would generate a shareable link
     navigator.clipboard
       .writeText(`${window.location.origin}/shared-workout/${workout.id || '123'}`)
       .then(() => {
@@ -113,14 +108,114 @@ export function GeneratedWorkout({ formData, workoutData, onReset }) {
       })
   }
 
-  const handlePrintWorkout = () => {
-    window.print();
-    toast.info("Printing workout plan...", {
+  // New PDF generation function
+  const handlePrintWorkout = async () => {
+    setIsLoading(true);
+    toast.info("Generating PDF, please wait...", {
       position: "top-right",
       autoClose: 2000,
       hideProgressBar: true
     });
-  }
+    
+    try {
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const contentWidth = pdf.internal.pageSize.getWidth();
+      const margin = 10;
+      let yPosition = 20;
+      
+      // Add title and description
+      pdf.setFontSize(20);
+      pdf.text(workout.name || workout.title, contentWidth / 2, yPosition, { align: 'center' });
+      yPosition += 10;
+      
+      pdf.setFontSize(12);
+      const description = workout.description;
+      const descriptionLines = pdf.splitTextToSize(description, contentWidth - 2 * margin);
+      pdf.text(descriptionLines, contentWidth / 2, yPosition, { align: 'center' });
+      yPosition += descriptionLines.length * 6 + 10;
+      
+      // Add workout overview
+      pdf.setFontSize(16);
+      pdf.text("Workout Overview", margin, yPosition);
+      yPosition += 8;
+      
+      pdf.setFontSize(12);
+      pdf.text(`Days Per Week: ${workoutDays.filter(day => !day.dayName.includes("Rest Day")).length}`, margin, yPosition);
+      yPosition += 6;
+      pdf.text(`Duration: ${workout.duration || formData?.duration || 45} minutes per session`, margin, yPosition);
+      yPosition += 6;
+      pdf.text(`Level: ${workout.level || formData?.experience || "Beginner"}`, margin, yPosition);
+      yPosition += 6;
+      pdf.text(`Goal: ${workout.goal ? workout.goal.replace(/-/g, ' ') : "Build Muscle"}`, margin, yPosition);
+      yPosition += 15;
+      
+      // Render each workout day
+      for (let i = 0; i < transformedDays.length; i++) {
+        const day = transformedDays[i];
+        
+        // Check if we need a new page
+        if (yPosition > 250) {
+          pdf.addPage();
+          yPosition = 20;
+        }
+        
+        pdf.setFontSize(16);
+        pdf.text(`Day ${day.day}: ${day.focus}`, margin, yPosition);
+        yPosition += 8;
+        
+        // Add exercises
+        pdf.setFontSize(12);
+        for (const exercise of day.exercises) {
+          // Check if we need a new page
+          if (yPosition > 270) {
+            pdf.addPage();
+            yPosition = 20;
+          }
+          
+          pdf.setFont(undefined, 'bold');
+          pdf.text(`• ${exercise.name}`, margin, yPosition);
+          yPosition += 6;
+          
+          pdf.setFont(undefined, 'normal');
+          pdf.text(`    Sets: ${exercise.sets} | Reps: ${exercise.reps} | Rest: ${exercise.rest}`, margin, yPosition);
+          yPosition += 6;
+          
+          if (exercise.equipment) {
+            pdf.text(`    Equipment: ${exercise.equipment}`, margin, yPosition);
+            yPosition += 6;
+          }
+          
+          if (exercise.instructions) {
+            pdf.text(`    Instructions:`, margin, yPosition);
+            yPosition += 5;
+            const instructionLines = pdf.splitTextToSize(exercise.instructions, contentWidth - 2 * margin - 10);
+            pdf.text(instructionLines, margin + 10, yPosition);
+            yPosition += instructionLines.length * 5 + 5;
+          } else {
+            yPosition += 5;
+          }
+        }
+        
+        yPosition += 10;
+      }
+      
+      // Save the PDF
+      pdf.save(`${workout.name || workout.title || 'Workout_Plan'}.pdf`);
+      toast.success("Your workout plan has been downloaded as a PDF!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
+      });
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast.error("Could not generate PDF. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // If workout is undefined or missing critical data, show an error state
   if (!workout || (!workout.name && !workout.title)) {
@@ -155,190 +250,192 @@ export function GeneratedWorkout({ formData, workoutData, onReset }) {
     ? formData.focus.map(f => f.charAt(0).toUpperCase() + f.slice(1)).join(", ")
     : "Full Body"
 
-    // 🔥 Handle Status Updates
-    useEffect(() => {
-      if (status1?.status === STATUSES.SUCCESS) {
-        // navigate("/");
-        toast.success(status1.message);
-        console.log(status1.message);
-        setIsLoading(false);
-        dispatch(setStatus(null));
-      } else if (status1?.status === STATUSES.ERROR) {
-        toast.error(status1.message);
-      }
-    }, [status1]);
-  
+  // Handle Status Updates
+  useEffect(() => {
+    if (status1?.status === STATUSES.SUCCESS) {
+      toast.success(status1.message);
+      console.log(status1.message);
+      setIsLoading(false);
+      dispatch(setStatus(null));
+    } else if (status1?.status === STATUSES.ERROR) {
+      toast.error(status1.message);
+    }
+  }, [status1]);
 
   return (
     <RootLayout>
- <div className="container mx-auto py-10 px-12">
-      <ToastContainer />
-      <Link to="/user" className="flex items-center text-muted-foreground hover:text-foreground mb-6">
-        <ChevronLeft className="mr-1 h-4 w-4" />
-        Back to home
-      </Link>
+      <div className="container mx-auto py-10 px-12">
+        <ToastContainer />
+        <Link to="/user" className="flex items-center text-muted-foreground hover:text-foreground mb-6">
+          <ChevronLeft className="mr-1 h-4 w-4" />
+          Back to home
+        </Link>
 
-      <div className="max-w-4xl mx-auto">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-          <div>
-            <h1 className="text-3xl font-bold">{workoutTitle}</h1>
-            <p className="text-muted-foreground">{workoutDescription}</p>
-          </div>
-
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={onReset} className="gap-1">
-              <RotateCcw className="h-4 w-4" />
-              Regenerate
-            </Button>
-            <Button variant="outline" size="sm" className="gap-1" onClick={handlePrintWorkout}>
-              <Printer className="h-4 w-4" />
-              Print
-            </Button>
-            <Button variant="outline" size="sm" className="gap-1" onClick={handleShareWorkout}>
-              <Share className="h-4 w-4" />
-              Share
-            </Button>
-            <Button
-              className={classNames(
-                "w-full sm:w-auto gap-3",
-                isLoading ? "opacity-70 cursor-not-allowed" : ""
-              )}
-              size="sm"
-              onClick={() => handleSaveWorkout(planId)}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Saving...
-                </span>
-              ) : (
-                <>
-                  <Save className="h-4 w-4" />
-                  Save 
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
-
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Workout Overview</CardTitle>
-            <CardDescription>A {workoutDays.filter(day => !day.dayName.includes("Rest Day")).length}-day workout plan tailored to your preferences</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-muted rounded-lg p-4 text-center">
-                <div className="text-sm text-muted-foreground mb-1">Days Per Week</div>
-                <div className="text-2xl font-bold">{workoutDays.filter(day => !day.dayName.includes("Rest Day")).length}</div>
-              </div>
-              <div className="bg-muted rounded-lg p-4 text-center">
-                <div className="text-sm text-muted-foreground mb-1">Duration</div>
-                <div className="text-2xl font-bold">{workoutDuration} min</div>
-              </div>
-              <div className="bg-muted rounded-lg p-4 text-center">
-                <div className="text-sm text-muted-foreground mb-1">Level</div>
-                <div className="text-2xl font-bold capitalize">{workoutLevel}</div>
-              </div>
-              <div className="bg-muted rounded-lg p-4 text-center">
-                <div className="text-sm text-muted-foreground mb-1">Goal</div>
-                <div className="text-2xl font-bold capitalize">
-                  {workout.goal ? workout.goal.replace(/-/g, ' ') : "Build Muscle"}
-                </div>
-              </div>
+        <div className="max-w-4xl mx-auto" ref={workoutContentRef}>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            <div>
+              <h1 className="text-3xl font-bold">{workoutTitle}</h1>
+              <p className="text-muted-foreground">{workoutDescription}</p>
             </div>
-          </CardContent>
-        </Card>
 
-        {transformedDays.length > 0 ? (
-          <Tabs defaultValue="1" className="mb-8">
-            <TabsList className="grid" style={{ gridTemplateColumns: `repeat(${transformedDays.length}, 1fr)` }}>
-              {transformedDays.map((day) => (
-                <TabsTrigger key={day.day} value={day.day}>
-                  Day {day.day}
-                </TabsTrigger>
-              ))}
-            </TabsList>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={onReset} className="gap-1">
+                <RotateCcw className="h-4 w-4" />
+                Regenerate
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="gap-1" 
+                onClick={handlePrintWorkout}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Generating...
+                  </span>
+                ) : (
+                  <>
+                    <Printer className="h-4 w-4" />
+                    Download PDF
+                  </>
+                )}
+              </Button>
+          
+              <Button
+                className={classNames(
+                  "w-full sm:w-auto gap-3",
+                  isLoading ? "opacity-70 cursor-not-allowed" : ""
+                )}
+                size="sm"
+                onClick={() => handleSaveWorkout(planId)}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Saving...
+                  </span>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" />
+                    Save 
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
 
-            {transformedDays.map((day) => (
-              <TabsContent key={day.day} value={day.day}>
-                <WorkoutDay day={day} />
-              </TabsContent>
-            ))}
-          </Tabs>
-        ) : (
           <Card className="mb-8">
-            <CardContent className="py-6">
-              <p className="text-center text-muted-foreground">No workout days have been generated.</p>
-            </CardContent>
-          </Card>
-        )}
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Ready to start?</CardTitle>
-            <CardDescription>Save this workout plan to your profile to track your progress</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Dumbbell className="h-6 w-6 text-primary" />
+            <CardHeader>
+              <CardTitle>Workout Overview</CardTitle>
+              <CardDescription>A {workoutDays.filter(day => !day.dayName.includes("Rest Day")).length}-day workout plan tailored to your preferences</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-muted rounded-lg p-4 text-center">
+                  <div className="text-sm text-muted-foreground mb-1">Days Per Week</div>
+                  <div className="text-2xl font-bold">{workoutDays.filter(day => !day.dayName.includes("Rest Day")).length}</div>
                 </div>
-                <div>
-                  <h3 className="font-medium">{workoutTitle}</h3>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Clock className="h-4 w-4 mr-1" />
-                    <span>{workoutDuration} min per session</span>
+                <div className="bg-muted rounded-lg p-4 text-center">
+                  <div className="text-sm text-muted-foreground mb-1">Duration</div>
+                  <div className="text-2xl font-bold">{workoutDuration} min</div>
+                </div>
+                <div className="bg-muted rounded-lg p-4 text-center">
+                  <div className="text-sm text-muted-foreground mb-1">Level</div>
+                  <div className="text-2xl font-bold capitalize">{workoutLevel}</div>
+                </div>
+                <div className="bg-muted rounded-lg p-4 text-center">
+                  <div className="text-sm text-muted-foreground mb-1">Goal</div>
+                  <div className="text-2xl font-bold capitalize">
+                    {workout.goal ? workout.goal.replace(/-/g, ' ') : "Build Muscle"}
                   </div>
                 </div>
               </div>
+            </CardContent>
+          </Card>
 
-              <Badge variant="outline" className="text-sm">
-                {workoutDays.filter(day => !day.dayName.includes("Rest Day")).length} days/week
-              </Badge>
-            </div>
-          </CardContent>
-          <CardFooter className="flex flex-col sm:flex-row gap-3">
-
-
-
-
-            <Button
-              className={classNames(
-                "w-full sm:w-auto gap-3",
-                isLoading ? "opacity-70 cursor-not-allowed" : ""
-              )}
-              size="lg"
-              onClick={() => handleSaveWorkout(planId)}
-              disabled={isLoading}
+          {transformedDays.length > 0 ? (
+            <Tabs 
+              defaultValue="1" 
+              className="mb-8"
+              onValueChange={(value) => setActiveTab(value)}
             >
-              {isLoading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Saving...
-                </span>
-              ) : (
-                <>
-                  <Save className="h-4 w-4" />
-                  Save to My Workouts
-                </>
-              )}
-            </Button>
+              <TabsList className="grid" style={{ gridTemplateColumns: `repeat(${transformedDays.length}, 1fr)` }}>
+                {transformedDays.map((day) => (
+                  <TabsTrigger key={day.day} value={day.day}>
+                    Day {day.day}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
 
-            <Link to="/user" className="w-full sm:w-auto">
-              <Button variant="outline" className="w-full" size="lg">
-                View in Dashboard
+              {transformedDays.map((day) => (
+                <TabsContent key={day.day} value={day.day}>
+                  <WorkoutDay day={day} />
+                </TabsContent>
+              ))}
+            </Tabs>
+          ) : (
+            <Card className="mb-8">
+              <CardContent className="py-6">
+                <p className="text-center text-muted-foreground">No workout days have been generated.</p>
+              </CardContent>
+            </Card>
+          )}
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Ready to start?</CardTitle>
+              <CardDescription>Save this workout plan to your profile to track your progress</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Dumbbell className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium">{workoutTitle}</h3>
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Clock className="h-4 w-4 mr-1" />
+                      <span>{workoutDuration} min per session</span>
+                    </div>
+                  </div>
+                </div>
+
+                <Badge variant="outline" className="text-sm">
+                  {workoutDays.filter(day => !day.dayName.includes("Rest Day")).length} days/week
+                </Badge>
+              </div>
+            </CardContent>
+            <CardFooter className="flex flex-col sm:flex-row gap-3">
+              <Button
+                className={classNames(
+                  "w-full sm:w-auto gap-3",
+                  isLoading ? "opacity-70 cursor-not-allowed" : ""
+                )}
+                size="lg"
+                onClick={() => handleSaveWorkout(planId)}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Saving...
+                  </span>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" />
+                    Save to My Workouts
+                  </>
+                )}
               </Button>
-            </Link>
-          </CardFooter>
-        </Card>
+            </CardFooter>
+          </Card>
+        </div>
       </div>
-    </div>
-
     </RootLayout>
-   
   )
 }
 

@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setStatus, updateWorkout } from "../../../../store/workoutSlice";
 import STATUSES from "../../../globals/status/statuses";  // Adjust path if necessary
 import { ErrorBoundary } from "react-error-boundary";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import DashboardLayout from "../../../components/layout/DashboardLayout";
 import Sidebar from "../../../components/navbar/admin/Sidebar";
@@ -19,6 +19,7 @@ const UpdateWorkout = () => {
   const [workoutData, setWorkoutData] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  console.log(status)
   useEffect(() => {
     // Find the workout data when the component mounts or workout data changes
     if (workout && workout.length > 0) {
@@ -36,19 +37,19 @@ const UpdateWorkout = () => {
   // }
 
 
-  // 🔥 Handle Status Updates
-  useEffect(() => {
-    if (status?.status === STATUSES.SUCCESS && status?.type === 'update') {
-      navigate("/Workout");
-      toast.success(status.message);
-      dispatch(setStatus(null));
-      setIsSubmitting(false);
-    } else if (status?.status === STATUSES.ERROR) {
-      toast.error(status.message);
-      dispatch(setStatus(null));
-      setIsSubmitting(false);
-    }
-  }, [status, dispatch, navigate]);
+  // // 🔥 Handle Status Updates
+  // useEffect(() => {
+  //   if (status?.status === STATUSES.SUCCESS) {
+  //     // navigate("/admin/Workout");
+  //     toast.success(status.message);
+  //     dispatch(setStatus(null));
+  //     setIsSubmitting(false);
+  //   } else if (status?.status === STATUSES.ERROR) {
+  //     toast.error(status.message);
+  //     dispatch(setStatus(null));
+  //     setIsSubmitting(false);
+  //   }
+  // }, [status, dispatch, navigate]);
 
   const handleUpdateWorkout = (formData) => {
     setIsSubmitting(true);
@@ -73,12 +74,14 @@ const UpdateWorkout = () => {
       </div>
     );
   }
+      
 
 
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
       <Suspense fallback={<div className="spinner">Loading...</div>}>
         <DashboardLayout SidebarComponent={Sidebar}>
+        {/* <ToastContainer position="top-center" autoClose={3000} /> */}
           <WorkoutForm id={id} type='update' onSubmit={handleUpdateWorkout} initialData={workoutData} />
         </DashboardLayout>
       </Suspense>

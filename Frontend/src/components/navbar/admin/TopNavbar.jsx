@@ -2,7 +2,7 @@ import { useState, useEffect, memo, useRef } from "react";
 import { Bell, ChevronDown, Settings, HelpCircle, User, LogOut, Dumbbell } from "lucide-react";
 import { throttle } from "lodash";
 import { Link, useNavigate } from "react-router-dom";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
+// import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAdminProfile, handleLogout } from "../../../../store/authSlice";
 import {
@@ -178,7 +178,7 @@ const TopNavbar = () => {
 
 
         {/* Theme Toggle */}
-        <ThemeToggle />
+        {/* <ThemeToggle /> */}
 
         {/* Notifications */}
         <div className="relative" ref={notificationRef}>

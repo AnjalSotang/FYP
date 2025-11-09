@@ -46,7 +46,7 @@ const generateWorkoutRoute = require("./routes/generateWorkout");
 
 
 // Initialize the notification scheduler
-const setupNotificationScheduler = require('./services/notificationSchedulers');
+// const setupNotificationScheduler = require('./services/notificationSchedulers');
 
 // Middleware setup
 app.use(cors());
@@ -73,7 +73,7 @@ app.use('/api',
   settingsRoutes,
   generateWorkoutRoute
 );
-// app.use('/api/generate-workout', generateWorkoutRoute); // Register the route with the /api/generate-workout path
+app.use('/api/generate-workout', generateWorkoutRoute); // Register the route with the /api/generate-workout path
 
 // Synchronize database
 sequelize.sync({ force: 0 })

@@ -24,6 +24,10 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from 'react-toastify';
 import RootLayout from '../../../components/layout/UserLayout';
+// Import the static image for user role
+import userWorkoutImage from "../../../assets/images/call.jpg" // Adjust the path/filename as needed
+
+
 
 export default function MyWorkoutsPage() {
   const dispatch = useDispatch()
@@ -38,6 +42,9 @@ export default function MyWorkoutsPage() {
   )
   const [workoutToDelete, setWorkoutToDelete] = useState(null)
   console.log(activeWorkouts)
+
+  console.log(userWorkoutImage)
+  console.log(completedWorkouts)
 
   useEffect(() => {
     // Fetch data when component mounts
@@ -100,6 +107,30 @@ export default function MyWorkoutsPage() {
     )
   }
 
+  const formatDuration = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+    
+    if (hours > 0) {
+      if (minutes === 0 && remainingSeconds === 0) {
+        return `${hours}h`;
+      } else if (remainingSeconds === 0) {
+        return `${hours}h ${minutes}m`;
+      } else {
+        return `${hours}h ${minutes}m ${remainingSeconds}s`;
+      }
+    } else if (minutes > 0) {
+      if (remainingSeconds === 0) {
+        return `${minutes}m`;
+      } else {
+        return `${minutes}m ${remainingSeconds}s`;
+      }
+    } else {
+      return `${remainingSeconds}s`;
+    }
+  }
+
   return (
     <RootLayout>
       <div className="container mx-auto py-10 px-12">
@@ -144,158 +175,172 @@ export default function MyWorkoutsPage() {
               </div>     // return(
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-1">
-                  <div className="space-y-4">
-
-
-                    {activeWorkouts.map((workout) => {
-                      const imageUrl = workout.image ? workout.image.replace(/\\/g, "/") : "";
-                      console.log(imageUrl)
-                      return (
-                        <Card
-                          key={workout.id}
-                          className={`cursor-pointer hover:shadow-md transition-shadow ${selectedWorkout && selectedWorkout.id === workout.id ? "border-primary" : ""
-                            }`}
-                          onClick={() => handleSelectWorkout(workout.id)}
-                        >
-                          <div className="flex p-4">
-                            <img
-                              src={`http://localhost:3001/${imageUrl}`}
-                              alt={workout.title}
-                              className="w-20 h-20 object-cover rounded-md mr-4"
-                            />
-                            <div className="flex-1">
-                              <div className="flex justify-between items-start">
-                                <h3 className="font-medium">{workout.title}</h3>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    handleDeleteWorkout(workout.id)
-                                  }}
-                                >
-                                  <Trash2 className="h-4 w-4 text-muted-foreground" />
-                                </Button>
-                              </div>
-                              <div className="text-sm text-muted-foreground mb-2">
-                                {workout.completedWorkouts} of {workout.totalWorkouts} workouts completed
-                              </div>
-                              <Progress value={workout.progress} className="h-2" />
+              <div className="lg:col-span-1">
+                <div className="space-y-4">
+                  {activeWorkouts.map((workout) => {
+                    // Properly defined and used image source function
+                    const getImageSrc = () => {
+                      if (workout.role === "user") {
+                        // Use static image for user role
+                        return userWorkoutImage;
+                      } else {
+                        // Use dynamic image for other roles
+                        const profileImageUrl = workout?.image ? workout.image.replace(/\\/g, "/") : "";
+                        return profileImageUrl ? `http://localhost:3001/${profileImageUrl}` : undefined;
+                      }
+                    };
+                    
+                    // Use the function instead of redefining the logic
+                    const imageUrl = getImageSrc();
+                    
+                    return (
+                      <Card
+                        key={workout.id}
+                        className={`cursor-pointer hover:shadow-md transition-shadow ${
+                          selectedWorkout && selectedWorkout.id === workout.id ? "border-primary" : ""
+                        }`}
+                        onClick={() => handleSelectWorkout(workout.id)}
+                      >
+                        <div className="flex p-4">
+                          <img
+                            src={imageUrl}
+                            alt={workout.title}
+                            className="w-20 h-20 object-cover rounded-md mr-4"
+                          />
+                          <div className="flex-1">
+                            <div className="flex justify-between items-start">
+                              <h3 className="font-medium">{workout.title}</h3>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteWorkout(workout.id);
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4 text-muted-foreground" />
+                              </Button>
                             </div>
-                          </div>
-                        </Card>
-                      )
-
-                    })}
-
-                    <Card className="border-dashed">
-                      <Link to="/" className="block p-4">
-                        <div className="flex items-center justify-center h-20">
-                          <div className="text-center">
-                            <Plus className="h-6 w-6 mx-auto text-muted-foreground mb-2" />
-                            <span className="text-sm font-medium">Add Workout Plan</span>
+                            <div className="text-sm text-muted-foreground mb-2">
+                              {workout.completedWorkouts} of {workout.totalWorkouts} workouts completed
+                            </div>
+                            <Progress value={workout.progress} className="h-2" />
                           </div>
                         </div>
-                      </Link>
-                    </Card>
-                  </div>
+                      </Card>
+                    );
+                  })}
+            
+                  <Card className="border-dashed">
+                    <Link to="/" className="block p-4">
+                      <div className="flex items-center justify-center h-20">
+                        <div className="text-center">
+                          <Plus className="h-6 w-6 mx-auto text-muted-foreground mb-2" />
+                          <span className="text-sm font-medium">Add Workout Plan</span>
+                        </div>
+                      </div>
+                    </Link>
+                  </Card>
                 </div>
-
-
-                {selectedWorkout && (
-                  <div className="lg:col-span-2">
-                    <Card>
-                      <CardHeader>
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <CardTitle>{selectedWorkout.title}</CardTitle>
-                            <CardDescription>Started on {selectedWorkout.startDate}</CardDescription>
-                          </div>
-                          <div className="flex gap-2">
-                            <Badge
-                              variant={
-                                selectedWorkout.level === "Beginner"
-                                  ? "default"
-                                  : selectedWorkout.level === "Intermediate"
-                                    ? "secondary"
-                                    : "destructive"
-                              }
-                            >
-                              {selectedWorkout.level}
-                            </Badge>
-                            <Badge variant="outline">{selectedWorkout.category}</Badge>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      
-                      <CardContent className="space-y-6">
-                        <div className="grid grid-cols-3 gap-4">
-                          <div className="bg-muted rounded-lg p-4 text-center">
-                            <div className="text-sm text-muted-foreground mb-1">Progress</div>
-                            <div className="text-2xl font-bold">{selectedWorkout.progress}%</div>
-                          </div>
-                          <div className="bg-muted rounded-lg p-4 text-center">
-                            <div className="text-sm text-muted-foreground mb-1">Workouts</div>
-                            <div className="text-2xl font-bold">
-                              {selectedWorkout.completedWorkouts}/{selectedWorkout.totalWorkouts}
-                            </div>
-                          </div>
-                          <div className="bg-muted rounded-lg p-4 text-center">
-                            <div className="text-sm text-muted-foreground mb-1">Streak</div>
-                            <div className="text-2xl font-bold">{selectedWorkout.streak} days</div>
-                          </div>
-                        </div>
-
-                        <div>
-                          <h3 className="text-lg font-medium mb-4">Progress Tracking</h3>
-                          <div className="h-64">
-                            <WorkoutProgressChart history={selectedWorkout.history} />
-                          </div>
-                        </div>
-
-                        <div>
-                          <h3 className="text-lg font-medium mb-2">Recent Activity</h3>
-                          <div className="space-y-2">
-                            {selectedWorkout.history?.slice(0, 5).map((day, index) => (
-                              <div key={index} className="flex items-center py-2 border-b last:border-0">
-                                <div
-                                  className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${day.completed ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
-                                    }`}
-                                >
-                                  {day.completed ? <Dumbbell className="h-4 w-4" /> : <Clock className="h-4 w-4" />}
-                                </div>
-                                <div className="flex-1">
-                                  <div className="font-medium">{day.completed ? "Workout Completed" : "Rest Day"}</div>
-                                  <div className="text-sm text-muted-foreground">{day.date}</div>
-                                </div>
-                                {day.completed && (
-                                  <div className="text-right">
-                                    <div className="font-medium">{day.duration} min</div>
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </CardContent>
-                      <CardFooter className="flex justify-between">
-                        <Button variant="outline" className="gap-1">
-                          <BarChart className="h-4 w-4" />
-                          Detailed Stats
-                        </Button>
-                        <Link to={`/MyWorkoutsID/${selectedWorkout.id}`}>
-                          <Button className="gap-1">
-                            Continue Workout
-                            <ChevronRight className="h-4 w-4" />
-                          </Button>
-                        </Link>
-                      </CardFooter>
-                    </Card>
-                  </div>
-                )}
               </div>
+            
+              {selectedWorkout && (
+                <div className="lg:col-span-2">
+                  <Card>
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle>{selectedWorkout.title}</CardTitle>
+                          <CardDescription>Started on {selectedWorkout.startDate}</CardDescription>
+                        </div>
+                        <div className="flex gap-2">
+                          <Badge
+                            variant={
+                              selectedWorkout.level === "Beginner"
+                                ? "default"
+                                : selectedWorkout.level === "Intermediate"
+                                  ? "secondary"
+                                  : "destructive"
+                            }
+                          >
+                            {selectedWorkout.level}
+                          </Badge>
+                          <Badge variant="outline">{selectedWorkout.category}</Badge>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    
+                    <CardContent className="space-y-6">
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="bg-muted rounded-lg p-4 text-center">
+                          <div className="text-sm text-muted-foreground mb-1">Progress</div>
+                          <div className="text-2xl font-bold">{selectedWorkout.progress}%</div>
+                        </div>
+                        <div className="bg-muted rounded-lg p-4 text-center">
+                          <div className="text-sm text-muted-foreground mb-1">Workouts</div>
+                          <div className="text-2xl font-bold">
+                            {selectedWorkout.completedWorkouts}/{selectedWorkout.totalWorkouts}
+                          </div>
+                        </div>
+                        <div className="bg-muted rounded-lg p-4 text-center">
+                          <div className="text-sm text-muted-foreground mb-1">Streak</div>
+                          <div className="text-2xl font-bold">{selectedWorkout.streak} days</div>
+                        </div>
+                      </div>
+            
+                      <div>
+                        <h3 className="text-lg font-medium mb-4">Progress Tracking</h3>
+                        <div className="h-64">
+                          <WorkoutProgressChart history={selectedWorkout.history} />
+                        </div>
+                      </div>
+            
+                      <div>
+                        <h3 className="text-lg font-medium mb-2">Recent Activity</h3>
+                        <div className="space-y-2">
+                          {selectedWorkout.history?.slice(0, 5).map((day, index) => (
+                            <div key={index} className="flex items-center py-2 border-b last:border-0">
+                              <div
+                                className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${
+                                  day.duration ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                                }`}
+                              >
+                                {day.duration ? <Dumbbell className="h-4 w-4" /> : <Clock className="h-4 w-4" />}
+                              </div>
+                              <div className="flex-1">
+                                <div className="font-medium">{day.duration ? "Workout Completed" : "Rest Day"}</div>
+                                <div className="text-sm text-muted-foreground">{day.date}</div>
+                              </div>
+                              {day.completed && (
+                                <div className="text-right">
+                                  {/* Added formatDuration function reference */}
+                                  <div className="font-medium">
+                                    {formatDuration ? formatDuration(day.duration) : `${day.duration} min`}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </CardContent>
+                    <CardFooter className="flex justify-between">
+                      <Button variant="outline" className="gap-1">
+                        <BarChart className="h-4 w-4" />
+                        Detailed Stats
+                      </Button>
+                      <Link to={`/MyWorkoutsID/${selectedWorkout.id}`}>
+                        <Button className="gap-1">
+                          Continue Workout
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                    </CardFooter>
+                  </Card>
+                </div>
+              )}
+            </div>
             )}
           </TabsContent>
 
@@ -312,73 +357,67 @@ export default function MyWorkoutsPage() {
                      const imageUrl = workout.image ? workout.image.replace(/\\/g, "/") : "";
                      console.log(imageUrl)
                      return (
-                  <Card key={workout.id} className="flex flex-col h-full">
-                    <div className="relative">
-                      <img
-                        src={`http://localhost:3001/${imageUrl}`}
-                        alt={workout.title}
-                        className="w-full h-48 object-cover rounded-t-lg"
-                      />
-                      <Badge className="absolute top-3 right-3 bg-green-500 hover:bg-green-600">Completed</Badge>
-                    </div>
-
-                    <CardHeader className="pb-2">
-                      <div className="flex justify-between">
-                        <CardTitle>{workout.title}</CardTitle>
-                        <div className="flex">
-                          {[...Array(5)].map((_, i) => (
-                            <svg
-                              key={i}
-                              className={`h-4 w-4 ${i < workout.rating ? "text-yellow-500" : "text-muted"}`}
-                              fill="currentColor"
-                              viewBox="0 0 20 20"
-                            >
-                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                          ))}
-                        </div>
-                      </div>
-                      <CardDescription>Completed on {workout.completedDate}</CardDescription>
-                    </CardHeader>
-
-                    <CardContent className="pb-2 pt-0">
-                      <div className="flex flex-wrap gap-2 mb-2">
-                        <Badge variant="outline">{workout.category}</Badge>
-                        <Badge
-                          variant={
-                            workout.level === "Beginner"
-                              ? "default"
-                              : workout.level === "Intermediate"
-                                ? "secondary"
-                                : "destructive"
-                          }
-                        >
-                          {workout.level}
+                      <Card key={workout.id} className="flex flex-col h-full shadow-md rounded-lg overflow-hidden">
+                      <div className="relative">
+                        <img
+                          src={`http://localhost:3001/${imageUrl}`}
+                          alt={workout.title}
+                          className="w-full h-48 object-cover"
+                        />
+                        <Badge className="absolute top-3 right-3 bg-green-500 hover:bg-green-600">
+                          Completed
                         </Badge>
                       </div>
-                      <div className="text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1 mb-1">
-                          <Clock className="h-4 w-4" />
-                          <span>{workout.duration}</span>
+                    
+                      <CardHeader className="pb-1 pt-3 px-4">
+                        <div className="flex justify-between items-start">
+                          <CardTitle className="text-lg">{workout.title}</CardTitle>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Dumbbell className="h-4 w-4" />
-                          <span>{workout.completedWorkouts} workouts completed</span>
+                        <CardDescription className="text-sm text-muted-foreground">
+                          Completed on {workout.completedDate}
+                        </CardDescription>
+                      </CardHeader>
+                    
+                      <CardContent className="px-4 pt-1 pb-2 space-y-2">
+                        <div className="flex flex-wrap gap-2">
+                          <Badge variant="outline">{workout.category}</Badge>
+                          <Badge
+                            variant={
+                              workout.level === "Beginner"
+                                ? "default"
+                                : workout.level === "Intermediate"
+                                  ? "secondary"
+                                  : "destructive"
+                            }
+                          >
+                            {workout.level}
+                          </Badge>
                         </div>
-                      </div>
-                    </CardContent>
-
-                    <CardFooter className="mt-auto pt-4">
-                      <div className="flex gap-2 w-full">
-                        <Button variant="outline" className="flex-1">
-                          View Details
-                        </Button>
-                        <Button className="flex-1" onClick={() => dispatch(restartWorkout(workout.id))}>
-                          Restart Plan
-                        </Button>
-                      </div>
-                    </CardFooter>
-                  </Card>
+                    
+                        <div className="text-sm text-muted-foreground space-y-1">
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-4 w-4" />
+                            <span>{workout.duration}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Dumbbell className="h-4 w-4" />
+                            <span>{workout.completedWorkouts} workouts completed</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    
+                      <CardFooter className="mt-auto px-4 pb-4 pt-2">
+                        <div className="flex gap-2 w-full">
+                          <Button variant="outline" className="flex-1">
+                            View Details
+                          </Button>
+                          <Button className="flex-1" onClick={() => dispatch(restartWorkout(workout.id))}>
+                            Restart Plan
+                          </Button>
+                        </div>
+                      </CardFooter>
+                    </Card>
+                    
                      )
 })}
               </div>

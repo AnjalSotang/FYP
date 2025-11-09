@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+ import { createSlice } from '@reduxjs/toolkit';
 import STATUSES from '../src/globals/status/statuses'
 import API from '../src/http';
 
@@ -122,9 +122,10 @@ export function login(data) {
 
 export function forget(data) {
     return async function forgetThunk(dispatch) {
+        console.log(data)
         dispatch(setStatus(STATUSES.LOADING))
         try {
-            const response = await API.post('auth/forget', data)
+            const response = await API.post('auth/forget', {email: data})
             if (response.status === 200) {
                 dispatch(setUser({ email: data.email }))
                 dispatch(setStatus({ status: STATUSES.SUCCESS, message: response.data.message }))
@@ -154,12 +155,15 @@ export function reset(data) {
     return async function resetThunk(dispatch) {
         dispatch(setStatus(STATUSES.LOADING))
         try {
+            console.log(data)
             const response = await API.post('auth/reset', data)
             if (response.status === 201) {
                 dispatch(setStatus({ status: STATUSES.SUCCESS, message: response.data.message }))
             }
+            console.log(response)
         }
         catch (error) {
+            let errorMessage = "An unexpected error occurred.";
             if (error.response) {
                 // Server responded with an error status (e.g., 400, 409)
                 errorMessage = error.response.data.message || "Password reset failed.";

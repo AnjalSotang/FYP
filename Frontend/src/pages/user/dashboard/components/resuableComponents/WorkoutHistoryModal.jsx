@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { CheckCircle2, Clock, CloudFog, Filter, Flame } from "lucide-react"
+import { CheckCircle2, Clock, Filter, Flame } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { fetchAllHistory } from "../../../../../../store/userWorkoutHistorySlice";
@@ -45,6 +45,43 @@ export function WorkoutHistoryModal({ open, onOpenChange }) {
   const resetFilters = () => {
     setFilterType("all")
     setSelectedDate(null)
+  }
+
+  const formatDuration = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+    
+    if (hours > 0) {
+      if (minutes === 0 && remainingSeconds === 0) {
+        return `${hours}h`;
+      } else if (remainingSeconds === 0) {
+        return `${hours}h ${minutes}m`;
+      } else {
+        return `${hours}h ${minutes}m ${remainingSeconds}s`;
+      }
+    } else if (minutes > 0) {
+      if (remainingSeconds === 0) {
+        return `${minutes}m`;
+      } else {
+        return `${minutes}m ${remainingSeconds}s`;
+      }
+    } else {
+      return `${remainingSeconds}s`;
+    }
+  }
+
+  // Function to check if workout is a rest day or if workoutDay is null
+  const isRestDay = (workout) => {
+    return !workout.workoutDay || (workout.workoutDay.dayName && workout.workoutDay.dayName.includes("Rest"));
+  }
+
+  // Function to get workout name safely
+  const getWorkoutName = (workout) => {
+    if (!workout.workoutDay) {
+      return "Unknown Workout";
+    }
+    return isRestDay(workout) ? "Rest Day" : workout.workoutDay.dayName;
   }
 
   // Get unique workout types for filter
@@ -92,23 +129,22 @@ export function WorkoutHistoryModal({ open, onOpenChange }) {
               filteredWorkouts.map((workout) => (
                 <div key={workout.id} className="flex items-center py-3 border-b last:border-0">
                   <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${!workout.workoutDay.dayName.includes("Rest") ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
-                      }`}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${!isRestDay(workout) ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}
                   >
-                    {!workout.workoutDay.dayName.includes("Rest") ? <CheckCircle2 className="h-5 w-5" /> : <Clock className="h-5 w-5" />}
+                    {!isRestDay(workout) ? <CheckCircle2 className="h-5 w-5" /> : <Clock className="h-5 w-5" />}
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center">
-                      <div className="font-medium">{!workout.workoutDay.dayName.includes("Rest") ? workout.workoutDay.dayName : "Rest Day"}</div>
+                      <div className="font-medium">{getWorkoutName(workout)}</div>
                       <Badge variant="outline" className="ml-2">
                         {format(new Date(workout.date), "EEE")}
                       </Badge>
                     </div>
                     <div className="text-sm text-muted-foreground">{format(new Date(workout.date), "MMMM d, yyyy")}</div>
                   </div>
-                  {!workout.workoutDay.dayName.includes("Rest") && (
+                  {!isRestDay(workout) && (
                     <div className="text-right">
-                      <div className="font-medium">{workout.duration} min</div>
+                      <div className="font-medium">{formatDuration(workout.duration)}</div>
                       <div className="text-sm text-muted-foreground">{workout.calories} calories</div>
                     </div>
                   )}
@@ -159,12 +195,12 @@ export function WorkoutHistoryModal({ open, onOpenChange }) {
                         <div key={workout.id} className="space-y-2 border-b pb-3 last:border-0 last:pb-0">
                           <div className="flex justify-between">
                             <span className="font-medium">
-                              {!workout.workoutDay.dayName.includes("Rest") ? workout.workoutDay.dayName : "Rest Day"}
+                              {getWorkoutName(workout)}
                             </span>
-                            {!workout.workoutDay.dayName.includes("Rest")&& (
+                            {!isRestDay(workout) && (
                               <div className="flex items-center gap-2">
                                 <span className="flex items-center text-sm">
-                                  <Clock className="h-4 w-4 mr-1" /> {workout.duration} min
+                                  <Clock className="h-4 w-4 mr-1" /> {formatDuration(workout.duration)}
                                 </span>
                                 <span className="flex items-center text-sm">
                                   <Flame className="h-4 w-4 mr-1" /> {workout.calories} cal
@@ -173,7 +209,7 @@ export function WorkoutHistoryModal({ open, onOpenChange }) {
                             )}
                           </div>
 
-                          {!workout.workoutDay.dayName.includes("Rest") && workout.workoutDay.exercises && workout.workoutDay.exercises.length > 0 && (
+                          {!isRestDay(workout) && workout.workoutDay.exercises && workout.workoutDay.exercises.length > 0 && (
                             <div className="text-sm text-muted-foreground">
                               {workout.workoutDay.exercises.map((ex, i) => (
                                 <div key={i}>

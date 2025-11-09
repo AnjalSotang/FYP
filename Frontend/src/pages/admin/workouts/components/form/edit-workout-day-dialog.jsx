@@ -24,6 +24,7 @@ export function EditWorkoutDayDialog({ day, open, onOpenChange, onSave }) {
   const dispatch = useDispatch();
   const [dayName, setDayName] = useState(day.dayName)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  // console.log(day)
 
   useEffect(() => {
     if (open) {
@@ -56,13 +57,6 @@ export function EditWorkoutDayDialog({ day, open, onOpenChange, onSave }) {
     }
   }
 
-  
-    //  // 🔥 Handle Status Updates
-    //  useEffect(() => {
-    //   if (status?.status === STATUSES.ERROR) {
-    //       toast.error(status.message);
-    //     }
-    //   }, [status]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -89,7 +83,7 @@ export function EditWorkoutDayDialog({ day, open, onOpenChange, onSave }) {
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Saving..." : "Save"}
+              {isSubmitting ? "Updating..." : "Update"}
             </Button>
           </DialogFooter>
         </form>

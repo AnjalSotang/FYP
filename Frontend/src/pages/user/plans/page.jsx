@@ -131,7 +131,7 @@ export default function WorkoutPlansPage() {
                       <div className="flex flex-wrap gap-4 text-sm">
                         <div className="flex items-center gap-1">
                           <Clock className="h-4 w-4 text-muted-foreground" />
-                          <span>{plan.duration}</span>
+                          <span>{plan.duration} days</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Dumbbell className="h-4 w-4 text-muted-foreground" />
@@ -175,7 +175,7 @@ export default function WorkoutPlansPage() {
                         <img
                           src={imageUrl ? `http://localhost:3001/${imageUrl}` : "/placeholder.svg"}
                           alt={plan.title}
-                          className="w-full h-48 object-cover rounded-t-lg"
+                          className="w-full h-60 object-cover rounded-t-lg"
                         />
                         <Badge
                           className="absolute top-3 right-3"
@@ -191,9 +191,9 @@ export default function WorkoutPlansPage() {
                         </Badge>
                       </div>
 
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-xl">{plan.title}</CardTitle>
-                      </CardHeader>
+                    <CardHeader className="pb-4">
+                      <CardTitle className="text-2xl">{plan.name}</CardTitle>
+                    </CardHeader>
 
                       <CardContent className="flex-1 pb-4">
                         <p className="text-muted-foreground mb-4 text-sm">{plan.description}</p>
@@ -201,7 +201,7 @@ export default function WorkoutPlansPage() {
                         <div className="flex flex-wrap gap-4 text-sm">
                           <div className="flex items-center gap-1">
                             <Clock className="h-4 w-4 text-muted-foreground" />
-                            <span>{plan.duration}</span>
+                            <span>{plan.duration} days</span>
                           </div>
                           <div className="flex items-center gap-1">
                             <Dumbbell className="h-4 w-4 text-muted-foreground" />
@@ -215,7 +215,7 @@ export default function WorkoutPlansPage() {
                       </CardContent>
 
                       <CardFooter className="pt-0">
-                        <Link to={`/user/Plan/${plan.id}`} className="w-full">
+                        <Link to={`/plan/${plan.id}`} className="w-full">
                           <Button variant="outline" className="w-full">
                             View Plan
                           </Button>
@@ -245,7 +245,7 @@ export default function WorkoutPlansPage() {
                         <img
                           src={imageUrl ? `http://localhost:3001/${imageUrl}` : "/placeholder.svg"}
                           alt={plan.title}
-                          className="w-full h-48 object-cover rounded-t-lg"
+                          className="w-full h-60 object-cover rounded-t-lg"
                         />
                         <Badge
                           className="absolute top-3 right-3"
@@ -261,9 +261,9 @@ export default function WorkoutPlansPage() {
                         </Badge>
                       </div>
 
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-xl">{plan.title}</CardTitle>
-                      </CardHeader>
+                    <CardHeader className="pb-4">
+                      <CardTitle className="text-2xl">{plan.name}</CardTitle>
+                    </CardHeader>
 
                       <CardContent className="flex-1 pb-4">
                         <p className="text-muted-foreground mb-4 text-sm">{plan.description}</p>
@@ -271,7 +271,7 @@ export default function WorkoutPlansPage() {
                         <div className="flex flex-wrap gap-4 text-sm">
                           <div className="flex items-center gap-1">
                             <Clock className="h-4 w-4 text-muted-foreground" />
-                            <span>{plan.duration}</span>
+                            <span>{plan.duration} days</span>
                           </div>
                           <div className="flex items-center gap-1">
                             <Dumbbell className="h-4 w-4 text-muted-foreground" />
@@ -285,7 +285,7 @@ export default function WorkoutPlansPage() {
                       </CardContent>
 
                       <CardFooter className="pt-0">
-                        <Link to={`/user/Plan/${plan.id}`} className="w-full">
+                        <Link to={`/plan/${plan.id}`} className="w-full">
                           <Button variant="outline" className="w-full">
                             View Plan
                           </Button>
@@ -312,7 +312,7 @@ export default function WorkoutPlansPage() {
                         <img
                           src={imageUrl ? `http://localhost:3001/${imageUrl}` : "/placeholder.svg"}
                           alt={plan.name}
-                          className="w-full h-48 object-cover rounded-t-lg"
+                          className="w-full h-60 object-cover rounded-t-lg"
                         />
                         <Badge
                           className="absolute top-3 right-3"
@@ -328,9 +328,10 @@ export default function WorkoutPlansPage() {
                         </Badge>
                       </div>
 
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-xl">{plan.name}</CardTitle>
-                      </CardHeader>
+                    
+                    <CardHeader className="pb-4">
+                      <CardTitle className="text-2xl">{plan.name}</CardTitle>
+                    </CardHeader>
 
                       <CardContent className="flex-1 pb-4">
                         <p className="text-muted-foreground mb-4 text-sm">{plan.description}</p>
@@ -338,7 +339,7 @@ export default function WorkoutPlansPage() {
                         <div className="flex flex-wrap gap-4 text-sm">
                           <div className="flex items-center gap-1">
                             <Clock className="h-4 w-4 text-muted-foreground" />
-                            <span>{plan.duration}</span>
+                            <span>{plan.duration} days</span>
                           </div>
                           <div className="flex items-center gap-1">
                             <Dumbbell className="h-4 w-4 text-muted-foreground" />
@@ -353,7 +354,7 @@ export default function WorkoutPlansPage() {
                       </CardContent>
 
                       <CardFooter className="pt-0">
-                        <Link to={`/user/Plan/${plan.id}`} className="w-full">
+                        <Link to={`/plan/${plan.id}`} className="w-full">
                           <Button variant="outline" className="w-full">
                             View Plan
                           </Button>
@@ -380,24 +381,24 @@ export default function WorkoutPlansPage() {
                         <img
                           src={imageUrl ? `http://localhost:3001/${imageUrl}` : "/placeholder.svg"}
                           alt={plan.title}
-                          className="w-full h-48 object-cover rounded-t-lg"
+                          className="w-full h-60 object-cover rounded-t-lg"
                         />
                         <Badge className="absolute top-3 right-3" variant="default">
                           {plan.level}
                         </Badge>
                       </div>
 
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-xl">{plan.name}</CardTitle>
-                      </CardHeader>
-
+                    <CardHeader className="pb-4">
+                      <CardTitle className="text-2xl">{plan.name}</CardTitle>
+                    </CardHeader>
+                    
                       <CardContent className="flex-1 pb-4">
                         <p className="text-muted-foreground mb-4 text-sm">{plan.description}</p>
 
                         <div className="flex flex-wrap gap-4 text-sm">
                           <div className="flex items-center gap-1">
                             <Clock className="h-4 w-4 text-muted-foreground" />
-                            <span>{plan.duration}</span>
+                            <span>{plan.duration} days</span>
                           </div>
                           <div className="flex items-center gap-1">
                             <Dumbbell className="h-4 w-4 text-muted-foreground" />
@@ -411,7 +412,7 @@ export default function WorkoutPlansPage() {
                       </CardContent>
 
                       <CardFooter className="pt-0">
-                        <Link to={`/user/Plan/${plan.id}`} className="w-full">
+                        <Link to={`/plan/${plan.id}`} className="w-full">
                           <Button variant="outline" className="w-full">
                             View Plan
                           </Button>

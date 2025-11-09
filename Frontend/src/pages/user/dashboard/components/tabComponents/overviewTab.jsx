@@ -75,6 +75,31 @@ export function OverviewTab() {
     return { startOfLastWeek, endOfLastWeek };
   };
 
+  const formatDuration = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.round((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+    
+    if (hours > 0) {
+      if (minutes === 0 && remainingSeconds === 0) {
+        return `${hours}h`;
+      } else if (remainingSeconds === 0) {
+        return `${hours}h ${minutes}m`;
+      } else {
+        return `${hours}h ${minutes}m ${remainingSeconds}s`;
+      }
+    } else if (minutes > 0) {
+      if (remainingSeconds === 0) {
+        return `${minutes}m`;
+      } else {
+        return `${minutes}m ${remainingSeconds}s`;
+      }
+    } else {
+      return `${remainingSeconds}s`;
+    }
+  }
+
+
   // Calculate stats from workout history
   const {
     weeklyWorkouts,
@@ -132,13 +157,19 @@ export function OverviewTab() {
     });
 
     const totalWeeklyWorkouts = uniqueWorkoutDays.size; // Count of unique days with workouts
-    const totalWeeklyMinutes = weeklyWorkouts.reduce((sum, workout) => sum + (workout.duration || 0), 0);
+    // const totalWeeklyMinutes = weeklyWorkouts.reduce((sum, workout) => sum + (formatDuration(workout.duration) || 0), 0);
     const totalWeeklyCalories = weeklyWorkouts.reduce((sum, workout) => sum + (workout.calories || 0), 0);
 
     // Calculate all-time stats
     const totalWorkouts = historyEntries.filter(workout => workout.completed).length;
-    const totalMinutes = historyEntries.reduce((sum, workout) => sum + (workout.duration || 0), 0);
+    // const totalMinutes = historyEntries.reduce((sum, workout) => sum + (formatDuration(workout.duration) || 0), 0);
     const totalCalories = historyEntries.reduce((sum, workout) => sum + (workout.calories || 0), 0);
+
+    const totalWeeklyMinutes = weeklyWorkouts.reduce((sum, workout) => sum + (workout.duration || 0), 0);
+const totalMinutes = historyEntries.reduce((sum, workout) => sum + (workout.duration || 0), 0);
+
+
+
 
     // Get last week's workouts
     const { startOfLastWeek, endOfLastWeek } = getLastWeekRange();
@@ -271,14 +302,15 @@ export function OverviewTab() {
               <Clock className="h-4 w-4 text-blue-500 mr-2" />
                               <span className="text-sm">Total Time</span>
               </div>
-              <div className="font-medium">{totalWeeklyMinutes} min</div>
+              <div className="font-medium">{formatDuration(totalWeeklyMinutes)}</div>
+
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center">
               <Flame className="h-4 w-4 text-orange-500 mr-2" />
               <span className="text-sm">Calories Burned</span>
               </div>
-              <div className="font-medium">{totalWeeklyCalories}</div>
+              <div className="font-medium">{totalWeeklyCalories} Kcal</div>
             </div>
           </CardContent>
         </Card>

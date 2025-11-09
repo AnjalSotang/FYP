@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import STATUSES from "../src/globals/status/statuses";
 import API from "../src/http";
+import { fetchWorkout, fetchWorkouts } from "./workoutSlice";
 
 const workoutDaySlice = createSlice({
     name: "workoutDay",
@@ -133,7 +134,7 @@ export function updateExcerciseInWorkoutDay(excerciseData) {
         console.log(excerciseData)
         try {
             // Send the exercise data along with the dayId in the request
-            const response = await API.post(
+            const response = await API.patch(
                 `api/workoutday/${excerciseData.dayId}/exercise/${excerciseData.excerciseId}`,
                 {
                     sets: excerciseData.sets,
@@ -145,7 +146,9 @@ export function updateExcerciseInWorkoutDay(excerciseData) {
             if (response.status === 200) {
                 // Dispatch a success action with the updated workout days
                 dispatch(setWorkoutDays(response.data));
+                // dispatch(fetchWorkout(excerciseData.workoutId));
                 dispatch(setStatus(STATUSES.SUCCESS));
+            
             } else {
                 // Handle unsuccessful response (if needed)
                 dispatch(setStatus({ status: STATUSES.ERROR, message: "Failed to add exercise to workout day" }));
@@ -157,6 +160,35 @@ export function updateExcerciseInWorkoutDay(excerciseData) {
     };
 }
 
+
+// For your workoutSlice.js
+export function removeExerciseFromWorkoutDay(exerciseData) {
+    return async function removeExerciseFromWorkoutDayThunk(dispatch) {
+      dispatch(setStatus(STATUSES.LOADING));
+      try {
+        console.log(exerciseData)
+        const response = await API.delete(
+          `api/workoutday/${exerciseData.dayId}/exercise/${exerciseData.excerciseId}`
+        );
+  
+        if (response.status === 200) {
+          // Fetch updated data after successful deletion
+          dispatch(fetchWorkout(exerciseData.workoutId));
+          dispatch(setStatus(STATUSES.SUCCESS));
+        } else {
+          dispatch(setStatus({ 
+            status: STATUSES.ERROR, 
+            message: "Failed to remove exercise from workout day" 
+          }));
+        }
+      } catch (error) {
+        dispatch(setStatus({ 
+          status: STATUSES.ERROR, 
+          message: error.message || "Failed to remove exercise from workout day" 
+        }));
+      }
+    };
+  }
 
 
 

@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useParams } from 'react-router-dom';
 import { deleteWorkout, fetchWorkouts, searchWorkouts, setStatus } from "../../../../../store/workoutSlice";
 import STATUSES from "../../../../globals/status/statuses";
-import {ToastContainer } from "react-toastify";
+import {toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import DashboardLayout from '../../../../components/layout/DashboardLayout';
 import { NewWorkoutDayDialog } from '../components/form/new-workoutday'
@@ -66,6 +66,16 @@ export default function WorkoutsPage() {
     </div>
   );
 
+ // 🔥 Handle Status Updates
+  useEffect(() => {
+    if (status?.status === STATUSES.SUCCESS ) {
+      // navigate("/admin/Workout");
+      toast.success(status.message);
+      dispatch(setStatus(null));
+      
+    } 
+  }, [status, dispatch]);
+
   // If we're still loading or workout not found, show appropriate UI
   if (status?.status === STATUSES.LOADING) {
     return (
@@ -85,6 +95,8 @@ export default function WorkoutsPage() {
 
   return (
     <div className="flex min-h-screen flex-col p-5">
+              <ToastContainer position="top-center" autoClose={3000} />
+
       <DashboardLayout>
         <div className="flex-1">
           <DashboardShell>
@@ -108,9 +120,9 @@ export default function WorkoutsPage() {
             >
               <div className="flex space-x-4">
                 <Button variant="outline" asChild>
-                  <Link to={`/admin/workout/edit/${id}`}>
+                  {/* <Link to={`/admin/workout/edit/${id}`}>
                     Edit Plan
-                  </Link>
+                  </Link> */}
                 </Button>
                 <NewWorkoutDayDialog Dialog id={numericId} />
               </div>

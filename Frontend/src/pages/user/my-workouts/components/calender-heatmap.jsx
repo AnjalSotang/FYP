@@ -1,18 +1,5 @@
-"use client"
-
 import { useState } from "react"
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay } from "date-fns"
-
-// interface WorkoutDay {
-//   date: string
-//   completed: boolean
-//   duration: number
-//   performance: number
-// }
-
-// interface CalendarHeatmapProps {
-//   workoutHistory: WorkoutDay[]
-// }
 
 export function CalendarHeatmap({ workoutHistory }) {
   const [currentMonth, setCurrentMonth] = useState(new Date())

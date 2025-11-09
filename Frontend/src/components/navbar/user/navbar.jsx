@@ -23,7 +23,7 @@ import {
   fetchUnreadCount, 
   addNewNotification 
 } from "../../../../store/userNotificationSlice";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
+// import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { cn } from "@/lib/utils";
 
 export function Navbar() {
@@ -204,7 +204,7 @@ export function Navbar() {
             </Button>
           </Link>
           
-          <ThemeToggle />
+          {/* <ThemeToggle /> */}
 
           {/* Notifications dropdown */}
           <DropdownMenu>
@@ -242,7 +242,9 @@ export function Navbar() {
                       <div className="flex items-start justify-between w-full">
                         <div className="font-medium flex items-center gap-2">
                           {notification.title}
-                          {!notification.read && <Badge variant="primary" className="h-1.5 w-1.5 rounded-full p-0" />}
+                          {!notification.read && <Badge variant="default" className="h-2 w-2 rounded-full p-0" />
+
+}
                         </div>
                         <div className="text-xs text-muted-foreground">{notification.time}</div>
                       </div>

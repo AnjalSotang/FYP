@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Provider } from "react-redux";
 import React, { Suspense, lazy } from "react";
 import store from "../store/store.js";
-import "./App.css";
+import "./App.css";   
 import { ErrorBoundary } from "react-error-boundary";
 import "@fontsource/inter"; // Defaults to weight 400.
 import { ProtectedAdmin, ProtectedUser } from './Protected.jsx';
@@ -13,8 +13,7 @@ import { ThemeProvider } from "./components/ui/theme-provider";
 import AppInitializer from './components/AppInitializer.js';
 
 
-
-// Lazy Loading Components
+// Lazy Loading Components  
 const Login = lazy(() => import("./pages/auth/Login"));
 const Register = lazy(() => import("./pages/auth/Register"));
 const ForgotPassword = lazy(() => import("./pages/auth/forget"));

@@ -62,24 +62,6 @@ export default function GenerateWorkoutPage() {
 
     setLoading(true)
 
-    // API call commented out for now, but we'll simulate success
-    // setTimeout(() => {
-    //   setGeneratedWorkout({ 
-     
-    //   })
-    //   setWorkoutGenerated(true)
-    //   setLoading(false)
-    //   toast.success("Your workout plan has been generated!", {
-    //     position: "top-right",
-    //     autoClose: 3000,
-    //     hideProgressBar: false,
-    //     closeOnClick: true,
-    //     pauseOnHover: true,
-    //     draggable: true
-    //   })
-    // }, 2000)
-    
-    // Uncomment this section when API is ready
     try {
       // Call the AI workout generation API
       const response = await fetch("http://localhost:3001/api/generate-workout", {

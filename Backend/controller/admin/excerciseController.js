@@ -61,6 +61,7 @@ const addExcercise = async (req, res) => {
             category,
             imagePath,
             burned_calories: burned_calories ? parseInt(burned_calories) : null,
+            role: 'admin',
             duration: duration ? parseInt(duration) : null,
             is_active: true
         });

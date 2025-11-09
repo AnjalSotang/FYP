@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 import STATUSES from '../src/globals/status/statuses';
 import API from '../src/http';
 
+
 const userNotificationSlice = createSlice({
     name: 'userNotification',
     initialState: {

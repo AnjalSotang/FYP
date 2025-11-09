@@ -181,6 +181,76 @@ const addExerciseToWorkoutDay = async (req, res) => {
   }
 };
 
+const updateExerciseInWorkoutDay = async (req, res) => {
+  try {
+    const { id, excerciseId } = req.params;
+    const { sets, reps, rest_time } = req.body;
+    
+    console.log('Workout Day ID:', id);
+    console.log('Exercise ID:', excerciseId);
+    console.log('Exercise Data:', sets, reps, rest_time);
+    
+    // Input validation
+    if (!sets || sets < 1) {  
+      return res.status(400).json({ message: 'Sets must be at least 1' });
+    }
+    
+    if (!reps || reps < 1) {
+      return res.status(400).json({ message: 'Reps must be at least 1' });
+    }
+    
+    if (!rest_time || rest_time < 0) {
+      return res.status(400).json({ message: 'Rest time must be at least 0' });
+    }
+
+    // Check if workout day exists
+    const workoutDay = await workoutday.findByPk(id); // Fixed: using findByPk with correct variable
+    if (!workoutDay) {
+      return res.status(404).json({ message: 'Workout day not found' });
+    }
+    
+    // Check if exercise exists
+    const exercise = await excercise.findByPk(excerciseId); // Fixed: using proper model name
+    if (!exercise) {
+      return res.status(404).json({ message: 'Exercise not found' });
+    }
+    
+    // Find the existing exercise in this workout day
+    const existingExercise = await workoutdayExcercise.findOne({ // Fixed: using proper model name
+      where: {
+        workoutDayId: id, // Fixed: using the correct variable from params
+        excerciseId // Fixed: using the correct variable from params
+      }
+    });
+    
+    // If it doesn't exist, return an error - this is an edit function
+    if (!existingExercise) {
+      return res.status(404).json({ message: 'Exercise not found in this workout day' });
+    }
+    
+    // Update the existing workout day exercise
+    await existingExercise.update({
+      sets,
+      reps,
+      rest_time
+    });
+    
+    // Return the updated exercise with the junction table data
+    const result = {
+      ...exercise.toJSON(),
+      WorkoutDayExercise: existingExercise.toJSON()
+    };
+    
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error('Error editing exercise in workout day:', error);
+    return res.status(500).json({ message: 'Failed to edit exercise in workout day', error });
+  }
+};
+
+// Your route is already correct:
+// router.patch('/workoutday/:id/exercise/:excerciseId', updateExerciseInWorkoutDay);
+
 // Remove exercise from workout day
 const removeExerciseFromWorkoutDay = async (req, res) => {
   try {
@@ -205,46 +275,6 @@ const removeExerciseFromWorkoutDay = async (req, res) => {
   }
 };
 
-// Update exercise in workout day
-const updateExerciseInWorkoutDay = async (req, res) => {
-  try {
-    const { id, excerciseId } = req.params;
-    const { sets, reps, rest_time } = req.body;
-    
-    if (!sets || sets < 1) {
-      return res.status(400).json({ message: 'Sets must be at least 1' });
-    }
-    
-    if (!reps || reps < 1) {
-      return res.status(400).json({ message: 'Reps must be at least 1' });
-    }
-
-    if (!rest_time || rest_time < 0) {
-      return res.status(400).json({ message: 'Rest time must be at least 0' });
-    }
-
-    
-    const workoutDayExercise = await workoutdayExcercise.findOne({
-      where: {
-        workoutdayId: id,
-        excerciseId
-      }
-    });
-    
-    if (!workoutDayExercise) {
-      return res.status(404).json({ message: 'Exercise not found in this workout day' });
-    }
-    
-       // Use `.update()` instead of setting properties manually
-       await workoutDayExercise.update({ sets, reps, rest_time });
-
-    
-    return res.status(200).json(workoutDayExercise);
-  } catch (error) {
-    console.error('Error updating exercise in workout day:', error);
-    return res.status(500).json({ message: 'Failed to update exercise in workout day' });
-  }
-};
 
 module.exports = {
   createWorkoutDay,

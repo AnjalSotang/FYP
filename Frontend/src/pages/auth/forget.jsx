@@ -1,18 +1,20 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
+import { faEnvelope, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useDispatch, useSelector } from "react-redux";
 import { forget, setStatus } from "../../../store/authSlice";
 import STATUSES from "../../globals/status/statuses";
 import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css"; // Import toast styles
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
-  const { user, status } = useSelector((state) => state.auth)
-  const dispatch = useDispatch()
+  const { user, status } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleRedirect = () => {
     navigate('/Login');
@@ -20,7 +22,7 @@ const ForgotPassword = () => {
 
   const handleSubmit = useCallback((e) => {
     e.preventDefault();
-    const newErrors = {}
+    const newErrors = {};
     if (!email) {
       newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(email)) {
@@ -32,25 +34,41 @@ const ForgotPassword = () => {
       return;
     }
 
+    toast.dismiss("sending-otp"); // Clear any existing sending toast
+    setIsSubmitting(true);
     dispatch(forget(email));
   }, [email, dispatch]);
 
   const handleReSubmit = (e) => {
     e.preventDefault();
     if(!user.email){
-      toast.error("Please enter the email first ")
-      return
+      toast.error("Please enter the email first");
+      return;
     }
-    dispatch(forget(user.email))
-  }
+    
+    toast.dismiss("sending-otp"); // Clear any existing sending toast
+    setIsSubmitting(true);
+    dispatch(forget(user.email));
+    toast.info("Resending OTP...", { autoClose: false, toastId: "sending-otp" });
+  };
 
-  // 🔥 Handle Status Updates
+  // Handle Status Updates
   useEffect(() => {
     if (status?.status === STATUSES.SUCCESS) {
-      navigate("/Reset");
-      dispatch(setStatus(null));
+      setIsSubmitting(false);
+      toast.success("OTP sent successfully Check your email! Redirecting to reset password page...");
+      
+      // Short delay to allow the toast to be seen before navigation
+      setTimeout(() => {
+        navigate("/Reset");
+        dispatch(setStatus(null));
+      }, 4000);
     } else if (status?.status === STATUSES.ERROR) {
+      setIsSubmitting(false);
       toast.error(status.message);
+    } else if (status?.status === STATUSES.LOADING) {
+      // Optional: Show loading toast
+      toast.info("Sending OTP, please wait...", { autoClose: false, toastId: "sending-otp" });
     }
   }, [status, dispatch, navigate]);
 
@@ -64,7 +82,6 @@ const ForgotPassword = () => {
       </div>
 
       <ToastContainer position="top-right" autoClose={3000} aria-live="assertive" />
-
 
       {/* Forgot Password Form Container */}
       <div className="bg-[#112240] p-12 rounded-2xl shadow-2xl shadow-black/40 w-[480px] hover:shadow-lg transition duration-300">
@@ -89,6 +106,7 @@ const ForgotPassword = () => {
               aria-label="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              disabled={isSubmitting}
             />
             <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white">
               <FontAwesomeIcon icon={faEnvelope} />
@@ -99,30 +117,46 @@ const ForgotPassword = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-[#b4e61d] to-[#a4d519] text-[#112240] text-lg font-bold py-3 rounded-lg hover:shadow-lg hover:scale-105 active:scale-95 transition duration-300"
+            className={`w-full bg-gradient-to-r from-[#b4e61d] to-[#a4d519] text-[#112240] text-lg font-bold py-3 rounded-lg transition duration-300 flex items-center justify-center ${
+              isSubmitting 
+                ? "opacity-70 cursor-not-allowed" 
+                : "hover:shadow-lg hover:scale-105 active:scale-95"
+            }`}
+            disabled={isSubmitting}
+            aria-busy={isSubmitting}
           >
-            Send OTP
+            {isSubmitting ? (
+              <>
+                <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />
+                Sending OTP...
+              </>
+            ) : (
+              "Send OTP"
+            )}
           </button>
         </form>
 
         <div className="mt-6 text-center">
           <p className="text-gray-400">
-            Didn’t receive the OTP?{" "}
+            Didn't receive the OTP?{" "}
             <button
-              className="text-[#4a90e2] font-bold hover:underline cursor-pointer bg-transparent border-none"
+              className={`text-[#4a90e2] font-bold hover:underline cursor-pointer bg-transparent border-none ${
+                isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+              }`}
               onClick={handleReSubmit}
+              disabled={isSubmitting}
             >
               Resend OTP
             </button>
           </p>
         </div>
 
-
         {/* Back to Login */}
         <div className="mt-6 text-center">
           <button
             className="text-[#4a90e2] font-bold hover:underline hover:text-[#3b7ac9] transition"
             onClick={handleRedirect}
+            disabled={isSubmitting}
           >
             Back to Login
           </button>

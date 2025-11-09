@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarIcon, Clock, Flame, ChevronLeft, ChevronRight } from "lucide-react";
 import { useSelector } from "react-redux";
 
-// Function to format history entries for daily chart
+// In the formatChartData function, convert seconds to minutes
 const formatChartData = (historyEntries, viewMonth, viewYear) => {
   const workoutsByDay = new Map();
   
@@ -17,14 +17,19 @@ const formatChartData = (historyEntries, viewMonth, viewYear) => {
 
   filteredEntries.forEach(entry => {
     // Ensure we're working with a Date object
+    
     const workoutDate = new Date(entry.date);
     const dateKey = workoutDate.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+    // Convert duration from seconds to minutes
+    const durationInMinutes = entry.duration ? Math.round(entry.duration / 60) : 0;
+  
 
     if (workoutsByDay.has(dateKey)) {
       const existingEntry = workoutsByDay.get(dateKey);
       workoutsByDay.set(dateKey, {
         date: dateKey,
-        minutes: existingEntry.minutes + (entry.duration || 0),
+        minutes: existingEntry.minutes + durationInMinutes,
         calories: existingEntry.calories + (entry.calories || 0),
         workouts: existingEntry.workouts + 1,
         rawDate: workoutDate
@@ -32,7 +37,7 @@ const formatChartData = (historyEntries, viewMonth, viewYear) => {
     } else {
       workoutsByDay.set(dateKey, {
         date: dateKey,
-        minutes: entry.duration || 0,
+        minutes: durationInMinutes,
         calories: entry.calories || 0,
         workouts: 1,
         rawDate: workoutDate
@@ -44,6 +49,9 @@ const formatChartData = (historyEntries, viewMonth, viewYear) => {
   result.sort((a, b) => a.rawDate - b.rawDate);
   return fillMissingDaysForMonth(result, viewMonth, viewYear);
 };
+
+
+
 
 // Function to ensure we have data for all days in the selected month
 const fillMissingDaysForMonth = (data, month, year) => {
@@ -270,40 +278,50 @@ const goToNextMonth = () => {
     [chartData, viewMonth, viewYear]
   );
 
-  // Current month stats
-  const currentMonthStats = useMemo(() => {
-    const entriesThisMonth = validEntries.filter(entry => {
-      const entryDate = new Date(entry.date);
-      return entryDate.getMonth() === viewMonth && entryDate.getFullYear() === viewYear;
-    });
-    
-    const calories = entriesThisMonth.reduce((sum, entry) => sum + (entry.calories || 0), 0);
-    const minutes = entriesThisMonth.reduce((sum, entry) => sum + (entry.duration || 0), 0);
-    const workouts = entriesThisMonth.length;
-    
-    return {
-      calories,
-      minutes,
-      workouts,
-      avgCaloriesPerWorkout: workouts ? Math.round(calories / workouts) : 0,
-      avgMinutesPerWorkout: workouts ? Math.round(minutes / workouts) : 0
-    };
-  }, [validEntries, viewMonth, viewYear]);
+// Update the monthly stats calculation
+const currentMonthStats = useMemo(() => {
+  const entriesThisMonth = validEntries.filter(entry => {
+    const entryDate = new Date(entry.date);
+    return entryDate.getMonth() === viewMonth && entryDate.getFullYear() === viewYear;
+  });
+  
+  const calories = entriesThisMonth.reduce((sum, entry) => sum + (entry.calories || 0), 0);
+  
+  // Convert duration from seconds to minutes
+  const seconds = entriesThisMonth.reduce((sum, entry) => sum + (entry.duration || 0), 0);
+  const minutes = Math.round(seconds / 60);
 
-  // Summary stats (all time)
-  const totalStats = useMemo(() => {
-    const calories = validEntries.reduce((sum, entry) => sum + (entry.calories || 0), 0);
-    const minutes = validEntries.reduce((sum, entry) => sum + (entry.duration || 0), 0);
-    const workouts = validEntries.length;
-    
-    return {
-      calories,
-      minutes,
-      workouts,
-      avgCaloriesPerWorkout: workouts ? Math.round(calories / workouts) : 0,
-      avgMinutesPerWorkout: workouts ? Math.round(minutes / workouts) : 0
-    };
-  }, [validEntries]);
+  console.log(minutes)
+  
+  const workouts = entriesThisMonth.length;
+  
+  return {
+    calories,
+    minutes,
+    workouts,
+    avgCaloriesPerWorkout: workouts ? Math.round(calories / workouts) : 0,
+    avgMinutesPerWorkout: workouts ? Math.round(minutes / workouts) : 0
+  };
+}, [validEntries, viewMonth, viewYear]);
+
+// Update the total stats calculation
+const totalStats = useMemo(() => {
+  const calories = validEntries.reduce((sum, entry) => sum + (entry.calories || 0), 0);
+  
+  // Convert duration from seconds to minutes
+  const seconds = validEntries.reduce((sum, entry) => sum + (entry.duration || 0), 0);
+  const minutes = Math.round(seconds / 60);
+  
+  const workouts = validEntries.length;
+  
+  return {
+    calories,
+    minutes,
+    workouts,
+    avgCaloriesPerWorkout: workouts ? Math.round(calories / workouts) : 0,
+    avgMinutesPerWorkout: workouts ? Math.round(minutes / workouts) : 0
+  };
+}, [validEntries]);
 
   useEffect(() => setIsMounted(true), []);
 

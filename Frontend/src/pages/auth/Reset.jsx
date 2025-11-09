@@ -1,29 +1,26 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import { faEye, faEyeSlash, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useDispatch, useSelector } from "react-redux";
 import { reset, setStatus } from "../../../store/authSlice";
 import STATUSES from "../../globals/status/statuses";
 import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ResetPassword = () => {
+  const {user, status} = useSelector((state) => state.auth);
   const [data, setData] = useState({
     email: user?.email || "",
     otp: "",
     password: "",
     confirmPassword: ""
-  })
-
-  const {user, status} = useSelector((state) => state.auth)
-  const dispatch = useDispatch()
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-
-     const [errors, setErrors] = useState({});
-
-  
+  const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
-
 
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
@@ -34,16 +31,16 @@ const ResetPassword = () => {
     setData((prevData)=> ({
       ...prevData,
       [name]: value
-    }))
-  }
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    const {otp, password, confirmPassword} = data
-    const newErrors = {}
+    const {otp, password, confirmPassword} = data;
+    const newErrors = {};
     if (!otp.trim()) {
-      newErrors.otp= "Please Enter the OTP";
+      newErrors.otp = "Please Enter the OTP";
     }
     if (!password) {
       newErrors.password = "Please Enter The New Password";
@@ -53,7 +50,7 @@ const ResetPassword = () => {
     }
     if (!confirmPassword) {
       newErrors.confirmPassword = "Please Confirm The New Password";
-    }else if (password !== confirmPassword) {
+    } else if (password !== confirmPassword) {
       newErrors.confirmPassword = "Passwords do not match.";
     }
 
@@ -62,20 +59,28 @@ const ResetPassword = () => {
       return;
     }
   
-
-    dispatch(reset(data))
+    setIsSubmitting(true);
+    toast.info("Processing your request...", { autoClose: false, toastId: "reset-password" });
+    dispatch(reset(data));
   };
 
-  
-  
-  useEffect(()=>{
+  useEffect(() => {
     if (status?.status === STATUSES.SUCCESS) {
-      navigate("/login");
-      setTimeout(() => dispatch(setStatus(null)), 500); // Add delay before resetting status
+      setIsSubmitting(false);
+      toast.dismiss("reset-password");
+      toast.success("Password reset successful! Redirecting to login page...");
+      
+      // Short delay to allow the toast to be seen before navigation
+      setTimeout(() => {
+        navigate("/login");
+        dispatch(setStatus(null));
+      }, 3000);
     } else if (status?.status === STATUSES.ERROR) {
+      setIsSubmitting(false);
+      toast.dismiss("reset-password");
       toast.error(status.message);
     }
-  }, [status, dispatch, navigate])
+  }, [status, dispatch, navigate]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0b1129] to-[#1a2c50] flex items-center justify-center relative">
@@ -86,7 +91,6 @@ const ResetPassword = () => {
         </h1>
       </div>
 
-      
       <ToastContainer position="top-right" autoClose={3000} />
 
       {/* Reset Password Form Container */}
@@ -107,10 +111,12 @@ const ResetPassword = () => {
               placeholder="Enter OTP"
               className="w-full p-4 pl-4 rounded-lg bg-[#1a2c50] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4a90e2] transition"
               aria-label="Enter OTP"
-              name= "otp"
+              name="otp"
               onChange={handleChange}
+              value={data.otp}
+              disabled={isSubmitting}
             />
-             {errors.otp && <span className='error-message fade-in-error'>{errors.otp}</span>}
+            {errors.otp && <span className='error-message fade-in-error'>{errors.otp}</span>}
           </div>
 
           {/* New Password Input */}
@@ -122,11 +128,16 @@ const ResetPassword = () => {
               aria-label="Enter new password"
               name="password"
               onChange={handleChange}
+              value={data.password}
+              disabled={isSubmitting}
             />
             <button
               type="button"
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-[#4a90e2] transition"
+              className={`absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-[#4a90e2] transition ${
+                isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+              }`}
               onClick={togglePasswordVisibility}
+              disabled={isSubmitting}
             >
               <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
             </button>
@@ -140,13 +151,18 @@ const ResetPassword = () => {
               placeholder="Confirm new password"
               className="w-full p-4 pl-4 rounded-lg bg-[#1a2c50] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4a90e2] transition"
               aria-label="Confirm new password"
-              name = "confirmPassword"
+              name="confirmPassword"
               onChange={handleChange}
+              value={data.confirmPassword}
+              disabled={isSubmitting}
             />
             <button
               type="button"
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-[#4a90e2] transition"
+              className={`absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-[#4a90e2] transition ${
+                isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+              }`}
               onClick={togglePasswordVisibility}
+              disabled={isSubmitting}
             >
               <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
             </button>
@@ -156,12 +172,24 @@ const ResetPassword = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-[#b4e61d] to-[#a4d519] text-[#112240] text-lg font-bold py-3 rounded-lg hover:shadow-lg hover:scale-105 active:scale-95 transition duration-300"
+            className={`w-full bg-gradient-to-r from-[#b4e61d] to-[#a4d519] text-[#112240] text-lg font-bold py-3 rounded-lg transition duration-300 flex items-center justify-center ${
+              isSubmitting 
+                ? "opacity-70 cursor-not-allowed" 
+                : "hover:shadow-lg hover:scale-105 active:scale-95"
+            }`}
+            disabled={isSubmitting}
+            aria-busy={isSubmitting}
           >
-            Reset Password
+            {isSubmitting ? (
+              <>
+                <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />
+                Resetting Password...
+              </>
+            ) : (
+              "Reset Password"
+            )}
           </button>
         </form>
-
       </div>
     </div>
   );

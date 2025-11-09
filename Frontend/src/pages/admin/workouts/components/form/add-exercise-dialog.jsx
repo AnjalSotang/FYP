@@ -15,19 +15,42 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { cloneDeep } from "lodash";
-import { addExcerciseToWorkoutDay } from "../../../../../../store/workoutDaySlice";
+import { addExcerciseToWorkoutDay, updateExcerciseInWorkoutDay } from "../../../../../../store/workoutDaySlice";
 
-
-export function AddExerciseDialog({ dayId, open, onOpenChange, onAdd }) {
+export function ExerciseDialog({ 
+  dayId, 
+  exerciseToEdit = null,  // Pass existing exercise when editing
+  open, 
+  onOpenChange, 
+  onAdd,
+  onUpdate 
+}) {
   const { data: availableExcercises, status } = useSelector((state) => state.excercise);
   const dispatch = useDispatch();
 
-  const [excerciseId, setExcerciseId] = useState("")
-  const [sets, setSets] = useState("3")
-  const [reps, setReps] = useState("10")
-  const [rest_time, setRest_time] = useState("10")
+  // Set initial state based on whether we're editing or adding
+  const [excerciseId, setExcerciseId] = useState(exerciseToEdit?.id || "")
+  const [sets, setSets] = useState(exerciseToEdit?.WorkoutDayExercise?.sets?.toString() || "3")
+  const [reps, setReps] = useState(exerciseToEdit?.WorkoutDayExercise?.reps?.toString() || "10")
+  const [rest_time, setRest_time] = useState(exerciseToEdit?.WorkoutDayExercise?.rest_time?.toString() || "10")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  
+  const isEditMode = !!exerciseToEdit;
+
+  // Reset form when dialog opens/closes or when exerciseToEdit changes
+  useEffect(() => {
+    if (exerciseToEdit) {
+      setExcerciseId(exerciseToEdit.id || "")
+      setSets(exerciseToEdit.WorkoutDayExercise?.sets?.toString() || "3")
+      setReps(exerciseToEdit.WorkoutDayExercise?.reps?.toString() || "10")
+      setRest_time(exerciseToEdit.WorkoutDayExercise?.rest_time?.toString() || "10")
+    } else {
+      setExcerciseId("")
+      setSets("3")
+      setReps("10")
+      setRest_time("10")
+    }
+  }, [exerciseToEdit, open])
 
   // Fetch exercises on mount
   useEffect(() => {
@@ -39,54 +62,106 @@ export function AddExerciseDialog({ dayId, open, onOpenChange, onAdd }) {
     setIsSubmitting(true)
 
     try {
-      // Prepare the data to send to the API
-      const exerciseData = {
-        dayId,
-        excerciseId,
-        sets: parseInt(sets),
-        reps: parseInt(reps),
-        rest_time: parseInt(rest_time)
-      }
-      
-      // Dispatch the Redux action
-      await dispatch(addExcerciseToWorkoutDay(exerciseData))
-
-      // Get the selected exercise for the local state update
-      const selectedExercise = availableExcercises.find((ex) => ex.id === excerciseId)
-      
-      if (selectedExercise) {
-        // Call the onAdd callback to update UI immediately
-        onAdd(dayId, {
-          id: selectedExercise.id,
-          name: selectedExercise.name,
+      // If we're editing, use the update action
+      if (isEditMode) {
+        // Prepare data for updating
+        const updateData = {
+          dayId,
+          excerciseId: exerciseToEdit.id, // Using the ID from the exercise being edited
           sets: parseInt(sets),
           reps: parseInt(reps),
-          rest_time: parseInt(rest_time),
-        })
+          rest_time: parseInt(rest_time)
+        }
+        
+        // Dispatch update action
+        await dispatch(updateExcerciseInWorkoutDay(updateData))
+        
+        // Call the onUpdate callback to update UI immediately if provided
+        if (onUpdate) {
+          onUpdate(dayId, {
+            id: exerciseToEdit.id,
+            name: exerciseToEdit.name,
+            WorkoutDayExercise: {
+              sets: parseInt(sets),
+              reps: parseInt(reps),
+              rest_time: parseInt(rest_time),
+            }
+          })
+        }
+      } else {
+        // Prepare data for adding
+        const addData = {
+          dayId,
+          excerciseId,
+          sets: parseInt(sets),
+          reps: parseInt(reps),
+          rest_time: parseInt(rest_time)
+        }
+        
+        // Dispatch add action
+        await dispatch(addExcerciseToWorkoutDay(addData))
+        
+        // Get the selected exercise for the local state update
+        const selectedExercise = availableExcercises.find((ex) => ex.id === excerciseId)
+        
+        if (selectedExercise && onAdd) {
+          // Call the onAdd callback to update UI immediately
+          onAdd(dayId, {
+            id: selectedExercise.id,
+            name: selectedExercise.name,
+            WorkoutDayExercise: {
+              sets: parseInt(sets),
+              reps: parseInt(reps),
+              rest_time: parseInt(rest_time),
+            }
+          })
+        }
       }
       
       // Close the dialog
       onOpenChange(false)
     } catch (error) {
-      console.error("Error adding exercise to workout day:", error)
+      console.error(`Error ${isEditMode ? 'updating' : 'adding'} exercise:`, error)
     } finally {
       setIsSubmitting(false)
-      window.location.reload();
+      window.location.reload(); // Note: Consider using a more targeted approach than full page reload
     }
   }
+
+    // // 🔥 Handle Status Updates
+    // useEffect(() => {
+    //   if (status?.status === STATUSES.SUCCESS) {
+    //     // navigate("/admin/Workout");
+    //     toast.success(status.message);
+    //     dispatch(setStatus(null));
+    //   //   setIsSubmitting(false);
+    //   } else if (status?.status === STATUSES.ERROR) {
+    //     toast.error(status.message);
+    //     dispatch(setStatus(null));
+    //   //   setIsSubmitting(false);
+    //   }
+    // }, [status, dispatch, navigate]);
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Add Exercise</DialogTitle>
-            <DialogDescription>Add an exercise to this workout day.</DialogDescription>
+            <DialogTitle>{isEditMode ? 'Edit Exercise' : 'Add Exercise'}</DialogTitle>
+            <DialogDescription>
+              {isEditMode ? 'Update the exercise details.' : 'Add an exercise to this workout day.'}
+            </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="exercise">Exercise</Label>
-              <Select value={excerciseId} onValueChange={setExcerciseId} required>
+              <Select 
+                value={excerciseId} 
+                onValueChange={setExcerciseId} 
+                required
+                disabled={isEditMode} // Disable changing the exercise when editing
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select an exercise" />
                 </SelectTrigger>
@@ -127,11 +202,11 @@ export function AddExerciseDialog({ dayId, open, onOpenChange, onAdd }) {
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="rest_time">Rest Time</Label>
+                <Label htmlFor="rest_time">Rest Time (sec)</Label>
                 <Input
                   id="rest_time"
                   type="number"
-                  min="1"
+                  min="0"
                   value={rest_time}
                   onChange={(e) => setRest_time(e.target.value)}
                   required
@@ -144,7 +219,7 @@ export function AddExerciseDialog({ dayId, open, onOpenChange, onAdd }) {
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting || !excerciseId}>
-              {isSubmitting ? "Adding..." : "Add Exercise"}
+              {isSubmitting ? (isEditMode ? "Updating..." : "Adding...") : (isEditMode ? "Update Exercise" : "Add Exercise")}
             </Button>
           </DialogFooter>
         </form>

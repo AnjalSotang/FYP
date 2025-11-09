@@ -254,6 +254,9 @@ const getCompletedWorkouts = async (req, res) => {
 
 
 
+
+
+
 const deleteUserWorkout = async (req, res) => {
   try {
     // Extract user ID from the decoded token
@@ -642,7 +645,7 @@ const getUserWorkout = async (req, res) => {
   try {
     // Extract user ID from the decoded token
     let userId = req.decoded.id;
-    const id = req.params.userid;
+    const id = req.params.id;
     console.log("Decoded User ID:", userId);
     console.log("User ID from params:", id);
 
@@ -718,6 +721,7 @@ const getUserWorkout = async (req, res) => {
       progress: UserWorkout.progress,
       currentDay: UserWorkout.currentDay,
       totalDays: UserWorkout.totalWorkouts,
+      streak: UserWorkout.streak,
       currentWeek: currentWeek,
       cycleDay: cycleIndex + 1, // Day number within the current cycle (1-based)
       level: UserWorkout.workouts.level,

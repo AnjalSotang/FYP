@@ -30,7 +30,7 @@ async function createWorkoutInDB(workoutData, userId) {
       name: workoutData.title,
       description: workoutData.description,
       level: workoutData.level,
-      duration: workoutData.duration || 45, // Default if not provided
+      duration: workoutData.duration, // Default if not provided
       goal: workoutData.goal,
       calories: workoutData.calories,
       equipment: Array.isArray(workoutData.equipment) ? workoutData.equipment.join(', ') : workoutData.equipment,
@@ -168,22 +168,6 @@ async function createWorkoutInDB(workoutData, userId) {
 }
 
 
-
-// Helper function to create user notifications
-// const createUserNotification = async (
-//   userId, 
-//   title, 
-//   message, 
-//   type, 
-//   referenceId, 
-//   referenceType
-// ) => {
-//   // This function implementation would be defined elsewhere
-//   // or imported from a notification service
-//   console.log(`Creating notification for user ${userId}: ${title}`);
-//   // Placeholder implementation - replace with actual notification logic
-// };
-
 router.post("/generate-workout", async (req, res) => {
   const { goal, experience, days, duration, equipment, focus, additionalInfo, userId } = req.body;
 
@@ -209,7 +193,8 @@ router.post("/generate-workout", async (req, res) => {
   Additional Information: ${additionalInfo || "None"}
   
   Create a 7-day weekly schedule where ${days} days are workout days and the remaining days are rest days. Place rest days strategically to allow for muscle recovery.
-  
+  Note: If the user specifies 7 workout days, there will be no rest days. If 6 workout days are specified, include 1 rest day.
+
   For each workout day, provide:
   1. A focus area (e.g., "Upper Body", "Lower Body", "Core", etc.)
   2. A list of 4-6 exercises with sets, reps, rest periods, and equipment needed
@@ -222,6 +207,10 @@ router.post("/generate-workout", async (req, res) => {
   {
     "title": "Name of the workout plan",
     "description": "Brief description of the workout plan",
+  "duration": 30, // Number of days for the full program
+  "goal": "User's goal",
+  "calories": number, // Total estimated calories to be burned over the whole program
+  "equipment": "Comma-separated list of equipment",
     "days": [
       {
         "day": 1,

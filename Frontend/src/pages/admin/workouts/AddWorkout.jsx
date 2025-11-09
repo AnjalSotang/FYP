@@ -19,23 +19,25 @@ const AddExercise = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  console.log(status)
   
   console.log("Workout state:", workout);
 
-  // 🔥 Handle Status Updates
-  useEffect(() => {
-    if (status?.status === STATUSES.SUCCESS) {
-      // Only navigate if this was an add operation
-      // navigate("/Workout");
-      // toast.success(status.message);
-      dispatch(setStatus(null));
-      setIsSubmitting(false);
-    } else if (status?.status === STATUSES.ERROR) {
-      toast.error(status.message);
-      dispatch(setStatus(null));
-      setIsSubmitting(false);
-    }
-  }, [status, dispatch, navigate]);
+  // // 🔥 Handle Status Updates
+  // useEffect(() => {
+  //   if (status?.status === STATUSES.SUCCESS) {
+  //     // Only navigate if this was an add operation
+  //     // navigate("/Workout");
+  //     // toast.success(status.message);
+  //     dispatch(setStatus(null));
+  //     setIsSubmitting(false);
+  //   } else if (status?.status === STATUSES.ERROR) {
+  //     toast.error(status.message);
+  //     dispatch(setStatus(null));
+  //     setIsSubmitting(false);
+  //   }
+  // }, [status, dispatch, navigate]);
 
   const handleAddWorkout = (data) => {
     setIsSubmitting(true);

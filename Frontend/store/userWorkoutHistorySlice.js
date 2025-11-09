@@ -108,7 +108,8 @@ export function fetchActiveWorkoutsWithHistory() {
                 }
             });
 
-            console.log(response.data.data);
+            console.log(response.data);
+            
             if (response.status === 200) {
                 // Format the workout data with history information
                 

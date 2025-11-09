@@ -9,6 +9,33 @@ export function ActivityItem({ day, index }) {
   const formattedDate = `${month} ${dayNumber}`;
   console.log(formattedDate);
 
+  const formatDuration = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+    
+    if (hours > 0) {
+      if (minutes === 0 && remainingSeconds === 0) {
+        return `${hours}h`;
+      } else if (remainingSeconds === 0) {
+        return `${hours}h ${minutes}m`;
+      } else {
+        return `${hours}h ${minutes}m ${remainingSeconds}s`;
+      }
+    } else if (minutes > 0) {
+      if (remainingSeconds === 0) {
+        return `${minutes}m`;
+      } else {
+        return `${minutes}m ${remainingSeconds}s`;
+      }
+    } else {
+      return `${remainingSeconds}s`;
+    }
+  }
+
+  
+  
+
   return (
     <div key={index} className="flex items-center py-2 border-b last:border-0">
       <div
@@ -26,7 +53,7 @@ export function ActivityItem({ day, index }) {
       </div>
       {day.duration !== 0 && (
         <div className="text-right">
-          <div className="font-medium">{day.duration} min</div>
+          <div className="font-medium">{formatDuration(day.duration)} min</div>
           <div className="text-sm text-muted-foreground">{day.calories} calories</div>
         </div>
       )}

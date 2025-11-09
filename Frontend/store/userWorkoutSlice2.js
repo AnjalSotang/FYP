@@ -209,12 +209,14 @@ export function fetchCompletedWorkouts() {
         dispatch(setStatus(STATUSES.LOADING));
         try {
             const token = localStorage.getItem('token');
-            const response = await API.get('/api/getCompletedWorkouts', {
+            const response = await API.get('/api/getCompletedWorkouts',
+                {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });;
             if (response.status === 200) {
+                console.log(response.data);
                 dispatch(setCompletedWorkouts(response.data));
                 dispatch(setStatus({ status: STATUSES.SUCCESS }));
             }
@@ -234,6 +236,43 @@ export function fetchCompletedWorkouts() {
         }
     };
 }
+
+
+export function fetchCompletedWorkout() {
+    return async function fetchCompletedWorkoutsThunk(dispatch) {
+        dispatch(setStatus(STATUSES.LOADING));
+        try {
+            const token = localStorage.getItem('token');
+            const response = await API.get('/api/getCompletedWorkouts',
+                {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });;
+            if (response.status === 200) {
+                console.log(response.data);
+                dispatch(setCompletedWorkouts(response.data));
+                dispatch(setStatus({ status: STATUSES.SUCCESS }));
+            }
+        } catch (error) {
+            let errorMessage = "Failed to fetch completed workouts";
+
+            if (error.response) {
+                errorMessage = error.response.data.message || errorMessage;
+            } else if (error.request) {
+                errorMessage = "Cannot connect to the server. Please check your internet or try again later.";
+            } else {
+                errorMessage = error.message;
+            }
+
+            dispatch(setError(errorMessage));
+            dispatch(setStatus({ status: STATUSES.ERROR, message: errorMessage }));
+        }
+    };
+}
+
+
+
 
 export function addWorkoutPlan(workoutId) {
     return async function addWorkoutPlanThunk(dispatch) {

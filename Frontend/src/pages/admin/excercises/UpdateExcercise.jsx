@@ -40,7 +40,6 @@ const UpdateExercise = () => {
   // 🔥 Handle Status Updates
   useEffect(() => {
     if (status?.status === STATUSES.SUCCESS) {
-      navigate("/");
       toast.success(status.message);
       dispatch(setStatus(null));
     } else if (status?.status === STATUSES.ERROR) {

@@ -32,6 +32,8 @@ const ExercisesPage = () => {
   const [difficultyFilter, setDifficultyFilter] = useState("all")
   const [deletingId, setDeletingId] = useState(null);
 
+  console.log(exercises)
+
   // Fetch exercises on mount
   useEffect(() => {
     dispatch(fetchExcercises());
@@ -41,6 +43,7 @@ const ExercisesPage = () => {
   useEffect(() => {
     if (status?.status === STATUSES.SUCCESS) {
       dispatch(setStatus(null));
+      toast.success(status.message);
     } 
   }, [status, dispatch]);
 
@@ -69,6 +72,7 @@ const filteredExercises = Array.isArray(exercises)
 
   return (
     <DashboardLayout>
+        <ToastContainer position="top-center" autoClose={3000} />
       <div className="flex flex-col gap-6 m-form-padding">
                 <div>
           <h1 className="text-3xl mb-2 font-bold tracking-tight">Exercises</h1>

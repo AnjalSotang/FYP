@@ -8,33 +8,34 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Pencil, Plus, Trash2 } from "lucide-react"
-import { AddExerciseDialog } from "../form/add-exercise-dialog"
+import { ExerciseDialog } from "../form/add-exercise-dialog" // Updated import
 import { EditWorkoutDayDialog } from "../form/edit-workout-day-dialog"
 import { DeleteWorkoutDayDialog } from "../form/delete-workout-day-dialog"
+import { removeExerciseFromWorkoutDay } from "../../../../../../store/workoutDaySlice";
+import { DeleteExerciseDialog } from "../form/delete-excercise-dialog";
 
 export function WorkoutDayList({ workoutPlanId }) {
+  // Add this to your state declarations at the top of WorkoutDayList component
+  const [deletingExercise, setDeletingExercise] = useState(null);
   const [editingDay, setEditingDay] = useState(null);
   const [deletingDayId, setDeletingDayId] = useState(null);
   const [addingExerciseToDayId, setAddingExerciseToDayId] = useState(null);
+  const [editingExercise, setEditingExercise] = useState(null); // New state for editing exercise
 
   const { status } = useSelector((state) => state.workout);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // Only fetch if workoutData is not provided from parent
+
+  // Only fetch if workoutPlanId is provided
   useEffect(() => {
     if (workoutPlanId) {
       dispatch(fetchWorkout(workoutPlanId));
     }
   }, [workoutPlanId, dispatch]);
 
-  // Get workoutDays from either passed workoutData or from Redux state
-  const { data1: reduxWorkoutDays } = useSelector((state) => state.workout);
-  const workoutDays = reduxWorkoutDays;
-console.log("WorkoutDays:", workoutDays);
-
-  console.log("WorkoutPlanId:", workoutPlanId);
-  console.log("Using workout days:", workoutDays);
+  // Get workoutDays from Redux state
+  const { currentWorkout: workoutDays } = useSelector((state) => state.workout);
 
   // Handle different states based on status
   if (status === STATUSES.LOADING && !workoutDays) {
@@ -51,15 +52,13 @@ console.log("WorkoutDays:", workoutDays);
 
   // Get the days array from the workoutDays object
   const days = workoutDays.days;
-  console.log("Days:", days);
 
   // Check if days is empty or not
   const hasDays = Array.isArray(days) && days.length > 0;
-  console.log(hasDays)
-  
+
   return (
     <>
-      <div className="grid gap-4  bg-card border rounded-md p-4">
+      <div className="grid gap-4 bg-card border rounded-md p-4">
         {!hasDays ? (
           <Card>
             <CardContent className="py-10 text-center">
@@ -98,7 +97,6 @@ console.log("WorkoutDays:", workoutDays);
                       </Button>
                     </div>
                     <div className="rounded-md border">
-
                       <Table>
                         <TableHeader>
                           <TableRow>
@@ -112,7 +110,7 @@ console.log("WorkoutDays:", workoutDays);
                         <TableBody>
                           {!day.excercises || day.excercises.length === 0 ? (
                             <TableRow>
-                              <TableCell colSpan={4} className="h-24 text-center">
+                              <TableCell colSpan={5} className="h-24 text-center">
                                 No exercises found.
                               </TableCell>
                             </TableRow>
@@ -122,7 +120,11 @@ console.log("WorkoutDays:", workoutDays);
                                 <TableCell>{exercise.name}</TableCell>
                                 <TableCell>{exercise.WorkoutDayExercise?.sets || "N/A"}</TableCell>
                                 <TableCell>{exercise.WorkoutDayExercise?.reps || "N/A"}</TableCell>
-                                <TableCell>{exercise.WorkoutDayExercise?.rest_time || "N/A"}</TableCell>
+                                <TableCell>
+                                  {exercise.WorkoutDayExercise?.rest_time
+                                    ? `${exercise.WorkoutDayExercise.rest_time} sec`
+                                    : "N/A"}
+                                </TableCell>
 
                                 <TableCell>
                                   <div className="flex space-x-2">
@@ -130,17 +132,27 @@ console.log("WorkoutDays:", workoutDays);
                                       variant="ghost"
                                       size="icon"
                                       onClick={() => {
-                                        // Edit exercise functionality would go here
+                                        // Set the exercise being edited and pass the dayId
+                                        setEditingExercise({
+                                          ...exercise,
+                                          dayId: day.id
+                                        });
                                       }}
                                     >
                                       <Pencil className="h-4 w-4" />
                                       <span className="sr-only">Edit</span>
                                     </Button>
+
                                     <Button
                                       variant="ghost"
                                       size="icon"
                                       onClick={() => {
-                                        // Delete exercise functionality would go here
+                                        // Set the exercise to be deleted
+                                        setDeletingExercise({
+                                          dayId: day.id,
+                                          exerciseId: exercise.id,
+                                          workoutId: workoutPlanId
+                                        });
                                       }}
                                     >
                                       <Trash2 className="h-4 w-4" />
@@ -170,8 +182,7 @@ console.log("WorkoutDays:", workoutDays);
             if (!open) setEditingDay(null)
           }}
           onSave={(updatedDay) => {
-            // Use dispatch to update the workout day in the Redux store
-            // Example: dispatch(updateWorkoutDay(updatedDay));
+            // Handle saving updated day
             setEditingDay(null)
           }}
         />
@@ -185,24 +196,48 @@ console.log("WorkoutDays:", workoutDays);
             if (!open) setDeletingDayId(null)
           }}
           onDelete={(id) => {
-            // Use dispatch to delete the workout day in the Redux store
-            // Example: dispatch(deleteWorkoutDay(id));
+            // Handle deleting day
             setDeletingDayId(null)
           }}
         />
       )}
 
-      {addingExerciseToDayId && (
-        <AddExerciseDialog
-          dayId={addingExerciseToDayId}
-          open={!!addingExerciseToDayId}
+      {deletingExercise && (
+        <DeleteExerciseDialog
+          dayId={deletingExercise.dayId}
+          exerciseId={deletingExercise.exerciseId}
+          workoutId={deletingExercise.workoutId}
+          open={!!deletingExercise}
           onOpenChange={(open) => {
-            if (!open) setAddingExerciseToDayId(null)
+            if (!open) setDeletingExercise(null)
+          }}
+          onDelete={() => {
+            dispatch(fetchWorkout(workoutPlanId)); // Refresh data after deletion
+            setDeletingExercise(null);
+          }}
+        />
+      )}
+
+      {/* Conditional rendering for the ExerciseDialog component */}
+      {(addingExerciseToDayId || editingExercise) && (
+        <ExerciseDialog
+          dayId={addingExerciseToDayId || editingExercise?.dayId}
+          exerciseToEdit={editingExercise} // Will be null when adding
+          open={!!(addingExerciseToDayId || editingExercise)}
+          onOpenChange={(open) => {
+            if (!open) {
+              setAddingExerciseToDayId(null)
+              setEditingExercise(null)
+            }
           }}
           onAdd={(dayId, exercise) => {
-            // Use dispatch to add the exercise to the workout day in the Redux store
-            // Example: dispatch(addExerciseToWorkoutDay(dayId, exercise));
+            console.log("Exercise added:", exercise);
+            dispatch(fetchWorkout(workoutPlanId)); // 
             setAddingExerciseToDayId(null)
+          }}
+          onUpdate={(dayId, updatedExercise) => {
+            console.log("Exercise updated:", updatedExercise);
+            setEditingExercise(null)
           }}
         />
       )}

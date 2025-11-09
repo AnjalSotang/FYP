@@ -73,7 +73,7 @@ const getActiveWorkouts = async (req, res) => {
                 {
                     model: workout,
                     as: 'workouts',  // Use the same alias from the association
-                    attributes: ['id', 'name', 'description', 'level', 'duration', 'goal', 'equipment', 'calories', 'imagePath']
+                    attributes: ['id', 'name', 'description', 'level', 'duration', 'goal', 'equipment', 'calories', 'imagePath', 'role']
                 }
             ],
             order: [['updatedAt', 'DESC']]
@@ -122,6 +122,7 @@ const getActiveWorkouts = async (req, res) => {
                     id: UserWorkout.id,
                     workoutId: UserWorkout.workoutId,
                     title: UserWorkout.workouts.title,
+                    role: UserWorkout.workouts.role,
                     progress: UserWorkout.progress,
                     nextWorkout: UserWorkout.nextWorkout,
                     lastCompleted: lastCompleted,  // Using the formatted date

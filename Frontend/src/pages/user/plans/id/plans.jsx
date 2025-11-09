@@ -105,7 +105,7 @@ export default function WorkoutPlanPage({ }) {
   return (
     <RootLayout>
       <div className="container mx-auto py-12 px-12">
-        <Link to="/" className="flex items-center text-muted-foreground hover:text-foreground mb-6">
+        <Link to="/plans" className="flex items-center text-muted-foreground hover:text-foreground mb-6">
           <ChevronLeft className="mr-1 h-4 w-4" />
           Back to plans
         </Link>
@@ -166,7 +166,7 @@ export default function WorkoutPlanPage({ }) {
                     <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
                     <span>Duration</span>
                   </div>
-                  <div>{plan.duration}</div>
+                  <div>{plan.duration} days</div>
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -234,10 +234,10 @@ export default function WorkoutPlanPage({ }) {
                   )}
                 </Button>
 
-                <Button variant="outline" className="w-full gap-3">
+                {/* <Button variant="outline" className="w-full gap-3">
                   <Share className="h-4 w-4" />
                   Share Plan
-                </Button>
+                </Button> */}
               </CardFooter>
             </Card>
           </div>
