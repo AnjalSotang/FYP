@@ -8,7 +8,7 @@ import RootLayout from '../../../components/layout/UserLayout'
 import { useDispatch, useSelector } from "react-redux";
 import { fetchMeasurements, setStatus } from "../../../../store/measurementSlice";
 // Import tab content components
-import { OverviewTab } from "./components/tabComponents/OverviewTab"
+
 import { WorkoutsTab } from "./components/tabComponents/workoutsTab"
 import { ProgressTab } from "./components/tabComponents/progressTab"
 import { StatsTab } from "./components/tabComponents/statsTab"
@@ -17,6 +17,7 @@ import { MeasurementsHistory } from "./components/resuableComponents/Measurement
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from 'react-toastify';
+import { OverviewTab } from "./components/tabComponents/OverviewTab"
 
 export default function DashboardPage() {
   const { data } = useSelector((state) => state.auth || {});
